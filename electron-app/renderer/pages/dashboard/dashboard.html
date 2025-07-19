@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRMS System | Dashboard</title>
+
+    <!-- ========== ALL CSS FILES ========== -->
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/animate-css/animate.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/lobipanel/lobipanel.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/toastr/toastr.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/icheck/skins/line/blue.css">
+    <link rel="stylesheet" href="../../../../shared/css/main.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/js/amcharts/plugins/export/export.css" type="text/css" media="all" />
+
+    <!-- ========== MODERNIZR JS ========== -->
+    <script src="../../../../shared/js/modernizr/modernizr.min.js"></script>
+</head>
+<body class="top-navbar-fixed">
+    <div class="main-wrapper">
+        <!-- ========== TOP NAVBAR (from topbar.php) ========== -->
+        <nav class="navbar top-navbar bg-white box-shadow">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="navbar-header no-padding">
+                        <a class="navbar-brand" href="#">SRMS | Admin</a>
+                        <span class="small-nav-handle hidden-sm hidden-xs"><i class="fa fa-outdent"></i></span>
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+                            <span class="sr-only">Toggle navigation</span>
+                            <i class="fa fa-ellipsis-v"></i>
+                        </button>
+                        <button type="button" class="navbar-toggle mobile-nav-toggle">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                    </div>
+                    <div class="collapse navbar-collapse" id="navbar-collapse-1">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="#" id="logoutBtn" class="color-danger text-center"><i class="fa fa-sign-out"></i> Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- ========== WRAPPER FOR BOTH SIDEBARS & MAIN CONTENT ========== -->
+        <div class="content-wrapper">
+            <div class="content-container">
+                <!-- ========== LEFT SIDEBAR (from leftbar.php) ========== -->
+                <div class="left-sidebar bg-black-300 box-shadow">
+                    <div class="sidebar-content">
+                        <div class="sidebar-nav">
+                            <ul class="side-nav color-gray">
+                                <li class="nav-header"><span class="">Main Category</span></li>
+                                <li><a href="#"><i class="fa fa-dashboard"></i> <span>Dashboard</span></a></li>
+                                <li class="nav-header"><span class="">Appearance</span></li>
+                                <li class="has-children"><a href="#"><i class="fa fa-file-text"></i> <span>Student Classes</span> <i class="fa fa-angle-right arrow"></i></a></li>
+                                <li class="has-children"><a href="#"><i class="fa fa-file-text"></i> <span>Subjects</span> <i class="fa fa-angle-right arrow"></i></a></li>
+                                <li class="has-children"><a href="#"><i class="fa fa-users"></i> <span>Students</span> <i class="fa fa-angle-right arrow"></i></a></li>
+                                <li class="has-children"><a href="#"><i class="fa fa-info-circle"></i> <span>Result</span> <i class="fa fa-angle-right arrow"></i></a></li>
+                                <li><a href="#"><i class="fa fa-server"></i> <span> Admin Change Password</span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== MAIN PAGE CONTENT (from dashboard.php) ========== -->
+                <div class="main-page">
+                    <div class="container-fluid">
+                        <div class="row page-title-div">
+                            <div class="col-sm-6"><h2 class="title">Dashboard</h2></div>
+                        </div>
+                    </div>
+                    <section class="section">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                                    <a class="dashboard-stat bg-primary" href="#"><span id="totalStudents" class="number counter">0</span><span class="name">Regd Users</span><span class="bg-icon"><i class="fa fa-users"></i></span></a>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                                    <a class="dashboard-stat bg-danger" href="#"><span id="totalSubjects" class="number counter">0</span><span class="name">Subjects Listed</span><span class="bg-icon"><i class="fa fa-ticket"></i></span></a>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                                    <a class="dashboard-stat bg-warning" href="#"><span id="totalClasses" class="number counter">0</span><span class="name">Total classes</span><span class="bg-icon"><i class="fa fa-bank"></i></span></a>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                                    <a class="dashboard-stat bg-success" href="#"><span id="totalResults" class="number counter">0</span><span class="name">Results Declared</span><span class="bg-icon"><i class="fa fa-file-text"></i></span></a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== ALL COMMON JS FILES ========== -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="../../../../shared/js/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../../../../shared/js/bootstrap/bootstrap.min.js"></script>
+    <script src="../../../../shared/js/pace/pace.min.js"></script>
+    <script src="../../../../shared/js/lobipanel/lobipanel.min.js"></script>
+    <script src="../../../../shared/js/iscroll/iscroll.js"></script>
+
+    <!-- ========== ALL PAGE JS FILES ========== -->
+    <script src="../../../../shared/js/prism/prism.js"></script>
+    <script src="../../../../shared/js/waypoint/waypoints.min.js"></script>
+    <script src="../../../../shared/js/counterUp/jquery.counterup.min.js"></script>
+    <script src="../../../../shared/js/amcharts/amcharts.js"></script>
+    <script src="../../../../shared/js/amcharts/serial.js"></script>
+    <script src="../../../../shared/js/amcharts/plugins/export/export.min.js"></script>
+    <script src="../../../../shared/js/amcharts/themes/light.js"></script>
+    <script src="../../../../shared/js/toastr/toastr.min.js"></script>
+    <script src="../../../../shared/js/icheck/icheck.min.js"></script>
+
+    <!-- ========== THEME JS ========== -->
+    <script src="../../../../shared/js/main.js"></script>
+    
+    <!-- ========== OUR CUSTOM DASHBOARD SCRIPT ========== -->
+    <script src="dashboard.js"></script>
+</body>
+</html>

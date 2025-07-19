@@ -1,0 +1,17 @@
+body {
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-panel {
+    margin-top: 50px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+#message {
+    margin-top: 15px;
+    font-weight: bold;
+}
