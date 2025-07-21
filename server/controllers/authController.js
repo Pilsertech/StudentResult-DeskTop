@@ -1,7 +1,7 @@
 const db = require('../config/database');
 const md5 = require('md5');
 
-exports.login = (req, res) => {
+exports.login = async (req, res) => {
     // --- NEW: Log the incoming request ---
     console.log('Login attempt received.');
     console.log('Request body:', JSON.stringify(req.body));
@@ -21,14 +21,8 @@ exports.login = (req, res) => {
     // --- NEW: Log the query before executing ---
     console.log('Executing query:', query.replace('?', `'${username}'`).replace('?', `'${hashedPassword}'`));
 
-    db.query(query, [username, hashedPassword], (err, results) => {
-        if (err) {
-            // --- NEW: Log the database error ---
-            console.error("Database query error:", err.message);
-            // This is the error the user is seeing.
-            return res.status(500).json({ success: false, message: "An internal server error occurred." });
-        }
-
+    try {
+        const [results] = await db.execute(query, [username, hashedPassword]);
         // --- NEW: Log the query result ---
         console.log(`Query finished. Number of results: ${results.length}`);
 
@@ -39,5 +33,9 @@ exports.login = (req, res) => {
             console.log(`Login failed for user: ${username}. Invalid credentials.`);
             res.status(401).json({ success: false, message: "Invalid username or password" });
         }
-    });
+    } catch (err) {
+        // --- NEW: Log the database error ---
+        console.error("Database query error:", err.message);
+        res.status(500).json({ success: false, message: "An internal server error occurred." });
+    }
 };

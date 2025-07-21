@@ -18,10 +18,35 @@
 
     <!-- ========== MODERNIZR JS ========== -->
     <script src="../../../../shared/js/modernizr/modernizr.min.js"></script>
+    <style>
+        .arrow.rotate {
+            transform: rotate(90deg);
+            transition: transform 0.2s;
+        }
+        .sidebar-content .user-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sidebar-content .user-info .profile-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        .sidebar-content .user-info .title {
+            margin: 0;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        .sidebar-content .user-info .info {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+    </style>
 </head>
 <body class="top-navbar-fixed">
     <div class="main-wrapper">
-        <!-- ========== TOP NAVBAR (from topbar.php) ========== -->
+        <!-- ========== TOP NAVBAR ========== -->
         <nav class="navbar top-navbar bg-white box-shadow">
             <div class="container-fluid">
                 <div class="row">
@@ -45,28 +70,64 @@
             </div>
         </nav>
 
-        <!-- ========== WRAPPER FOR BOTH SIDEBARS & MAIN CONTENT ========== -->
         <div class="content-wrapper">
             <div class="content-container">
-                <!-- ========== LEFT SIDEBAR (from leftbar.php) ========== -->
+                <!-- ========== LEFT SIDEBAR (collapsible and with user profile) ========== -->
                 <div class="left-sidebar bg-black-300 box-shadow">
                     <div class="sidebar-content">
+                        <!-- User Info -->
+                        <div class="user-info closed">
+                            <img src="../../../../shared/images/avatar-1.svg" alt="John Doe" class="img-circle profile-img">
+                            <h6 class="title">John Doe</h6>
+                            <small class="info">PHP Developer</small>
+                        </div>
+                        <!-- Sidebar Navigation -->
                         <div class="sidebar-nav">
                             <ul class="side-nav color-gray">
                                 <li class="nav-header"><span class="">Main Category</span></li>
-                                <li><a href="#"><i class="fa fa-dashboard"></i> <span>Dashboard</span></a></li>
+                                <li>
+                                    <a href="dashboard.html"><i class="fa fa-dashboard"></i> <span>Dashboard</span></a>
+                                </li>
                                 <li class="nav-header"><span class="">Appearance</span></li>
-                                <li class="has-children"><a href="#"><i class="fa fa-file-text"></i> <span>Student Classes</span> <i class="fa fa-angle-right arrow"></i></a></li>
-                                <li class="has-children"><a href="#"><i class="fa fa-file-text"></i> <span>Subjects</span> <i class="fa fa-angle-right arrow"></i></a></li>
-                                <li class="has-children"><a href="#"><i class="fa fa-users"></i> <span>Students</span> <i class="fa fa-angle-right arrow"></i></a></li>
-                                <li class="has-children"><a href="#"><i class="fa fa-info-circle"></i> <span>Result</span> <i class="fa fa-angle-right arrow"></i></a></li>
-                                <li><a href="#"><i class="fa fa-server"></i> <span> Admin Change Password</span></a></li>
+                                <li class="has-children">
+                                    <a href="#"><i class="fa fa-file-text"></i> <span>Student Classes</span> <i class="fa fa-angle-right arrow"></i></a>
+                                    <ul class="child-nav" style="display:none;">
+                                        <li><a href="../classes/create-class.html"><i class="fa fa-bars"></i> <span>Create Class</span></a></li>
+                                        <li><a href="../classes/manage-classes.html"><i class="fa fa-server"></i> <span>Manage Classes</span></a></li>
+                                    </ul>
+                                </li>
+                                <li class="has-children">
+                                    <a href="#"><i class="fa fa-file-text"></i> <span>Subjects</span> <i class="fa fa-angle-right arrow"></i></a>
+                                    <ul class="child-nav" style="display:none;">
+                                        <li><a href="../subjects/create-subject.html"><i class="fa fa-bars"></i> <span>Create Subject</span></a></li>
+                                        <li><a href="../subjects/manage-subjects.html"><i class="fa fa-server"></i> <span>Manage Subjects</span></a></li>
+                                        <li><a href="../subjects/add-subjectcombination.html"><i class="fa fa-newspaper-o"></i> <span>Add Subject Combination</span></a></li>
+                                        <li><a href="../subjects/manage-subjectcombination.html"><i class="fa fa-newspaper-o"></i> <span>Manage Subject Combination</span></a></li>
+                                    </ul>
+                                </li>
+                                <li class="has-children">
+                                    <a href="#"><i class="fa fa-users"></i> <span>Students</span> <i class="fa fa-angle-right arrow"></i></a>
+                                    <ul class="child-nav" style="display:none;">
+                                        <li><a href="../students/add-students.html"><i class="fa fa-bars"></i> <span>Add Students</span></a></li>
+                                        <li><a href="../students/manage-students.html"><i class="fa fa-server"></i> <span>Manage Students</span></a></li>
+                                    </ul>
+                                </li>
+                                <li class="has-children">
+                                    <a href="#"><i class="fa fa-info-circle"></i> <span>Result</span> <i class="fa fa-angle-right arrow"></i></a>
+                                    <ul class="child-nav" style="display:none;">
+                                        <li><a href="../results/add-result.html"><i class="fa fa-bars"></i> <span>Add Result</span></a></li>
+                                        <li><a href="../results/manage-results.html"><i class="fa fa-server"></i> <span>Manage Result</span></a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="../account/change-password.html"><i class="fa fa-server"></i> <span>Admin Change Password</span></a>
+                                </li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                <!-- ========== MAIN PAGE CONTENT (from dashboard.php) ========== -->
+                <!-- ========== MAIN PAGE CONTENT ========== -->
                 <div class="main-page">
                     <div class="container-fluid">
                         <div class="row page-title-div">
@@ -77,16 +138,32 @@
                         <div class="container-fluid">
                             <div class="row">
                                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                                    <a class="dashboard-stat bg-primary" href="#"><span id="totalStudents" class="number counter">0</span><span class="name">Regd Users</span><span class="bg-icon"><i class="fa fa-users"></i></span></a>
+                                    <a class="dashboard-stat bg-primary" href="../students/manage-students.html">
+                                        <span id="totalStudents" class="number counter">0</span>
+                                        <span class="name">Regd Users</span>
+                                        <span class="bg-icon"><i class="fa fa-users"></i></span>
+                                    </a>
                                 </div>
                                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                                    <a class="dashboard-stat bg-danger" href="#"><span id="totalSubjects" class="number counter">0</span><span class="name">Subjects Listed</span><span class="bg-icon"><i class="fa fa-ticket"></i></span></a>
+                                    <a class="dashboard-stat bg-danger" href="../subjects/manage-subjects.html">
+                                        <span id="totalSubjects" class="number counter">0</span>
+                                        <span class="name">Subjects Listed</span>
+                                        <span class="bg-icon"><i class="fa fa-ticket"></i></span>
+                                    </a>
                                 </div>
                                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                                    <a class="dashboard-stat bg-warning" href="#"><span id="totalClasses" class="number counter">0</span><span class="name">Total classes</span><span class="bg-icon"><i class="fa fa-bank"></i></span></a>
+                                    <a class="dashboard-stat bg-warning" href="../classes/manage-classes.html">
+                                        <span id="totalClasses" class="number counter">0</span>
+                                        <span class="name">Total classes</span>
+                                        <span class="bg-icon"><i class="fa fa-bank"></i></span>
+                                    </a>
                                 </div>
                                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                                    <a class="dashboard-stat bg-success" href="#"><span id="totalResults" class="number counter">0</span><span class="name">Results Declared</span><span class="bg-icon"><i class="fa fa-file-text"></i></span></a>
+                                    <a class="dashboard-stat bg-success" href="../results/manage-results.html">
+                                        <span id="totalResults" class="number counter">0</span>
+                                        <span class="name">Results Declared</span>
+                                        <span class="bg-icon"><i class="fa fa-file-text"></i></span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -117,8 +194,9 @@
 
     <!-- ========== THEME JS ========== -->
     <script src="../../../../shared/js/main.js"></script>
-    
     <!-- ========== OUR CUSTOM DASHBOARD SCRIPT ========== -->
     <script src="dashboard.js"></script>
+    <!-- ========== SIDEBAR FUNCTIONAL JS (separate file, no inline) ========== -->
+    <script src="sidebar.js"></script>
 </body>
 </html>

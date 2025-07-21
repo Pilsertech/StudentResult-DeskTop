@@ -4,9 +4,11 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+
+// --- ROUTES ---
 const authRoutes = require('./routes/authRoutes');
-const connection = require('./config/database');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const classRoutes = require('./routes/classRoutes'); // <-- ADDED: Class CRUD routes
 
 // --- INITIALIZATION ---
 const app = express();
@@ -18,14 +20,12 @@ const PORT = 9000;
 const logFilePath = path.join(__dirname, 'server.log');
 const logStream = fs.createWriteStream(logFilePath, { flags: 'a' });
 
-// Redirects standard server output to the log file.
 console.log = function(d) {
     const message = new Date().toISOString() + ' - ' + d + '\n';
     logStream.write(message);
     process.stdout.write(message);
 };
 
-// Redirects server errors to the log file.
 console.error = function(d) {
     const message = new Date().toISOString() + ' - ERROR: ' + d + '\n';
     logStream.write(message);
@@ -42,6 +42,7 @@ app.use(express.urlencoded({ extended: true }));
 // Registers the route files for different parts of the application.
 app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
+app.use('/classes', classRoutes); // <-- ADDED: Class CRUD endpoints
 
 // --- SHUTDOWN ROUTE ---
 // The special endpoint that Electron calls to safely stop the server.

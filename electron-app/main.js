@@ -1,17 +1,19 @@
-// --- ELECTRON MODULES ---
-// Import all necessary modules from the Electron library.
+// --- DISABLE BACKGROUND THROTTLING (ensures canvas/particles always animate) ---
 const { app, BrowserWindow, ipcMain, session } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 
+// These MUST be before app.whenReady()
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+
 // --- GLOBAL VARIABLES ---
-// These hold references to our server process and application windows.
 let serverProcess;
 let loginWindow;
 let dashboardWindow;
 
 // --- SERVER MANAGEMENT ---
-// This function starts the Node.js server.
 function startServer() {
     if (serverProcess) {
         console.log('Server process is already running.');
@@ -47,7 +49,6 @@ ipcMain.on('stop-server', async () => {
 });
 
 // --- WINDOW MANAGEMENT ---
-// This function creates the login window.
 function createLoginWindow() {
     loginWindow = new BrowserWindow({
         width: 1024,
@@ -56,14 +57,14 @@ function createLoginWindow() {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
+            backgroundThrottling: false // <-- This is crucial for particles.js to always animate!
         }
     });
     loginWindow.loadFile('renderer/pages/login/login.html');
-    loginWindow.webContents.openDevTools();
+    // Removed auto-open DevTools for better user experience
     loginWindow.on('closed', () => { loginWindow = null; });
 }
 
-// This function creates the dashboard window.
 function createDashboardWindow() {
     dashboardWindow = new BrowserWindow({
         width: 1280,
@@ -72,15 +73,15 @@ function createDashboardWindow() {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
+            backgroundThrottling: false // <-- For consistency if you use canvas animations
         },
     });
     dashboardWindow.loadFile('renderer/pages/dashboard/dashboard.html');
-    dashboardWindow.webContents.openDevTools();
+    // Removed auto-open DevTools for better user experience
     dashboardWindow.on('closed', () => { dashboardWindow = null; });
 }
 
 // --- IPC EVENT LISTENERS ---
-// This handles the transition from login to dashboard.
 ipcMain.on('login-successful', () => {
     console.log('IPC: Login successful! Switching to dashboard.');
     createDashboardWindow();
@@ -90,20 +91,25 @@ ipcMain.on('login-successful', () => {
 });
 
 // --- APP LIFECYCLE EVENTS ---
-// This runs when the app is ready.
 app.whenReady().then(() => {
-    // THIS IS THE CORRECTED CONTENT SECURITY POLICY FROM THE REPORT
+    // --- CONTENT SECURITY POLICY (CSP) ---
+    // The CSP here is designed to:
+    // - Allow Google Fonts (CSS + font files)
+    // - Permit images from the app and data URIs (base64)
+    // - Permit inline scripts/styles (for legacy JS like jQuery)
+    // - Allow connections to the local server and devtools
+    // WARNING: 'unsafe-eval' and 'unsafe-inline' are insecure and should be removed for production if possible.
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
         callback({
             responseHeaders: {
                 ...details.responseHeaders,
                 'Content-Security-Policy': [
                     "default-src 'self'",
+                    // WARNING: 'unsafe-eval' and 'unsafe-inline' are insecure. Remove if possible for production.
                     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-                    // FIX: Allows loading stylesheets from Google Fonts.
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-                    // FIX: Allows loading font files from Google's static hosting.
                     "font-src 'self' data: https://fonts.gstatic.com",
+                    "img-src 'self' data:", // Allow images from app and base64/data URIs
                     "connect-src http://localhost:9000 devtools://*"
                 ].join('; ')
             }
