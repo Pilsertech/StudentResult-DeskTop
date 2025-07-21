@@ -2,6 +2,7 @@
 /node_modules
 /server/node_modules
 /electron-app/node_modules
+/shared/node_modules
 
 # Log files
 /server/server.log
@@ -15,3 +16,17 @@ Thumbs.db
 
 # Environment variables (if you add a .env file later)
 .env
+
+# Build outputs
+/dist
+/build
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp

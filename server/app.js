@@ -11,6 +11,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const classRoutes = require('./routes/classRoutes'); // <-- ADDED: Class CRUD routes
 const subjectRoutes = require('./routes/subjectRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const resultRoutes = require('./routes/resultRoutes');
 
 // --- INITIALIZATION ---
 const app = express();
@@ -47,6 +48,14 @@ app.use('/dashboard', dashboardRoutes);
 app.use('/classes', classRoutes); // <-- ADDED: Class CRUD endpoints
 app.use('/subjects', subjectRoutes);
 app.use('/students', studentRoutes);
+app.use('/api/results', resultRoutes);
+
+
+// Log all incoming requests
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+    next();
+});
 
 // --- SHUTDOWN ROUTE ---
 // The special endpoint that Electron calls to safely stop the server.
