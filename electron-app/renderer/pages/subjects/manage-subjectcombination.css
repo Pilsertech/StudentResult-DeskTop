@@ -1,0 +1,69 @@
+/* Custom styles for Manage Subject Combination page */
+.errorWrap {
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #dd3d36;
+    -webkit-box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+
+.succWrap {
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #5cb85c;
+    -webkit-box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+
+.panel-body {
+    padding: 20px;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.fa-check {
+    color: #5cb85c;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.fa-times {
+    color: #d9534f;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.fa-check:hover {
+    color: #449d44;
+}
+
+.fa-times:hover {
+    color: #c9302c;
+}
+
+.status-active {
+    color: #5cb85c;
+    font-weight: bold;
+}
+
+.status-inactive {
+    color: #d9534f;
+    font-weight: bold;
+}
+
+#combinations-table_wrapper {
+    margin-top: 10px;
+}
+
+.dataTables_filter {
+    margin-bottom: 10px;
+}
+
+.action-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}

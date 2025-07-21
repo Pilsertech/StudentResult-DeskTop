@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Result Management System</title>
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/animate-css/animate.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/icheck/skins/flat/blue.css">
+    <link rel="stylesheet" href="../../../../shared/css/main.css" media="screen">
+    <link rel="stylesheet" href="find-result.css">
+    <script src="../../../../shared/js/modernizr/modernizr.min.js"></script>
+</head>
+<body class="desktop-body">
+    <div class="main-wrapper desktop-wrapper">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <h1 class="main-title">
+                            <i class="fa fa-graduation-cap"></i>
+                            Student Result Management System
+                        </h1>
+                        <p class="subtitle">Search for Student Results</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Section -->
+        <div class="content-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8 col-md-offset-2">
+                        <div class="search-container">
+                            <div class="search-header">
+                                <div class="search-icon">
+                                    <i class="fa fa-search"></i>
+                                </div>
+                                <h3>Find Your Results</h3>
+                                <p>Enter your Roll ID and select your class to view your academic results</p>
+                            </div>
+
+                            <div class="search-body">
+                                <div id="message"></div>
+                                
+                                <form id="findResultForm" class="search-form">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="rollid" class="form-label">
+                                                <i class="fa fa-user"></i>
+                                                Roll ID
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control form-control-lg" 
+                                                   id="rollid" 
+                                                   name="rollid" 
+                                                   placeholder="Enter Your Roll ID" 
+                                                   autocomplete="off" 
+                                                   required>
+                                            <div class="input-help">
+                                                <small class="text-muted">
+                                                    <i class="fa fa-info-circle"></i>
+                                                    Your unique student roll number
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group col-md-6">
+                                            <label for="classSelect" class="form-label">
+                                                <i class="fa fa-graduation-cap"></i>
+                                                Class & Section
+                                            </label>
+                                            <select name="class" 
+                                                    class="form-control form-control-lg" 
+                                                    id="classSelect" 
+                                                    required>
+                                                <option value="">Select Your Class</option>
+                                                <!-- Populated by JS -->
+                                            </select>
+                                            <div class="input-help">
+                                                <small class="text-muted">
+                                                    <i class="fa fa-info-circle"></i>
+                                                    Choose your current class and section
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-search">
+                                            <i class="fa fa-search"></i>
+                                            Search Results
+                                            <span class="btn-arrow">→</span>
+                                        </button>
+                                        
+                                        <button type="reset" class="btn btn-clear">
+                                            <i class="fa fa-refresh"></i>
+                                            Clear Form
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="search-footer">
+                                <div class="footer-links">
+                                    <a href="index.html" class="back-link">
+                                        <i class="fa fa-arrow-left"></i>
+                                        Back to Home
+                                    </a>
+                                    
+                                    <div class="help-text">
+                                        <i class="fa fa-question-circle"></i>
+                                        <span>Need help? Contact your school administrator</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <p class="copyright">
+                            <i class="fa fa-copyright"></i>
+                            2025 Student Result Management System | 
+                            Developed by SRMS Team
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <i class="fa fa-spinner fa-spin"></i>
+            </div>
+            <h4>Searching for your results...</h4>
+            <p>Please wait while we fetch your academic information</p>
+        </div>
+    </div>
+
+    <!-- ========== COMMON JS FILES ========== -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="../../../../shared/js/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../../../../shared/js/bootstrap/bootstrap.min.js"></script>
+    <script src="../../../../shared/js/pace/pace.min.js"></script>
+    <script src="../../../../shared/js/lobipanel/lobipanel.min.js"></script>
+    <script src="../../../../shared/js/iscroll/iscroll.js"></script>
+    <script src="../../../../shared/js/icheck/icheck.min.js"></script>
+    <script src="../../../../shared/js/main.js"></script>
+    <script src="find-result.js"></script>
+</body>
+</html>

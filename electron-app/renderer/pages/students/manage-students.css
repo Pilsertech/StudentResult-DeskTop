@@ -1,0 +1,63 @@
+/* Custom styles for Manage Students page */
+.errorWrap {
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #dd3d36;
+    -webkit-box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+
+.succWrap {
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #5cb85c;
+    -webkit-box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+
+.panel-body {
+    padding: 20px;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.fa-edit {
+    color: #337ab7;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.fa-edit:hover {
+    color: #23527c;
+}
+
+.status-active {
+    color: #5cb85c;
+    font-weight: bold;
+}
+
+.status-blocked {
+    color: #d9534f;
+    font-weight: bold;
+}
+
+#students-table_wrapper {
+    margin-top: 10px;
+}
+
+.dataTables_filter {
+    margin-bottom: 10px;
+}
+
+.class-info {
+    font-weight: 500;
+}
+
+/* Date formatting */
+.reg-date {
+    white-space: nowrap;
+}

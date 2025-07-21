@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRMS Admin Subject Combination</title>
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/animate-css/animate.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/lobipanel/lobipanel.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/prism/prism.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/main.css" media="screen">
+    <link rel="stylesheet" href="add-subjectcombination.css">
+    <script src="../../../../shared/js/modernizr/modernizr.min.js"></script>
+</head>
+<body class="top-navbar-fixed">
+    <div class="main-wrapper">
+        <!-- ========== TOP NAVBAR ========== -->
+        <div id="topbar-include"></div>
+        <!-- ========== WRAPPER FOR BOTH SIDEBARS & MAIN CONTENT ========== -->
+        <div class="content-wrapper">
+            <div class="content-container">
+                <!-- ========== LEFT SIDEBAR ========== -->
+                <div id="leftbar-include"></div>
+                <!-- ========== MAIN PAGE ========== -->
+                <div class="main-page">
+                    <div class="container-fluid">
+                        <div class="row page-title-div">
+                            <div class="col-md-6">
+                                <h2 class="title">Add Subject Combination</h2>
+                            </div>
+                        </div>
+                        <div class="row breadcrumb-div">
+                            <div class="col-md-6">
+                                <ul class="breadcrumb">
+                                    <li><a href="../dashboard/dashboard.html"><i class="fa fa-home"></i> Home</a></li>
+                                    <li><a href="#">Subjects</a></li>
+                                    <li class="active">Add Subject Combination</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="panel">
+                                    <div class="panel-heading">
+                                        <div class="panel-title">
+                                            <h5>Add Subject Combination</h5>
+                                        </div>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="message"></div>
+                                        <form id="addCombinationForm" class="form-horizontal" autocomplete="off">
+                                            <div class="form-group">
+                                                <label for="classSelect" class="col-sm-2 control-label">Class</label>
+                                                <div class="col-sm-10">
+                                                    <select name="class" class="form-control" id="classSelect" required>
+                                                        <option value="">Select Class</option>
+                                                        <!-- Populated by JS -->
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="subjectSelect" class="col-sm-2 control-label">Subject</label>
+                                                <div class="col-sm-10">
+                                                    <select name="subject" class="form-control" id="subjectSelect" required>
+                                                        <option value="">Select Subject</option>
+                                                        <!-- Populated by JS -->
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-sm-offset-2 col-sm-10">
+                                                    <button type="submit" class="btn btn-primary">Add</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /.col-md-12 -->
+                        </div>
+                    </div>
+                </div>
+                <!-- /.main-page -->
+            </div>
+            <!-- /.content-container -->
+        </div>
+        <!-- /.content-wrapper -->
+    </div>
+    <!-- /.main-wrapper -->
+
+    <!-- ========== COMMON JS FILES ========== -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="../../../../shared/js/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../../../../shared/js/bootstrap/bootstrap.min.js"></script>
+    <script src="../../../../shared/js/pace/pace.min.js"></script>
+    <script src="../../../../shared/js/lobipanel/lobipanel.min.js"></script>
+    <script src="../../../../shared/js/iscroll/iscroll.js"></script>
+    <script src="../../../../shared/js/prism/prism.js"></script>
+    <script src="../../../../shared/js/main.js"></script>
+    <script src="add-subjectcombination.js"></script>
+    <script>
+        // Load topbar and leftbar includes
+        $(function() {
+            $("#topbar-include").load("../includes/topbar.html");
+            $("#leftbar-include").load("../includes/leftbar.html");
+        });
+    </script>
+</body>
+</html>

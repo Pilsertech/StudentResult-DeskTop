@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRMS Admin Manage Subjects Combination</title>
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/animate-css/animate.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/lobipanel/lobipanel.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/prism/prism.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/js/DataTables/datatables.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/main.css" media="screen">
+    <link rel="stylesheet" href="manage-subjectcombination.css">
+    <script src="../../../../shared/js/modernizr/modernizr.min.js"></script>
+</head>
+<body class="top-navbar-fixed">
+    <div class="main-wrapper">
+        <!-- ========== TOP NAVBAR ========== -->
+        <div id="topbar-include"></div>
+        <!-- ========== WRAPPER FOR BOTH SIDEBARS & MAIN CONTENT ========== -->
+        <div class="content-wrapper">
+            <div class="content-container">
+                <!-- ========== LEFT SIDEBAR ========== -->
+                <div id="leftbar-include"></div>
+                <!-- ========== MAIN PAGE ========== -->
+                <div class="main-page">
+                    <div class="container-fluid">
+                        <div class="row page-title-div">
+                            <div class="col-md-6">
+                                <h2 class="title">Manage Subjects Combination</h2>
+                            </div>
+                        </div>
+                        <div class="row breadcrumb-div">
+                            <div class="col-md-6">
+                                <ul class="breadcrumb">
+                                    <li><a href="../dashboard/dashboard.html"><i class="fa fa-home"></i> Home</a></li>
+                                    <li>Subjects</li>
+                                    <li class="active">Manage Subjects Combination</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <section class="section">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="panel">
+                                        <div class="panel-heading">
+                                            <div class="panel-title">
+                                                <h5>View Subjects Combination Info</h5>
+                                            </div>
+                                        </div>
+                                        <div id="message"></div>
+                                        <div class="panel-body p-20">
+                                            <table id="combinations-table" class="display table table-striped table-bordered" cellspacing="0" width="100%">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Class and Section</th>
+                                                        <th>Subject</th>
+                                                        <th>Status</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tfoot>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Class and Section</th>
+                                                        <th>Subject</th>
+                                                        <th>Status</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </tfoot>
+                                                <tbody>
+                                                    <!-- Populated by JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /.col-md-12 -->
+                            </div>
+                            <!-- /.row -->
+                        </div>
+                        <!-- /.container-fluid -->
+                    </section>
+                    <!-- /.section -->
+                </div>
+                <!-- /.main-page -->
+            </div>
+            <!-- /.content-container -->
+        </div>
+        <!-- /.content-wrapper -->
+    </div>
+    <!-- /.main-wrapper -->
+
+    <!-- ========== COMMON JS FILES ========== -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="../../../../shared/js/bootstrap/bootstrap.min.js"></script>
+    <script src="../../../../shared/js/pace/pace.min.js"></script>
+    <script src="../../../../shared/js/lobipanel/lobipanel.min.js"></script>
+    <script src="../../../../shared/js/iscroll/iscroll.js"></script>
+    <script src="../../../../shared/js/prism/prism.js"></script>
+    <script src="../../../../shared/js/DataTables/datatables.min.js"></script>
+    <script src="../../../../shared/js/main.js"></script>
+    <script src="manage-subjectcombination.js"></script>
+    <script>
+        // Load topbar and leftbar includes
+        $(function() {
+            $("#topbar-include").load("../includes/topbar.html");
+            $("#leftbar-include").load("../includes/leftbar.html");
+        });
+    </script>
+</body>
+</html>

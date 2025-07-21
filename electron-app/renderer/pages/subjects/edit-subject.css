@@ -1,0 +1,70 @@
+/* Custom styles for Edit Subject page */
+.errorWrap {
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #dd3d36;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+
+.succWrap {
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #5cb85c;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+
+.form-horizontal .form-group {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.panel-body {
+    padding: 20px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn-default {
+    margin-left: 10px;
+}
+
+.control-label {
+    text-align: right;
+    padding-top: 7px;
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+#loading {
+    padding: 40px 0;
+    color: #666;
+}
+
+.fa-spinner {
+    font-size: 20px;
+    margin-right: 10px;
+}
+
+#error-state {
+    padding: 40px 0;
+    text-align: center;
+}
+
+#error-state p {
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 16px;
+}

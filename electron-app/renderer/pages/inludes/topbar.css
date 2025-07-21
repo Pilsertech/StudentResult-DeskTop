@@ -1,0 +1,243 @@
+/* Compact Futuristic Topbar */
+.futuristic-topbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    height: 55px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    border-radius: 0;
+}
+
+.futuristic-topbar .container-fluid {
+    padding: 0;
+}
+
+.futuristic-topbar .navbar-header {
+    height: 55px;
+    display: flex;
+    align-items: center;
+}
+
+.futuristic-brand {
+    height: 55px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.futuristic-brand:hover {
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.brand-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-icon {
+    color: white;
+    font-size: 1.4rem;
+}
+
+.brand-text {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.small-nav-handle {
+    height: 55px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.small-nav-handle:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-toggle {
+    border: none;
+    background: transparent;
+    color: white;
+    margin: 12px 10px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.navbar-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-collapse {
+    border: none;
+    box-shadow: none;
+}
+
+/* Quick Actions in Topbar */
+.quick-actions-nav {
+    margin-left: 40px;
+}
+
+.quick-action-item {
+    margin: 0 2px;
+}
+
+.quick-action-link {
+    height: 55px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.quick-action-link:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.15);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.quick-action-link i {
+    font-size: 1rem;
+}
+
+/* Right Side Items */
+.navbar-right li {
+    margin: 0 2px;
+}
+
+.navbar-right a,
+.navbar-right span {
+    height: 55px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+}
+
+.navbar-right a:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.time-display .current-time {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 0 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.time-display i {
+    margin-right: 5px;
+}
+
+.user-info .welcome-text {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 0 15px;
+    font-size: 0.8rem;
+}
+
+.user-info i {
+    margin-right: 5px;
+    font-size: 1rem;
+}
+
+.logout-link {
+    background: rgba(220, 53, 69, 0.2) !important;
+    border-radius: 6px !important;
+    color: #ff6b7a !important;
+    font-weight: 500;
+}
+
+.logout-link:hover {
+    background: rgba(220, 53, 69, 0.3) !important;
+    color: #ff4757 !important;
+}
+
+.logout-text {
+    margin-left: 5px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .quick-actions-nav {
+        display: none;
+    }
+    
+    .time-display,
+    .user-info {
+        display: none;
+    }
+    
+    .futuristic-brand .brand-text {
+        font-size: 1rem;
+    }
+    
+    .navbar-right a {
+        padding: 0 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .futuristic-brand {
+        padding: 0 10px;
+    }
+    
+    .brand-text {
+        display: none;
+    }
+    
+    .quick-action-link span,
+    .logout-text {
+        display: none;
+    }
+}
+
+/* Active states */
+.quick-action-link.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* Loading animation */
+.loading-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 5px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

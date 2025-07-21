@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRMS Admin Update Class</title>
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/animate-css/animate.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/lobipanel/lobipanel.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/prism/prism.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/main.css" media="screen">
+    <link rel="stylesheet" href="edit-class.css">
+    <script src="../../../../shared/js/modernizr/modernizr.min.js"></script>
+</head>
+<body class="top-navbar-fixed">
+    <div class="main-wrapper">
+        <!-- ========== TOP NAVBAR ========== -->
+        <div id="topbar-include"></div>
+        <!-- ========== WRAPPER FOR BOTH SIDEBARS & MAIN CONTENT ========== -->
+        <div class="content-wrapper">
+            <div class="content-container">
+                <!-- ========== LEFT SIDEBAR ========== -->
+                <div id="leftbar-include"></div>
+                <!-- ========== MAIN PAGE ========== -->
+                <div class="main-page">
+                    <div class="container-fluid">
+                        <div class="row page-title-div">
+                            <div class="col-md-6">
+                                <h2 class="title">Update Student Class</h2>
+                            </div>
+                        </div>
+                        <div class="row breadcrumb-div">
+                            <div class="col-md-6">
+                                <ul class="breadcrumb">
+                                    <li><a href="../dashboard/dashboard.html"><i class="fa fa-home"></i> Home</a></li>
+                                    <li><a href="#">Classes</a></li>
+                                    <li class="active">Update Class</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <section class="section">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-8 col-md-offset-2">
+                                    <div class="panel">
+                                        <div class="panel-heading">
+                                            <div class="panel-title">
+                                                <h5>Update Student Class info</h5>
+                                            </div>
+                                        </div>
+                                        <div class="panel-body">
+                                            <div id="message"></div>
+                                            <div id="loading" class="text-center" style="display: none;">
+                                                <i class="fa fa-spinner fa-spin"></i> Loading class data...
+                                            </div>
+                                            <form id="editClassForm" autocomplete="off" style="display: none;">
+                                                <input type="hidden" id="classId" name="classId">
+                                                <div class="form-group has-success">
+                                                    <label for="classname" class="control-label">Class Name</label>
+                                                    <div class="">
+                                                        <input type="text" name="classname" class="form-control" id="classname" required>
+                                                        <span class="help-block">Eg- Third, Fourth, Sixth etc</span>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group has-success">
+                                                    <label for="classnamenumeric" class="control-label">Class Name in Numeric</label>
+                                                    <div class="">
+                                                        <input type="number" name="classnamenumeric" class="form-control" id="classnamenumeric" required>
+                                                        <span class="help-block">Eg- 1,2,4,5 etc</span>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group has-success">
+                                                    <label for="section" class="control-label">Section</label>
+                                                    <div class="">
+                                                        <input type="text" name="section" class="form-control" id="section" required>
+                                                        <span class="help-block">Eg- A,B,C etc</span>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group has-success">
+                                                    <div class="">
+                                                        <button type="submit" class="btn btn-success btn-labeled">
+                                                            Update<span class="btn-label btn-label-right"><i class="fa fa-check"></i></span>
+                                                        </button>
+                                                        <a href="manage-classes.html" class="btn btn-default">Cancel</a>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                            <div id="error-state" style="display: none;">
+                                                <div class="text-center">
+                                                    <p>Class not found or error loading data.</p>
+                                                    <a href="manage-classes.html" class="btn btn-primary">Back to Manage Classes</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /.col-md-8 col-md-offset-2 -->
+                            </div>
+                            <!-- /.row -->
+                        </div>
+                        <!-- /.container-fluid -->
+                    </section>
+                    <!-- /.section -->
+                </div>
+                <!-- /.main-page -->
+            </div>
+            <!-- /.content-container -->
+        </div>
+        <!-- /.content-wrapper -->
+    </div>
+    <!-- /.main-wrapper -->
+
+    <!-- ========== COMMON JS FILES ========== -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="../../../../shared/js/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../../../../shared/js/bootstrap/bootstrap.min.js"></script>
+    <script src="../../../../shared/js/pace/pace.min.js"></script>
+    <script src="../../../../shared/js/lobipanel/lobipanel.min.js"></script>
+    <script src="../../../../shared/js/iscroll/iscroll.js"></script>
+    <script src="../../../../shared/js/prism/prism.js"></script>
+    <script src="../../../../shared/js/main.js"></script>
+    <script src="edit-class.js"></script>
+    <script>
+        // Load topbar and leftbar includes
+        $(function() {
+            $("#topbar-include").load("../includes/topbar.html");
+            $("#leftbar-include").load("../includes/leftbar.html");
+        });
+    </script>
+</body>
+</html>

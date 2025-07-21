@@ -1,0 +1,97 @@
+/* Custom styles for Edit Student page */
+.errorWrap {
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #dd3d36;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+
+.succWrap {
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #5cb85c;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+
+.form-horizontal .form-group {
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 20px;
+}
+
+.panel-body {
+    padding: 20px;
+}
+
+.btn-warning {
+    background-color: #f0ad4e;
+    border-color: #eea236;
+}
+
+.btn-warning:hover {
+    background-color: #ec971f;
+    border-color: #d58512;
+}
+
+.btn-default {
+    margin-left: 10px;
+}
+
+.control-label {
+    text-align: right;
+    padding-top: 7px;
+    font-weight: bold;
+}
+
+.radio-inline {
+    margin-right: 20px;
+    font-weight: normal;
+}
+
+.radio-inline input[type="radio"] {
+    margin-right: 5px;
+}
+
+.form-control[readonly] {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+#loading {
+    padding: 40px 0;
+    color: #666;
+}
+
+.fa-spinner {
+    font-size: 20px;
+    margin-right: 10px;
+}
+
+#error-state {
+    padding: 40px 0;
+    text-align: center;
+}
+
+#error-state p {
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 16px;
+}
+
+/* Date input styling */
+input[type="date"] {
+    height: 38px;
+}
+
+/* Registration date display */
+#regdate {
+    color: #666;
+    font-weight: 500;
+}

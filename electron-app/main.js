@@ -60,7 +60,7 @@ function createLoginWindow() {
             backgroundThrottling: false // <-- This is crucial for particles.js to always animate!
         }
     });
-    loginWindow.loadFile('renderer/pages/login/login.html');
+    loginWindow.loadFile('renderer/pages/login/index.html');
     // Removed auto-open DevTools for better user experience
     loginWindow.on('closed', () => { loginWindow = null; });
 }

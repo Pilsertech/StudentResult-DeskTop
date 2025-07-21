@@ -1,0 +1,105 @@
+/* Custom styles for Edit Class page */
+.errorWrap {
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #dd3d36;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+
+.succWrap {
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #5cb85c;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+
+.form-group.has-success {
+    margin-bottom: 20px;
+}
+
+.panel-body {
+    padding: 20px;
+}
+
+.btn-success {
+    background-color: #5cb85c;
+    border-color: #4cae4c;
+}
+
+.btn-success:hover {
+    background-color: #449d44;
+    border-color: #398439;
+}
+
+.btn-default {
+    margin-left: 10px;
+}
+
+.control-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.help-block {
+    color: #737373;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+#loading {
+    padding: 40px 0;
+    color: #666;
+}
+
+.fa-spinner {
+    font-size: 20px;
+    margin-right: 10px;
+}
+
+#error-state {
+    padding: 40px 0;
+    text-align: center;
+}
+
+#error-state p {
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 16px;
+}
+
+.btn-labeled {
+    padding-left: 12px;
+    padding-right: 35px;
+    position: relative;
+}
+
+.btn-label {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    padding: 0;
+    width: 30px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 0;
+}
+
+.btn-label-right {
+    right: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.btn-label .fa {
+    line-height: 34px;
+    text-align: center;
+    width: 100%;
+}

@@ -1,11 +1,16 @@
-<nav class="navbar top-navbar bg-white box-shadow">
+<nav class="navbar top-navbar bg-white box-shadow futuristic-topbar">
     <div class="container-fluid">
         <div class="row">
             <div class="navbar-header no-padding">
-                <a class="navbar-brand" href="../dashboard/dashboard.html">
-                    SRMS | Admin
+                <a class="navbar-brand futuristic-brand" href="../dashboard/dashboard.html">
+                    <div class="brand-content">
+                        <i class="fa fa-graduation-cap brand-icon"></i>
+                        <span class="brand-text">SRMS | Admin</span>
+                    </div>
                 </a>
-                <span class="small-nav-handle hidden-sm hidden-xs"><i class="fa fa-outdent"></i></span>
+                <span class="small-nav-handle hidden-sm hidden-xs">
+                    <i class="fa fa-outdent"></i>
+                </span>
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
                     <span class="sr-only">Toggle navigation</span>
                     <i class="fa fa-ellipsis-v"></i>
@@ -14,9 +19,66 @@
                     <i class="fa fa-bars"></i>
                 </button>
             </div>
+
             <div class="collapse navbar-collapse" id="navbar-collapse-1">
+                <!-- Quick Actions (Inline) -->
+                <ul class="nav navbar-nav quick-actions-nav">
+                    <li class="quick-action-item">
+                        <a href="../students/add-students.html" class="quick-action-link" title="Add Student">
+                            <i class="fa fa-user-plus"></i>
+                            <span class="hidden-xs">Add Student</span>
+                        </a>
+                    </li>
+                    <li class="quick-action-item">
+                        <a href="../subjects/create-subject.html" class="quick-action-link" title="Add Subject">
+                            <i class="fa fa-book"></i>
+                            <span class="hidden-xs">Add Subject</span>
+                        </a>
+                    </li>
+                    <li class="quick-action-item">
+                        <a href="../classes/create-class.html" class="quick-action-link" title="Add Class">
+                            <i class="fa fa-plus-square"></i>
+                            <span class="hidden-xs">Add Class</span>
+                        </a>
+                    </li>
+                    <li class="quick-action-item">
+                        <a href="../results/add-result.html" class="quick-action-link" title="Add Result">
+                            <i class="fa fa-file-text-o"></i>
+                            <span class="hidden-xs">Add Result</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Right Side Navigation -->
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="../login/login.html" class="color-danger text-center"><i class="fa fa-sign-out"></i> Logout</a></li>
+                    <li class="hidden-sm hidden-xs">
+                        <a href="#" class="user-info-handle" title="User Info">
+                            <i class="fa fa-user"></i>
+                        </a>
+                    </li>
+                    <li class="hidden-sm hidden-xs">
+                        <a href="#" class="full-screen-handle" title="Fullscreen">
+                            <i class="fa fa-arrows-alt"></i>
+                        </a>
+                    </li>
+                    <li class="time-display hidden-xs">
+                        <span class="current-time" id="currentTime">
+                            <i class="fa fa-clock-o"></i>
+                            <span class="time-text">--:--</span>
+                        </span>
+                    </li>
+                    <li class="user-info hidden-xs">
+                        <span class="welcome-text">
+                            <i class="fa fa-user-circle"></i>
+                            Welcome, <strong>Pilsertech</strong>
+                        </span>
+                    </li>
+                    <li>
+                        <a href="../login/index.html" class="logout-link" title="Logout">
+                            <i class="fa fa-sign-out"></i>
+                            <span class="logout-text">Logout</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

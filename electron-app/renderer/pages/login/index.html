@@ -5,23 +5,21 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Student Result Management System</title>
-
     <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css" media="screen">
     <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css" media="screen">
     <link rel="stylesheet" href="../../../../shared/css/animate-css/animate.min.css" media="screen">
     <link rel="stylesheet" href="../../../../shared/css/prism/prism.css" media="screen">
     <link rel="stylesheet" href="../../../../shared/css/main.css" media="screen">
-    <link rel="stylesheet" href="login_style.css">
+    <link rel="stylesheet" href="index.css">
     <script src="../../../../shared/js/modernizr/modernizr.min.js"></script>
 </head>
 <body class="">
-    <!-- Particles background -->
-    <div id="particles-js"></div>
-
     <div class="main-wrapper">
         <div class="">
             <div class="row">
                 <h1 align="center">Student Result Management System</h1>
+                
+                <!-- Student Section -->
                 <div class="col-lg-6 visible-lg-block">
                     <section class="section">
                         <div class="row mt-40">
@@ -51,8 +49,11 @@
                                     </div>
                                 </div>
                             </div>
-                        </section>
+                        </div>
+                    </section>
                 </div>
+
+                <!-- Admin Login Section -->
                 <div class="col-lg-6">
                     <section class="section">
                         <div class="row mt-40">
@@ -69,38 +70,42 @@
                                                 <div class="section-title">
                                                     <p class="sub-title">Student Result Management System</p>
                                                 </div>
-                                                <form id="loginForm" class="form-horizontal">
+                                                <div id="message"></div>
+                                                <form id="adminLoginForm" class="form-horizontal">
                                                     <div class="form-group">
                                                         <label for="username" class="col-sm-2 control-label">Username</label>
                                                         <div class="col-sm-10">
-                                                            <input type="text" name="username" class="form-control" id="username" placeholder="UserName">
+                                                            <input type="text" name="username" class="form-control" id="username" placeholder="UserName" required>
                                                         </div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="password" class="col-sm-2 control-label">Password</label>
                                                         <div class="col-sm-10">
-                                                            <input type="password" name="password" class="form-control" id="password" placeholder="Password">
+                                                            <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
                                                         </div>
                                                     </div>
                                                     <div class="form-group mt-20">
                                                         <div class="col-sm-offset-2 col-sm-10">
-                                                            <button type="submit" class="btn btn-success btn-labeled pull-right">Sign in<span class="btn-label btn-label-right"><i class="fa fa-check"></i></span></button>
+                                                            <button type="submit" class="btn btn-success btn-labeled pull-right">
+                                                                Sign in<span class="btn-label btn-label-right"><i class="fa fa-check"></i></span>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </form>
-                                                <div id="message" class="text-center" style="color: red;"></div>
                                             </div>
                                         </div>
-                                        <p class="text-muted text-center"><small>Copyright © 2024 SRMS</small></p>
+                                        <p class="text-muted text-center"><small>Copyright © 2025 SRMS</small></p>
                                     </div>
                                 </div>
                             </div>
-                        </section>
-                    </div>
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>
+    </div>
 
+    <!-- ========== COMMON JS FILES ========== -->
     <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
     <script src="../../../../shared/js/jquery-ui/jquery-ui.min.js"></script>
     <script src="../../../../shared/js/bootstrap/bootstrap.min.js"></script>
@@ -108,9 +113,6 @@
     <script src="../../../../shared/js/lobipanel/lobipanel.min.js"></script>
     <script src="../../../../shared/js/iscroll/iscroll.js"></script>
     <script src="../../../../shared/js/main.js"></script>
-    <script src="particles.min.js"></script>
-    <script src="particles-config.js"></script>
-    <script src="particles-init.js"></script>
-    <script src="login.js"></script>
+    <script src="index.js"></script>
 </body>
 </html>

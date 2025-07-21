@@ -14,7 +14,7 @@ exports.getAllClasses = async (req, res) => {
     }
 };
 
-// Create a new class (for reference, already provided previously)
+// Create a new class
 exports.createClass = async (req, res) => {
     const { classname, classnamenumeric, section } = req.body;
 
@@ -23,12 +23,27 @@ exports.createClass = async (req, res) => {
     }
 
     try {
+        // Check for duplicate class combination
+        const [existing] = await db.execute(
+            'SELECT id FROM tblclasses WHERE ClassName = ? AND ClassNameNumeric = ? AND Section = ?',
+            [classname, classnamenumeric, section]
+        );
+        
+        if (existing.length > 0) {
+            return res.json({ success: false, message: 'This class combination already exists.' });
+        }
+
         const [result] = await db.execute(
             'INSERT INTO tblclasses (ClassName, ClassNameNumeric, Section) VALUES (?, ?, ?)',
             [classname, classnamenumeric, section]
         );
+        
         if (result.insertId) {
-            return res.json({ success: true, id: result.insertId });
+            return res.json({ 
+                success: true, 
+                message: 'Class created successfully',
+                id: result.insertId 
+            });
         } else {
             return res.json({ success: false, message: 'Insert failed.' });
         }
@@ -64,12 +79,26 @@ exports.updateClass = async (req, res) => {
     }
 
     try {
+        // Check for duplicate class combination (excluding current record)
+        const [existing] = await db.execute(
+            'SELECT id FROM tblclasses WHERE ClassName = ? AND ClassNameNumeric = ? AND Section = ? AND id != ?',
+            [classname, classnamenumeric, section, id]
+        );
+        
+        if (existing.length > 0) {
+            return res.json({ success: false, message: 'This class combination already exists.' });
+        }
+
         const [result] = await db.execute(
             'UPDATE tblclasses SET ClassName = ?, ClassNameNumeric = ?, Section = ? WHERE id = ?',
             [classname, classnamenumeric, section, id]
         );
+        
         if (result.affectedRows) {
-            return res.json({ success: true });
+            return res.json({ 
+                success: true, 
+                message: 'Data has been updated successfully' // Matches PHP message
+            });
         } else {
             return res.json({ success: false, message: 'Update failed or class not found.' });
         }
@@ -83,9 +112,24 @@ exports.updateClass = async (req, res) => {
 exports.deleteClass = async (req, res) => {
     const { id } = req.params;
     try {
+        // Check if class is used in students or subject combinations
+        const [students] = await db.execute('SELECT StudentId FROM tblstudents WHERE ClassId = ?', [id]);
+        const [combinations] = await db.execute('SELECT id FROM tblsubjectcombination WHERE ClassId = ?', [id]);
+        
+        if (students.length > 0) {
+            return res.json({ success: false, message: 'Cannot delete class. Students are assigned to this class.' });
+        }
+        
+        if (combinations.length > 0) {
+            return res.json({ success: false, message: 'Cannot delete class. Subject combinations exist for this class.' });
+        }
+
         const [result] = await db.execute('DELETE FROM tblclasses WHERE id = ?', [id]);
         if (result.affectedRows) {
-            return res.json({ success: true });
+            return res.json({ 
+                success: true, 
+                message: 'Class deleted successfully' 
+            });
         } else {
             return res.json({ success: false, message: 'Delete failed or class not found.' });
         }
