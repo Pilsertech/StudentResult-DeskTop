@@ -86,7 +86,7 @@ This will automatically start the Node.js server and then launch the Electron de
 
 **Default Admin Login:**
 * **Username:** `admin`
-* **Password:** `alphacodecamp` (Note: This is from the original `READ ME.txt` and is MD5 hashed in the database).
+* **Password:** `admin` (Note: This is from the original `READ ME.txt` and is MD5 hashed in the database).
 
 ## 6. Next Steps / To-Do List
 
