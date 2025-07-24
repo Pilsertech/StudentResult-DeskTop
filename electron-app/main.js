@@ -57,7 +57,9 @@ function createLoginWindow() {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
-            backgroundThrottling: false // <-- This is crucial for particles.js to always animate!
+            backgroundThrottling: false, // <-- This is crucial for particles.js to always animate!
+            webSecurity: true, // Keep security enabled
+            allowRunningInsecureContent: false // Keep secure
         }
     });
     loginWindow.loadFile('renderer/pages/login/index.html');
@@ -73,7 +75,9 @@ function createDashboardWindow() {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
-            backgroundThrottling: false // <-- For consistency if you use canvas animations
+            backgroundThrottling: false, // <-- For consistency if you use canvas animations
+            webSecurity: true, // Keep security enabled
+            allowRunningInsecureContent: false // Keep secure
         },
     });
     dashboardWindow.loadFile('renderer/pages/dashboard/dashboard.html');
@@ -92,29 +96,54 @@ ipcMain.on('login-successful', () => {
 
 // --- APP LIFECYCLE EVENTS ---
 app.whenReady().then(() => {
-    // --- CONTENT SECURITY POLICY (CSP) ---
-    // The CSP here is designed to:
-    // - Allow Google Fonts (CSS + font files)
-    // - Permit images from the app and data URIs (base64)
-    // - Permit inline scripts/styles (for legacy JS like jQuery)
-    // - Allow connections to the local server and devtools
-    // WARNING: 'unsafe-eval' and 'unsafe-inline' are insecure and should be removed for production if possible.
+    // --- ENHANCED CONTENT SECURITY POLICY (CSP) FOR ELECTRON WITH FILE LOADING ---
+    // This CSP is specifically designed for Electron apps that need to:
+    // - Load local files (includes folder) ✅
+    // - Use jQuery and legacy JavaScript ✅  
+    // - Connect to local server ✅
+    // - Load Google Fonts ✅
+    // - Support Bootstrap and Font Awesome ✅
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
         callback({
             responseHeaders: {
                 ...details.responseHeaders,
                 'Content-Security-Policy': [
-                    "default-src 'self'",
-                    // WARNING: 'unsafe-eval' and 'unsafe-inline' are insecure. Remove if possible for production.
-                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-                    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-                    "font-src 'self' data: https://fonts.gstatic.com",
-                    "img-src 'self' data:", // Allow images from app and base64/data URIs
-                    "connect-src http://localhost:9000 devtools://*"
+                    // Default source: allow self and file protocol for local includes
+                    "default-src 'self' file: data: blob:",
+                    
+                    // Scripts: Allow self, inline scripts (for jQuery/Bootstrap), eval (for some legacy libs), and file protocol
+                    // NOTE: 'unsafe-inline' and 'unsafe-eval' are needed for jQuery, Bootstrap, and legacy code
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' file: data: blob:",
+                    
+                    // Styles: Allow self, inline styles, file protocol, and Google Fonts
+                    "style-src 'self' 'unsafe-inline' file: data: blob: https://fonts.googleapis.com",
+                    
+                    // Fonts: Allow self, data URIs, file protocol, and Google Fonts
+                    "font-src 'self' data: file: blob: https://fonts.gstatic.com",
+                    
+                    // Images: Allow self, data URIs, file protocol, and blob
+                    "img-src 'self' data: file: blob:",
+                    
+                    // Network connections: Allow local server and DevTools
+                    "connect-src 'self' http://localhost:9000 ws://localhost:9000 file: data: devtools://*",
+                    
+                    // Media: Allow self and file protocol
+                    "media-src 'self' file: data: blob:",
+                    
+                    // Object/Embed: Restrict for security
+                    "object-src 'none'",
+                    
+                    // Base URI: Only self
+                    "base-uri 'self'",
+                    
+                    // Form actions: Only self and local server
+                    "form-action 'self' http://localhost:9000"
                 ].join('; ')
             }
         });
     });
+    
+    console.log('🔒 Enhanced CSP configured for Electron file loading');
     startServer();
 });
 

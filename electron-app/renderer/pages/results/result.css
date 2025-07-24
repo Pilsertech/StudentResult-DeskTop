@@ -1,0 +1,489 @@
+/* Student Result Page - Public-facing design */
+
+/* Base Layout - Full width for public page */
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.main-wrapper {
+    width: 100%;
+    min-height: 100vh;
+}
+
+.content-wrapper {
+    width: 100%;
+    background: transparent;
+}
+
+.main-page.full-width {
+    margin: 0;
+    padding: 20px 0;
+    width: 100%;
+}
+
+/* Page Title */
+.page-title-div {
+    text-align: center;
+    padding: 40px 0;
+    color: white;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+/* Panel Styling */
+.panel {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border: none;
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.search-panel {
+    animation: slideInFromTop 0.8s ease-out;
+}
+
+.results-panel {
+    animation: slideInFromBottom 0.8s ease-out;
+}
+
+@keyframes slideInFromTop {
+    from { opacity: 0; transform: translateY(-50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInFromBottom {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.panel-heading {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    padding: 20px 25px;
+    border-bottom: none;
+}
+
+.panel-title h5 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.panel-title i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+.panel-body {
+    padding: 30px 25px;
+}
+
+/* Form Styling */
+.form-horizontal .form-group {
+    margin-bottom: 25px;
+}
+
+.form-horizontal .control-label {
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    padding-top: 8px;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px 15px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    background: white;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+    font-size: 0.875rem;
+    color: #dc3545;
+}
+
+/* Button Styling */
+.btn {
+    padding: 12px 25px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    border: none;
+}
+
+.btn-lg {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #5a6fd8, #6a4190);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+}
+
+.btn-success:hover {
+    background: linear-gradient(45deg, #20c997, #17a2b8);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.btn-warning {
+    background: linear-gradient(45deg, #ffc107, #fd7e14);
+    color: #333;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(45deg, #fd7e14, #dc3545);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(45deg, #dc3545, #e74c3c);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+.btn-default {
+    background: linear-gradient(45deg, #6c757d, #5a6268);
+    color: white;
+}
+
+.btn-default:hover {
+    background: linear-gradient(45deg, #5a6268, #495057);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    color: white;
+}
+
+/* Student Information Section */
+.student-info-section {
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+    padding: 25px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border-left: 5px solid #667eea;
+}
+
+.info-item {
+    text-align: center;
+    padding: 15px;
+}
+
+.info-item strong {
+    color: #495057;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.info-item p {
+    color: #2c3e50;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Results Table */
+.results-table-section {
+    margin-bottom: 30px;
+}
+
+.results-table {
+    margin-bottom: 0;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.results-table thead th {
+    background: linear-gradient(45deg, #495057, #6c757d);
+    color: white;
+    text-align: center;
+    font-weight: 600;
+    padding: 15px 10px;
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+}
+
+.results-table tbody td,
+.results-table tbody th {
+    padding: 15px 10px;
+    text-align: center;
+    vertical-align: middle;
+    border-color: #e9ecef;
+}
+
+.results-table tbody tr:hover {
+    background: rgba(102, 126, 234, 0.05);
+    transform: scale(1.01);
+    transition: all 0.3s ease;
+}
+
+/* Subject rows */
+.subject-row td {
+    font-size: 1rem;
+}
+
+.subject-name {
+    font-weight: 600;
+    color: #495057;
+}
+
+.marks-cell {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+/* Grade badges */
+.grade-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.grade-a { background: linear-gradient(45deg, #28a745, #20c997); color: white; }
+.grade-b { background: linear-gradient(45deg, #007bff, #17a2b8); color: white; }
+.grade-c { background: linear-gradient(45deg, #ffc107, #fd7e14); color: #333; }
+.grade-d { background: linear-gradient(45deg, #dc3545, #e74c3c); color: white; }
+.grade-f { background: linear-gradient(45deg, #6c757d, #495057); color: white; }
+
+/* Footer rows */
+.results-table tfoot tr {
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+}
+
+.total-row th,
+.percentage-row th,
+.download-row th {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    font-weight: 600;
+    padding: 15px;
+}
+
+.total-row td,
+.percentage-row td,
+.download-row td {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    padding: 15px;
+}
+
+/* Loading State */
+.loading-container {
+    padding: 80px 0;
+    color: white;
+}
+
+.loading-container i {
+    margin-bottom: 25px;
+}
+
+.loading-container h4 {
+    margin-bottom: 15px;
+    font-weight: 300;
+}
+
+.loading-container p {
+    opacity: 0.8;
+}
+
+/* Alert Styling */
+.alert-with-icon {
+    padding: 25px;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.alert-with-icon i {
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+.alert-warning {
+    background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+    color: #856404;
+    border-left: 5px solid #ffc107;
+}
+
+.alert-danger {
+    background: linear-gradient(45deg, #f8d7da, #f5c6cb);
+    color: #721c24;
+    border-left: 5px solid #dc3545;
+}
+
+.alert-with-icon p {
+    margin: 10px 0 20px 0;
+    font-size: 1rem;
+}
+
+/* Result Actions */
+.result-actions {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 2px solid #e9ecef;
+    margin-top: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-page.full-width {
+        padding: 10px;
+    }
+    
+    .title {
+        font-size: 2rem;
+    }
+    
+    .panel-body {
+        padding: 20px 15px;
+    }
+    
+    .form-horizontal .control-label {
+        text-align: left;
+        margin-bottom: 5px;
+    }
+    
+    .form-horizontal .col-sm-3,
+    .form-horizontal .col-sm-9 {
+        width: 100%;
+        float: none;
+    }
+    
+    .form-horizontal .col-sm-offset-3 {
+        margin-left: 0;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .student-info-section .col-md-4 {
+        margin-bottom: 15px;
+    }
+    
+    .results-table {
+        font-size: 0.9rem;
+    }
+    
+    .results-table thead th,
+    .results-table tbody td,
+    .results-table tfoot td {
+        padding: 10px 5px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white !important;
+    }
+    
+    .main-wrapper {
+        box-shadow: none !important;
+    }
+    
+    .btn,
+    .result-actions {
+        display: none !important;
+    }
+    
+    .panel {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+}
+
+/* Success animations */
+@keyframes resultFound {
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.result-found {
+    animation: resultFound 0.6s ease-out;
+}
+
+/* Pulse animation for search button */
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
+}
+
+.btn-primary:focus {
+    animation: pulse 1.5s infinite;
+}

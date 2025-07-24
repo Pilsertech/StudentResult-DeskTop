@@ -589,6 +589,105 @@ class ResultController {
         }
     }
 
+    // Get student by roll ID and class (exact PHP student query) - FOR RESULT.PHP
+    static async getStudentByRoll(req, res) {
+        try {
+            const { rollId, classId } = req.params;
+            console.log('🔍 Getting student by roll ID:', rollId, 'class:', classId);
+            
+            // Exact PHP query logic
+            const query = `
+                SELECT 
+                    tblstudents.StudentName,
+                    tblstudents.RollId,
+                    tblstudents.RegDate,
+                    tblstudents.StudentId,
+                    tblstudents.Status,
+                    tblclasses.ClassName,
+                    tblclasses.Section
+                FROM tblstudents 
+                JOIN tblclasses ON tblclasses.id = tblstudents.ClassId 
+                WHERE tblstudents.RollId = ? AND tblstudents.ClassId = ?
+            `;
+            
+            const [results] = await db.execute(query, [rollId, classId]);
+            
+            if (results.length === 0) {
+                return res.json({
+                    success: false,
+                    message: 'Student not found with provided Roll ID and Class'
+                });
+            }
+            
+            res.json({
+                success: true,
+                student: results[0]
+            });
+            
+        } catch (error) {
+            console.error('❌ Error getting student by roll:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Failed to fetch student information',
+                error: error.message
+            });
+        }
+    }
+
+    // Get student results by roll ID and class (exact PHP results query) - FOR RESULT.PHP
+    static async getStudentResultsByRoll(req, res) {
+        try {
+            const { rollId, classId } = req.params;
+            console.log('🔍 Getting results by roll ID:', rollId, 'class:', classId);
+            
+            // Exact PHP query logic
+            const query = `
+                SELECT 
+                    t.StudentName,
+                    t.RollId,
+                    t.ClassId,
+                    t.marks,
+                    SubjectId,
+                    tblsubjects.SubjectName 
+                FROM (
+                    SELECT 
+                        sts.StudentName,
+                        sts.RollId,
+                        sts.ClassId,
+                        tr.marks,
+                        SubjectId 
+                    FROM tblstudents as sts 
+                    JOIN tblresult as tr ON tr.StudentId = sts.StudentId
+                ) as t 
+                JOIN tblsubjects ON tblsubjects.id = t.SubjectId 
+                WHERE (t.RollId = ? AND t.ClassId = ?)
+                ORDER BY tblsubjects.SubjectName
+            `;
+            
+            const [results] = await db.execute(query, [rollId, classId]);
+            
+            if (results.length === 0) {
+                return res.json({
+                    success: false,
+                    message: 'No results found for this student'
+                });
+            }
+            
+            res.json({
+                success: true,
+                results: results
+            });
+            
+        } catch (error) {
+            console.error('❌ Error getting results by roll:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Failed to fetch student results',
+                error: error.message
+            });
+        }
+    }
+
     // Enhanced dashboard statistics
     static async getDashboardStats(req, res) {
         try {

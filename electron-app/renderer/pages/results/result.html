@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Result Management System</title>
+    
+    <!-- CORRECT PATHS - Using shared folder structure -->
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/animate-css/animate.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/lobipanel/lobipanel.min.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/prism/prism.css" media="screen">
+    <link rel="stylesheet" href="../../../../shared/css/main.css" media="screen">
+    <link rel="stylesheet" href="result.css">
+    
+    <script src="../../../../shared/js/modernizr/modernizr.min.js"></script>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="content-wrapper">
+            <div class="content-container">
+                <!-- ========== MAIN PAGE ========== -->
+                <div class="main-page full-width">
+                    <div class="container-fluid">
+                        <div class="row page-title-div">
+                            <div class="col-md-12">
+                                <h2 class="title text-center">Student Result Management System</h2>
+                                <p class="subtitle text-center">Check Your Academic Results</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <section class="section">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <!-- Search Form -->
+                                <div class="col-md-8 col-md-offset-2" id="searchSection">
+                                    <div class="panel search-panel">
+                                        <div class="panel-heading">
+                                            <div class="panel-title">
+                                                <h5>
+                                                    <i class="fa fa-search"></i> 
+                                                    Enter Your Details to View Results
+                                                </h5>
+                                            </div>
+                                        </div>
+                                        <div class="panel-body">
+                                            <form id="resultSearchForm" class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label">Select Class:</label>
+                                                    <div class="col-sm-9">
+                                                        <select id="classSelect" class="form-control" required>
+                                                            <option value="">-- Select Class --</option>
+                                                        </select>
+                                                        <div class="invalid-feedback"></div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label">Roll ID:</label>
+                                                    <div class="col-sm-9">
+                                                        <input type="text" 
+                                                               id="rollIdInput" 
+                                                               class="form-control" 
+                                                               placeholder="Enter your Roll ID" 
+                                                               required>
+                                                        <div class="invalid-feedback"></div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="form-group">
+                                                    <div class="col-sm-offset-3 col-sm-9">
+                                                        <button type="submit" class="btn btn-primary btn-lg">
+                                                            <i class="fa fa-search"></i> Search Results
+                                                        </button>
+                                                        <a href="../login/index.html" class="btn btn-default btn-lg">
+                                                            <i class="fa fa-home"></i> Back to Home
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Loading State -->
+                                <div class="col-md-8 col-md-offset-2" id="loadingSection" style="display: none;">
+                                    <div class="text-center loading-container">
+                                        <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
+                                        <h4>Searching for your results...</h4>
+                                        <p>Please wait while we fetch your academic records.</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Results Display -->
+                                <div class="col-md-8 col-md-offset-2" id="resultsSection" style="display: none;">
+                                    <div class="panel results-panel">
+                                        <div class="panel-heading">
+                                            <div class="panel-title">
+                                                <h5>
+                                                    <i class="fa fa-graduation-cap"></i> 
+                                                    Student Result Details
+                                                </h5>
+                                            </div>
+                                        </div>
+                                        <div class="panel-body p-20">
+                                            <!-- Student Information -->
+                                            <div class="student-info-section">
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <div class="info-item">
+                                                            <strong>Student Name:</strong>
+                                                            <p id="studentName">Loading...</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="info-item">
+                                                            <strong>Roll ID:</strong>
+                                                            <p id="studentRollId">Loading...</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="info-item">
+                                                            <strong>Class:</strong>
+                                                            <p id="studentClass">Loading...</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Results Table -->
+                                            <div class="results-table-section">
+                                                <table class="table table-hover table-bordered results-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th width="10%">#</th>
+                                                            <th width="50%">Subject</th>
+                                                            <th width="20%">Marks</th>
+                                                            <th width="20%">Grade</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="resultsTableBody">
+                                                        <!-- Populated by JavaScript -->
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr class="total-row">
+                                                            <th colspan="2">Total Marks</th>
+                                                            <td id="totalMarks"><strong>0</strong> out of <strong>0</strong></td>
+                                                            <td id="overallGrade">-</td>
+                                                        </tr>
+                                                        <tr class="percentage-row">
+                                                            <th colspan="2">Percentage</th>
+                                                            <td colspan="2" id="percentage"><strong>0%</strong></td>
+                                                        </tr>
+                                                        <tr class="download-row">
+                                                            <th colspan="2">Download Result</th>
+                                                            <td colspan="2">
+                                                                <button class="btn btn-success btn-sm" onclick="downloadResultPDF()">
+                                                                    <i class="fa fa-download"></i> Download PDF
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                            
+                                            <!-- Actions -->
+                                            <div class="result-actions">
+                                                <button class="btn btn-primary" onclick="searchAgain()">
+                                                    <i class="fa fa-search"></i> Search Again
+                                                </button>
+                                                <a href="../login/index.html" class="btn btn-default">
+                                                    <i class="fa fa-home"></i> Back to Home
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Error States -->
+                                <div class="col-md-8 col-md-offset-2" id="notFoundSection" style="display: none;">
+                                    <div class="alert alert-warning alert-with-icon">
+                                        <i class="fa fa-exclamation-triangle"></i>
+                                        <strong>Notice!</strong> Your result has not been declared yet.
+                                        <p>Please contact your institution for more information.</p>
+                                        <button class="btn btn-warning" onclick="searchAgain()">
+                                            <i class="fa fa-search"></i> Try Another Roll ID
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-8 col-md-offset-2" id="invalidSection" style="display: none;">
+                                    <div class="alert alert-danger alert-with-icon">
+                                        <i class="fa fa-times-circle"></i>
+                                        <strong>Oh snap!</strong> Invalid Roll ID or Class selection.
+                                        <p>Please check your Roll ID and Class, then try again.</p>
+                                        <button class="btn btn-danger" onclick="searchAgain()">
+                                            <i class="fa fa-search"></i> Search Again
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CORRECT JS PATHS - From shared folder -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="../../../../shared/js/bootstrap/bootstrap.min.js"></script>
+    <script src="../../../../shared/js/pace/pace.min.js"></script>
+    <script src="../../../../shared/js/lobipanel/lobipanel.min.js"></script>
+    <script src="../../../../shared/js/iscroll/iscroll.js"></script>
+    <script src="../../../../shared/js/prism/prism.js"></script>
+    <script src="../../../../shared/js/main.js"></script>
+    
+    <!-- PDF Libraries -->
+    <script src="../../../../shared/js/pdf-libs/jspdf.umd.min.js"></script>
+    <script src="../../../../shared/js/pdf-libs/html2canvas.min.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="result.js"></script>
+</body>
+</html>

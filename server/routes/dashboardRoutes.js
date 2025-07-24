@@ -11,4 +11,7 @@ router.get('/system-status', dashboardController.getSystemStatus);
 // Chart data
 router.get('/chart-data', dashboardController.getChartData);
 
+// REMOVE THIS LINE COMPLETELY - IT'S CAUSING THE ERROR:
+// router.get('/dashboard/stats', ResultController.getDashboardStats);
+
 module.exports = router;

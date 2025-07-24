@@ -1,0 +1,175 @@
+<nav class="navbar top-navbar futuristic-topbar">
+    <div class="container-fluid">
+        <!-- Left: Brand -->
+        <div class="navbar-left">
+            <a class="navbar-brand" href="../dashboard/dashboard.html">
+                <i class="fa fa-graduation-cap"></i>
+                <span class="brand-text">SRMS | Admin</span>
+            </a>
+        </div>
+
+        <!-- Center: Quick Actions -->
+        <div class="navbar-center">
+            <ul class="quick-actions">
+                <li>
+                    <a href="../students/add-students.html" class="quick-action" title="Add New Student">
+                        <i class="fa fa-user-plus"></i>
+                        <span class="action-text">Add Student</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="../results/add-result.html" class="quick-action" title="Add New Result">
+                        <i class="fa fa-file-text-o"></i>
+                        <span class="action-text">Add Result</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="../classes/create-class.html" class="quick-action" title="Create New Class">
+                        <i class="fa fa-plus-square"></i>
+                        <span class="action-text">Add Class</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="../subjects/create-subject.html" class="quick-action" title="Create New Subject">
+                        <i class="fa fa-book"></i>
+                        <span class="action-text">Add Subject</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right: Essential Info Only -->
+        <div class="navbar-right">
+            <!-- User Welcome -->
+            <div class="nav-item user-info">
+                <i class="fa fa-user-circle"></i>
+                <span class="user-name">Pilsertech</span>
+            </div>
+            
+            <!-- System Status -->
+            <div class="nav-item status-info">
+                <i class="fa fa-circle status-dot online" id="statusDot"></i>
+                <span class="status-text" id="statusText">Online</span>
+            </div>
+            
+            <!-- Logout Button -->
+            <div class="nav-item logout-item">
+                <a href="../login/index.html" class="logout-link" onclick="confirmLogout(event)">
+                    <i class="fa fa-sign-out"></i>
+                    <span class="logout-text">Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+// Clean & Responsive Topbar
+(function() {
+    'use strict';
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeTopbar();
+        handleResize();
+        window.addEventListener('resize', handleResize);
+    });
+
+    function initializeTopbar() {
+        checkSystemStatus();
+        setActiveMenuItem();
+        
+        // Check status every 30 seconds
+        setInterval(checkSystemStatus, 30000);
+        
+        console.log('✅ Clean responsive topbar initialized');
+    }
+
+    function handleResize() {
+        const windowWidth = window.innerWidth;
+        const actionTexts = document.querySelectorAll('.action-text');
+        const userName = document.querySelector('.user-name');
+        const statusText = document.querySelector('.status-text');
+        const logoutText = document.querySelector('.logout-text');
+        const brandText = document.querySelector('.brand-text');
+        
+        if (windowWidth < 1200) {
+            // Hide action text, show icons only
+            actionTexts.forEach(text => text.style.display = 'none');
+        } else {
+            // Show action text
+            actionTexts.forEach(text => text.style.display = 'inline');
+        }
+        
+        if (windowWidth < 900) {
+            // Hide user name, show icon only
+            if (userName) userName.style.display = 'none';
+            if (statusText) statusText.style.display = 'none';
+            if (logoutText) logoutText.style.display = 'none';
+        } else {
+            // Show text
+            if (userName) userName.style.display = 'inline';
+            if (statusText) statusText.style.display = 'inline';
+            if (logoutText) logoutText.style.display = 'inline';
+        }
+        
+        if (windowWidth < 600) {
+            // Hide brand text on very small screens
+            if (brandText) brandText.style.display = 'none';
+        } else {
+            if (brandText) brandText.style.display = 'inline';
+        }
+        
+        console.log(`📱 Responsive layout applied for width: ${windowWidth}px`);
+    }
+
+    function checkSystemStatus() {
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        
+        fetch('http://localhost:9000/api/results/health')
+            .then(response => {
+                if (response.ok) {
+                    statusDot.className = 'fa fa-circle status-dot online';
+                    if (statusText) statusText.textContent = 'Online';
+                } else {
+                    throw new Error('Server error');
+                }
+            })
+            .catch(() => {
+                statusDot.className = 'fa fa-circle status-dot offline';
+                if (statusText) statusText.textContent = 'Offline';
+            });
+    }
+
+    function setActiveMenuItem() {
+        const currentPath = window.location.pathname;
+        const quickActions = document.querySelectorAll('.quick-action');
+        
+        quickActions.forEach(link => {
+            link.classList.remove('active');
+            const href = link.getAttribute('href');
+            if (href && currentPath.includes(href.replace('../', '').replace('.html', ''))) {
+                link.classList.add('active');
+            }
+        });
+    }
+
+    window.confirmLogout = function(event) {
+        const confirmMessage = 'Are you sure you want to logout?\n\n' +
+                             'User: Pilsertech\n' +
+                             'System: SRMS Dashboard';
+        
+        if (!confirm(confirmMessage)) {
+            event.preventDefault();
+            return false;
+        }
+        
+        console.log('🚪 Logout confirmed via topbar');
+        localStorage.clear();
+        sessionStorage.clear();
+        return true;
+    };
+
+    console.log('✅ Clean topbar script loaded');
+})();
+</script>

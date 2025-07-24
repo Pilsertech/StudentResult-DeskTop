@@ -1,0 +1,686 @@
+/* Perfect Leftbar - Click-Based Submenus (No Hover Required) */
+
+.left-sidebar {
+    position: fixed !important;
+    top: 55px !important;
+    left: 0 !important;
+    width: 70px !important;
+    height: calc(100vh - 55px) !important;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%) !important;
+    border-right: 3px solid #3498db !important;
+    box-shadow: 3px 0 20px rgba(0, 0, 0, 0.3) !important;
+    z-index: 9998 !important;
+    transition: width 0.3s ease !important;
+    
+    /* CRITICAL: Fixed sidebar - NO scrolling, stays in place */
+    overflow: hidden !important;
+    
+    display: block !important;
+}
+
+.left-sidebar.expanded {
+    width: 280px !important;
+    /* CRITICAL: Fixed sidebar - NO scrolling even when expanded */
+    overflow: hidden !important;
+}
+
+/* Toggle Button - Always Fixed and On Top */
+.sidebar-toggle {
+    position: fixed !important;
+    top: 75px !important;
+    left: 52px !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+    border: 2px solid white !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    /* CRITICAL: Ensure button stays above everything, including submenus */
+    z-index: 9999999 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.5) !important;
+}
+
+.left-sidebar.expanded ~ .sidebar-toggle,
+.left-sidebar.expanded + .sidebar-toggle {
+    left: 262px !important;
+}
+
+.sidebar-toggle:hover {
+    transform: scale(1.15) !important;
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.7) !important;
+    background: linear-gradient(135deg, #c0392b, #a93226) !important;
+}
+
+.sidebar-toggle i {
+    color: white !important;
+    font-size: 1.4rem !important;
+    font-weight: 900 !important;
+    transition: transform 0.3s ease !important;
+}
+
+.left-sidebar.expanded ~ .sidebar-toggle i,
+.left-sidebar.expanded + .sidebar-toggle i {
+    transform: rotate(180deg) !important;
+}
+
+/* Sidebar Content */
+.sidebar-content {
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    z-index: 9998 !important;
+    overflow: hidden !important;
+}
+
+/* User Info Section */
+.user-info {
+    padding: 40px 10px 20px !important;
+    text-align: center !important;
+    border-bottom: 2px solid #3498db !important;
+    background: linear-gradient(135deg, #3498db, #2980b9) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease !important;
+    min-height: 160px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.left-sidebar.expanded .user-info {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Avatar Container */
+.user-avatar {
+    position: relative !important;
+    margin-bottom: 12px !important;
+    width: 60px !important;
+    height: 60px !important;
+}
+
+.profile-img {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    border: 3px solid white !important;
+    object-fit: cover !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    display: block !important;
+    background: white !important;
+}
+
+.avatar-fallback {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+    border: 3px solid white !important;
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.avatar-fallback i {
+    color: white !important;
+    font-size: 2rem !important;
+}
+
+/* User Details */
+.user-details {
+    text-align: center !important;
+}
+
+.user-name {
+    color: white !important;
+    margin: 5px 0 3px 0 !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.user-role {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 8px !important;
+}
+
+.session-info {
+    color: #2ecc71 !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    padding: 4px 8px !important;
+    border-radius: 12px !important;
+    margin-top: 5px !important;
+}
+
+/* Navigation - Internal scrolling only (sidebar stays fixed) */
+.sidebar-nav {
+    flex: 1 !important;
+    padding: 15px 0 !important;
+    /* CRITICAL: Only nav content scrolls, sidebar stays fixed */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+    overscroll-behavior: contain !important;
+    /* Ensure nav area doesn't interfere with fixed positioning */
+    max-height: calc(100vh - 55px - 160px - 80px) !important; /* Account for user-info and footer */
+}
+
+.side-nav {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: relative !important;
+    overflow: visible !important;
+}
+
+/* Enhanced Navigation Headers */
+.nav-header {
+    padding: 15px 15px 10px !important;
+    margin-top: 8px !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease !important;
+    flex-shrink: 0 !important;
+    border-bottom: 1px solid rgba(52, 152, 219, 0.3) !important;
+}
+
+.nav-header:first-of-type {
+    margin-top: 0 !important;
+}
+
+.left-sidebar.expanded .nav-header {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.nav-header span {
+    color: #3498db !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.nav-header span::before {
+    content: '●' !important;
+    font-size: 0.6rem !important;
+    color: #f39c12 !important;
+}
+
+/* Enhanced Navigation Items */
+.nav-item {
+    margin: 3px 8px !important;
+    border-radius: 10px !important;
+    overflow: visible !important;
+    position: relative !important;
+    transition: all 0.2s ease !important;
+}
+
+.nav-item:hover {
+    transform: translateX(2px) !important;
+}
+
+.nav-item > a {
+    display: flex !important;
+    align-items: center !important;
+    padding: 12px 15px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-decoration: none !important;
+    transition: all 0.3s ease !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    position: relative !important;
+    white-space: nowrap !important;
+}
+
+/* ANTI-FLICKER: Stable main navigation hover */
+.nav-item > a:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400) !important;
+    color: white !important;
+    text-decoration: none !important;
+    transform: translateX(2px) !important;
+    box-shadow: 0 2px 8px rgba(230, 126, 34, 0.4) !important;
+}
+
+.nav-item.active > a {
+    background: linear-gradient(135deg, #27ae60, #229954) !important;
+    color: white !important;
+    box-shadow: 0 3px 12px rgba(39, 174, 96, 0.5) !important;
+    border-left: 4px solid #2ecc71 !important;
+}
+
+.nav-item.logout-item > a:hover {
+    background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+    color: white !important;
+}
+
+/* Icons */
+.nav-item i {
+    width: 24px !important;
+    margin-right: 12px !important;
+    font-size: 1.2rem !important;
+    text-align: center !important;
+    flex-shrink: 0 !important;
+    color: inherit !important;
+}
+
+/* Navigation Text */
+.nav-text {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease !important;
+    white-space: nowrap !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: inherit !important;
+    overflow: hidden !important;
+}
+
+.left-sidebar.expanded .nav-text {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Arrows */
+.arrow {
+    margin-left: auto !important;
+    transition: transform 0.3s ease !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    font-size: 0.8rem !important;
+    color: inherit !important;
+    flex-shrink: 0 !important;
+}
+
+.left-sidebar.expanded .arrow {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.has-children.open .arrow {
+    transform: rotate(90deg) !important;
+}
+
+/* CRITICAL FIX: Submenu Panel ABOVE Everything */
+.child-nav {
+    /* CRITICAL: Position OUTSIDE of leftbar container */
+    position: fixed !important;
+    top: 55px !important;
+    left: 280px !important;
+    width: 350px !important;
+    
+    /* CRITICAL FIX: Dynamic height based on content */
+    height: auto !important;
+    min-height: 100px !important;
+    max-height: calc(100vh - 75px) !important;
+    
+    background: linear-gradient(135deg, #2c3e50, #34495e) !important;
+    border: 3px solid #3498db !important;
+    border-radius: 0 0 15px 0 !important;
+    box-shadow: 8px 8px 30px rgba(0, 0, 0, 0.6) !important;
+    
+    /* CRITICAL: Content-based padding */
+    padding-top: 60px !important;
+    padding-bottom: 20px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    
+    /* CRITICAL: Completely hide by default - NO FLICKER */
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateX(-100%) !important;
+    pointer-events: none !important;
+    
+    /* ANTI-FLICKER: Optimized transitions */
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
+                visibility 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    
+    /* CRITICAL: Highest z-index to appear above EVERYTHING */
+    z-index: 999999 !important;
+    
+    list-style: none !important;
+    margin: 0 !important;
+    
+    /* ANTI-FLICKER optimizations */
+    will-change: opacity, visibility, transform !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+    transform-style: preserve-3d !important;
+    
+    overscroll-behavior: contain !important;
+}
+
+/* PRODUCTION: Show submenu ONLY via click - ZERO hover dependency */
+.left-sidebar.expanded .has-children.open .child-nav {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateX(0) !important;
+    pointer-events: auto !important;
+}
+
+/* CRITICAL: Remove ALL hover-based behaviors */
+.child-nav:hover,
+.has-children:hover .child-nav,
+.nav-item:hover .child-nav {
+    /* Explicitly remove any hover effects */
+}
+
+/* Submenu Header */
+.child-nav::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 50px !important;
+    background: linear-gradient(135deg, #3498db, #2980b9) !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
+    z-index: 1 !important;
+}
+
+/* PRODUCTION FIX: Fully Functional Close Button */
+.submenu-close-btn {
+    position: absolute !important;
+    top: 8px !important;
+    right: 15px !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+    color: white !important;
+    border: 2px solid white !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.8rem !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    z-index: 10000 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.5) !important;
+    user-select: none !important;
+    
+    /* CRITICAL: Ensure clickability */
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+}
+
+.submenu-close-btn:hover {
+    transform: scale(1.15) !important;
+    background: linear-gradient(135deg, #c0392b, #a93226) !important;
+    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.7) !important;
+}
+
+.submenu-close-btn:active {
+    transform: scale(0.95) !important;
+    transition: all 0.1s ease !important;
+}
+
+/* Enhanced Submenu Items */
+.child-nav li {
+    margin: 6px 0 !important;
+    padding: 0 20px !important;
+    position: relative !important;
+}
+
+.child-nav li:first-child {
+    margin-top: 12px !important;
+}
+
+/* FLICKER-FREE: Ultra-stable submenu item styling */
+.child-nav li a {
+    display: flex !important;
+    align-items: center !important;
+    padding: 16px 20px !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-decoration: none !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    border-radius: 10px !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    border-left: 4px solid transparent !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    
+    /* CRITICAL: Complete anti-flicker system */
+    transition: all 0.15s ease-out !important;
+    will-change: background, transform, box-shadow !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+    
+    /* Prevent any layout shifts */
+    contain: layout style paint !important;
+}
+
+/* FLICKER-FREE: Stable hover state */
+.child-nav li a:hover {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad) !important;
+    color: white !important;
+    text-decoration: none !important;
+    transform: translateX(4px) translateZ(0) !important;
+    box-shadow: 0 2px 8px rgba(155, 89, 182, 0.3) !important;
+    border-left: 4px solid #e74c3c !important;
+}
+
+.child-nav li a.active {
+    background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.5) !important;
+    border-left: 4px solid #2ecc71 !important;
+    transform: translateX(3px) !important;
+}
+
+.child-nav i {
+    width: 24px !important;
+    margin-right: 15px !important;
+    font-size: 1.2rem !important;
+    color: inherit !important;
+    flex-shrink: 0 !important;
+    text-align: center !important;
+}
+
+/* Submenu Title */
+.submenu-title {
+    position: absolute !important;
+    top: 15px !important;
+    left: 20px !important;
+    color: white !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+    z-index: 2 !important;
+}
+
+/* Tooltips */
+.left-sidebar:not(.expanded) .nav-item:not(.has-children):hover::after {
+    content: attr(data-tooltip) !important;
+    position: fixed !important;
+    left: 85px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: #2c3e50 !important;
+    color: white !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    z-index: 10001 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+    border: 2px solid #3498db !important;
+    pointer-events: none !important;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    padding: 15px 10px !important;
+    text-align: center !important;
+    border-top: 2px solid #3498db !important;
+    background: linear-gradient(135deg, #34495e, #2c3e50) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease !important;
+    flex-shrink: 0 !important;
+}
+
+.left-sidebar.expanded .sidebar-footer {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.footer-content {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 3px !important;
+}
+
+.footer-content small {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+}
+
+/* Scrollbar */
+.sidebar-nav::-webkit-scrollbar,
+.child-nav::-webkit-scrollbar {
+    width: 6px !important;
+}
+
+.sidebar-nav::-webkit-scrollbar-track,
+.child-nav::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb,
+.child-nav::-webkit-scrollbar-thumb {
+    background: #3498db !important;
+    border-radius: 6px !important;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover,
+.child-nav::-webkit-scrollbar-thumb:hover {
+    background: #2980b9 !important;
+}
+
+/* Focus States */
+.nav-item a:focus {
+    outline: 3px solid #f39c12 !important;
+    outline-offset: 2px !important;
+}
+
+.sidebar-toggle:focus {
+    outline: 3px solid #f39c12 !important;
+    outline-offset: 2px !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .left-sidebar {
+        transform: translateX(-100%) !important;
+    }
+    
+    .left-sidebar.mobile-open {
+        transform: translateX(0) !important;
+        width: 280px !important;
+    }
+    
+    .sidebar-toggle {
+        left: 20px !important;
+    }
+    
+    .child-nav {
+        width: calc(100vw - 280px) !important;
+    }
+}
+
+/* Animations */
+@keyframes slideInRight {
+    from { 
+        opacity: 0 !important; 
+        transform: translateX(-10px) !important; 
+    }
+    to { 
+        opacity: 1 !important; 
+        transform: translateX(0) !important; 
+    }
+}
+
+.left-sidebar.expanded .nav-text {
+    animation: slideInRight 0.3s ease !important;
+}
+
+/* CRITICAL: Force proper display and stacking */
+.left-sidebar {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* CRITICAL: Proper document-level stacking context */
+body {
+    position: relative !important;
+    overflow-x: hidden !important;
+    /* Allow normal vertical scrolling */
+    overflow-y: auto !important;
+}
+
+.main-page {
+    position: relative !important;
+    z-index: 1 !important;
+    /* Ensure main content can scroll normally */
+    overflow-y: auto !important;
+}
+
+/* CRITICAL: Ensure submenu appears above everything */
+.child-nav {
+    /* Override any inherited z-index issues */
+    position: fixed !important;
+    z-index: 999999 !important;
+}
+
+/* ANTI-FLICKER: Targeted optimization only for submenus */
+.child-nav, .child-nav * {
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+    -webkit-perspective: 1000px !important;
+    perspective: 1000px !important;
+}

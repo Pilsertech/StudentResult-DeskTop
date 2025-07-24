@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Library Test</title>
+    <script src="js/pdf-libs/jspdf.umd.min.js"></script>
+    <script src="js/pdf-libs/html2canvas.min.js"></script>
+</head>
+<body>
+    <h1>PDF Test</h1>
+    <button onclick="testPDF()">Generate Test PDF</button>
+    
+    <script>
+        function testPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.text('Hello PDF!', 20, 20);
+                doc.save('test.pdf');
+                alert('PDF generated successfully!');
+            } catch (error) {
+                alert('Error: ' + error.message);
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

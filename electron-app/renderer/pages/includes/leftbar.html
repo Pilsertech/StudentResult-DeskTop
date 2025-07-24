@@ -1,0 +1,465 @@
+<div class="left-sidebar" id="leftSidebar">
+    <div class="sidebar-content">
+        <!-- User Profile Section -->
+        <div class="user-info">
+            <div class="user-avatar">
+                <img src="../../../../shared/images/avatar-admin.svg" 
+                     alt="Administrator Avatar" 
+                     class="profile-img" 
+                     onerror="this.src='../../../../shared/images/avatar-admin.png'; if(this.src.includes('png') && this.complete && this.naturalHeight === 0) this.style.display='none';">
+                <div class="avatar-fallback">
+                    <i class="fa fa-user-shield"></i>
+                </div>
+            </div>
+            <div class="user-details">
+                <h6 class="user-name">Administrator</h6>
+                <small class="user-role">System Administrator</small>
+                <div class="session-info">
+                    <i class="fa fa-clock-o"></i>
+                    <span>Session: <span id="sessionDuration">00:00:00</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <div class="sidebar-nav" id="sidebarNav">
+            <ul class="side-nav">
+                <!-- Dashboard Section -->
+                <li class="nav-header">
+                    <span>OVERVIEW</span>
+                </li>
+                <li class="nav-item active" data-tooltip="Main Dashboard">
+                    <a href="../dashboard/dashboard.html">
+                        <i class="fa fa-tachometer"></i> 
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- Academic Management Section -->
+                <li class="nav-header">
+                    <span>ACADEMIC MANAGEMENT</span>
+                </li>
+                
+                <!-- Classes Management -->
+                <li class="nav-item has-children" data-tooltip="Class Management">
+                    <a href="#" onclick="toggleMenu(this, 'Classes')">
+                        <i class="fa fa-university"></i> 
+                        <span class="nav-text">Classes</span>
+                        <i class="fa fa-chevron-right arrow"></i>
+                    </a>
+                    <ul class="child-nav">
+                        <div class="submenu-title">Class Management</div>
+                        <div class="submenu-close-btn" onclick="closeSubmenu(this)">×</div>
+                        <li>
+                            <a href="../classes/create-class.html">
+                                <i class="fa fa-plus-circle"></i> 
+                                <span class="nav-text">Add New Class</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../classes/manage-classes.html">
+                                <i class="fa fa-list-alt"></i> 
+                                <span class="nav-text">Manage Classes</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Subjects Management -->
+                <li class="nav-item has-children" data-tooltip="Subject Management">
+                    <a href="#" onclick="toggleMenu(this, 'Subjects')">
+                        <i class="fa fa-book"></i> 
+                        <span class="nav-text">Subjects</span>
+                        <i class="fa fa-chevron-right arrow"></i>
+                    </a>
+                    <ul class="child-nav">
+                        <div class="submenu-title">Subject Management</div>
+                        <div class="submenu-close-btn" onclick="closeSubmenu(this)">×</div>
+                        <li>
+                            <a href="../subjects/create-subject.html">
+                                <i class="fa fa-plus"></i> 
+                                <span class="nav-text">Add New Subject</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../subjects/manage-subjects.html">
+                                <i class="fa fa-edit"></i> 
+                                <span class="nav-text">Manage Subjects</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../subjects/add-subjectcombination.html">
+                                <i class="fa fa-link"></i> 
+                                <span class="nav-text">Add Combinations</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../subjects/manage-subjectcombination.html">
+                                <i class="fa fa-cogs"></i> 
+                                <span class="nav-text">Manage Combinations</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Student Management Section -->
+                <li class="nav-header">
+                    <span>STUDENT MANAGEMENT</span>
+                </li>
+                
+                <!-- Students -->
+                <li class="nav-item has-children" data-tooltip="Student Records">
+                    <a href="#" onclick="toggleMenu(this, 'Students')">
+                        <i class="fa fa-graduation-cap"></i> 
+                        <span class="nav-text">Students</span>
+                        <i class="fa fa-chevron-right arrow"></i>
+                    </a>
+                    <ul class="child-nav">
+                        <div class="submenu-title">Student Records</div>
+                        <div class="submenu-close-btn" onclick="closeSubmenu(this)">×</div>
+                        <li>
+                            <a href="../students/add-students.html">
+                                <i class="fa fa-user-plus"></i> 
+                                <span class="nav-text">Add New Student</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../students/manage-students.html">
+                                <i class="fa fa-users"></i> 
+                                <span class="nav-text">Manage Students</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Results & Assessment Section -->
+                <li class="nav-header">
+                    <span>RESULTS & ASSESSMENT</span>
+                </li>
+                
+                <!-- Results Management -->
+                <li class="nav-item has-children" data-tooltip="Result Management">
+                    <a href="#" onclick="toggleMenu(this, 'Results')">
+                        <i class="fa fa-bar-chart"></i> 
+                        <span class="nav-text">Results</span>
+                        <i class="fa fa-chevron-right arrow"></i>
+                    </a>
+                    <ul class="child-nav">
+                        <div class="submenu-title">Result Management</div>
+                        <div class="submenu-close-btn" onclick="closeSubmenu(this)">×</div>
+                        <li>
+                            <a href="../results/add-result.html">
+                                <i class="fa fa-plus-circle"></i> 
+                                <span class="nav-text">Add Result</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../results/manage-results.html">
+                                <i class="fa fa-table"></i> 
+                                <span class="nav-text">Manage Results</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../results/result.html">
+                                <i class="fa fa-search"></i> 
+                                <span class="nav-text">View Results</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Find Result (Public Search) -->
+                <li class="nav-item" data-tooltip="Public Result Search">
+                    <a href="../login/find-result.html">
+                        <i class="fa fa-search-plus"></i> 
+                        <span class="nav-text">Find Result</span>
+                    </a>
+                </li>
+
+                <!-- System Administration Section -->
+                <li class="nav-header">
+                    <span>SYSTEM ADMINISTRATION</span>
+                </li>
+                
+                <!-- Account Settings -->
+                <li class="nav-item" data-tooltip="Change Password">
+                    <a href="../account/change-password.html">
+                        <i class="fa fa-key"></i> 
+                        <span class="nav-text">Change Password</span>
+                    </a>
+                </li>
+
+                <!-- Logout -->
+                <li class="nav-item logout-item" data-tooltip="Logout from SRMS">
+                    <a href="../login/index.html" onclick="return confirmLogout()">
+                        <i class="fa fa-sign-out"></i> 
+                        <span class="nav-text">Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <div class="footer-content">
+                <small class="system-info">
+                    <i class="fa fa-graduation-cap"></i>
+                    SRMS v1.0.0
+                </small>
+                <small class="date-info">
+                    <i class="fa fa-calendar"></i>
+                    <span id="footerDate">2025-07-23</span>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toggle Button Outside Sidebar -->
+<div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Navigation Menu">
+    <i class="fa fa-bars" id="toggleIcon"></i>
+</div>
+
+<script>
+// FIXED: Enhanced Leftbar with Working Functions
+(function() {
+    'use strict';
+    
+    let sessionStartTime = new Date();
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(initializeLeftbar, 100);
+        setupScrollIsolation();
+    });
+    
+    function initializeLeftbar() {
+        setActiveMenuItem();
+        updateFooterDate();
+        updateSessionDuration();
+        addTooltips();
+        handleAvatarLoad();
+        
+        setInterval(updateSessionDuration, 1000);
+        setInterval(updateFooterDate, 60000);
+        
+        console.log('✅ Fixed leftbar initialized');
+    }
+    
+    // FIXED: Prevent scroll propagation to dashboard
+    function setupScrollIsolation() {
+        const sidebarNav = document.querySelector('.sidebar-nav');
+        const childNavs = document.querySelectorAll('.child-nav');
+        
+        // Isolate main sidebar scroll
+        if (sidebarNav) {
+            sidebarNav.addEventListener('wheel', function(e) {
+                const isScrollable = sidebarNav.scrollHeight > sidebarNav.clientHeight;
+                if (isScrollable) {
+                    e.stopPropagation();
+                }
+            });
+        }
+        
+        // Isolate submenu scroll
+        childNavs.forEach(nav => {
+            nav.addEventListener('wheel', function(e) {
+                const isScrollable = nav.scrollHeight > nav.clientHeight;
+                if (isScrollable) {
+                    e.stopPropagation();
+                }
+            });
+        });
+        
+        console.log('🔒 Scroll isolation setup complete');
+    }
+    
+    function handleAvatarLoad() {
+        const img = document.querySelector('.profile-img');
+        const fallback = document.querySelector('.avatar-fallback');
+        
+        if (img && fallback) {
+            img.addEventListener('error', function() {
+                img.style.display = 'none';
+                fallback.style.display = 'flex';
+            });
+            
+            img.addEventListener('load', function() {
+                fallback.style.display = 'none';
+                img.style.display = 'block';
+            });
+        }
+    }
+    
+    function updateSessionDuration() {
+        const now = new Date();
+        const duration = now - sessionStartTime;
+        
+        const hours = Math.floor(duration / (1000 * 60 * 60));
+        const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((duration % (1000 * 60)) / 1000);
+        
+        const durationString = 
+            String(hours).padStart(2, '0') + ':' + 
+            String(minutes).padStart(2, '0') + ':' + 
+            String(seconds).padStart(2, '0');
+        
+        const durationElement = document.getElementById('sessionDuration');
+        if (durationElement) {
+            durationElement.textContent = durationString;
+        }
+    }
+    
+    function updateFooterDate() {
+        const now = new Date();
+        const dateString = now.getFullYear() + '-' + 
+                          String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(now.getDate()).padStart(2, '0');
+        
+        const footerElement = document.getElementById('footerDate');
+        if (footerElement) {
+            footerElement.textContent = dateString;
+        }
+    }
+    
+    function setActiveMenuItem() {
+        const currentPath = window.location.pathname;
+        const currentPage = currentPath.split('/').pop().replace('.html', '');
+        
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelectorAll('.child-nav a').forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        document.querySelectorAll('.nav-item a, .child-nav a').forEach(link => {
+            const href = link.getAttribute('href');
+            
+            if (href && href !== '#') {
+                const linkPage = href.split('/').pop().replace('.html', '');
+                
+                if (linkPage === currentPage || 
+                    (currentPage === 'dashboard' && href.includes('dashboard'))) {
+                    
+                    link.classList.add('active');
+                    const parentItem = link.closest('.nav-item');
+                    if (parentItem) {
+                        parentItem.classList.add('active');
+                        
+                        const hasChildren = link.closest('.has-children');
+                        if (hasChildren && hasChildren !== parentItem) {
+                            const sidebar = document.getElementById('leftSidebar');
+                            sidebar.classList.add('expanded');
+                            
+                            setTimeout(() => {
+                                hasChildren.classList.add('open');
+                            }, 100);
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function addTooltips() {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            const link = item.querySelector('a');
+            const textSpan = link?.querySelector('.nav-text');
+            if (textSpan && textSpan.textContent) {
+                item.setAttribute('data-tooltip', textSpan.textContent.trim());
+            }
+        });
+    }
+
+    console.log('✅ Leftbar script loaded');
+})();
+
+// FIXED: Global Functions with Proper Scope
+function toggleSidebar() {
+    const sidebar = document.getElementById('leftSidebar');
+    const icon = document.getElementById('toggleIcon');
+    
+    if (sidebar) {
+        sidebar.classList.toggle('expanded');
+        
+        if (sidebar.classList.contains('expanded')) {
+            icon.className = 'fa fa-indent';
+            console.log('📖 Sidebar expanded');
+        } else {
+            icon.className = 'fa fa-bars';
+            console.log('📕 Sidebar collapsed');
+            
+            // Close all submenus when collapsing
+            document.querySelectorAll('.has-children.open').forEach(menu => {
+                menu.classList.remove('open');
+            });
+        }
+    }
+}
+
+function toggleMenu(element, menuTitle) {
+    const sidebar = document.getElementById('leftSidebar');
+    
+    // Expand sidebar if collapsed
+    if (!sidebar.classList.contains('expanded')) {
+        sidebar.classList.add('expanded');
+        const icon = document.getElementById('toggleIcon');
+        if (icon) icon.className = 'fa fa-indent';
+        
+        setTimeout(() => toggleMenuHelper(element, menuTitle), 300);
+        return;
+    }
+    
+    toggleMenuHelper(element, menuTitle);
+}
+
+function toggleMenuHelper(element, menuTitle) {
+    const parentLi = element.closest('.has-children');
+    
+    if (!parentLi) return;
+    
+    // Close other menus
+    document.querySelectorAll('.has-children.open').forEach(menu => {
+        if (menu !== parentLi) {
+            menu.classList.remove('open');
+        }
+    });
+    
+    // Toggle current menu with delay for stability
+    const isOpen = parentLi.classList.contains('open');
+    
+    if (isOpen) {
+        parentLi.classList.remove('open');
+        console.log('📁 Panel closed:', menuTitle);
+    } else {
+        // Small delay to ensure stable display
+        setTimeout(() => {
+            parentLi.classList.add('open');
+            console.log('📂 Panel opened:', menuTitle);
+        }, 50);
+    }
+}
+
+// FIXED: Working Close Submenu Function - Global Scope
+function closeSubmenu(closeBtn) {
+    const parentMenu = closeBtn.closest('.has-children');
+    if (parentMenu) {
+        parentMenu.classList.remove('open');
+        console.log('🚪 Submenu closed via close button');
+    }
+}
+
+function confirmLogout() {
+    const sessionDuration = document.getElementById('sessionDuration');
+    const duration = sessionDuration ? sessionDuration.textContent : '00:00:00';
+    
+    if (confirm(`Are you sure you want to logout?\n\nSession Duration: ${duration}\nUser: Pilsertech\nSystem: SRMS Dashboard`)) {
+        localStorage.clear();
+        sessionStorage.clear();
+        return true;
+    }
+    return false;
+}
+
+console.log('✅ All leftbar functions loaded globally');
+</script>
