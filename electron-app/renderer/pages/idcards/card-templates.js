@@ -1,9 +1,10 @@
-// ID Card Template Editor with Fabric.js
+// Enhanced ID Card Template Editor with Complete Database Integration
 
 class TemplateEditorManager {
     constructor() {
         this.canvas = null;
         this.templates = [];
+        this.classes = [];
         this.currentTemplate = null;
         this.currentSide = 'front';
         this.frontImage = null;
@@ -11,23 +12,351 @@ class TemplateEditorManager {
         this.positionData = { front: {}, back: {} };
         this.isLoading = false;
         
+        // Element types that can be placed on templates
+        this.elementTypes = {
+            'student-name': { label: 'Student Name', icon: 'fa-user', category: 'student-info' },
+            'roll-id': { label: 'Roll ID', icon: 'fa-id-badge', category: 'student-info' },
+            'class-name': { label: 'Class & Section', icon: 'fa-graduation-cap', category: 'student-info' },
+            'student-email': { label: 'Email Address', icon: 'fa-envelope', category: 'student-info' },
+            'gender': { label: 'Gender', icon: 'fa-venus-mars', category: 'student-info' },
+            'dob': { label: 'Date of Birth', icon: 'fa-calendar', category: 'student-info' },
+            'photo': { label: 'Student Photo', icon: 'fa-camera', category: 'photo' },
+            'qr-code': { label: 'QR Code', icon: 'fa-qrcode', category: 'codes' },
+            'barcode': { label: 'Barcode', icon: 'fa-barcode', category: 'codes' },
+            'school-logo': { label: 'School Logo', icon: 'fa-shield', category: 'branding' },
+            'issue-date': { label: 'Issue Date', icon: 'fa-calendar-check-o', category: 'admin' },
+            'valid-until': { label: 'Valid Until', icon: 'fa-calendar-times-o', category: 'admin' }
+        };
+        
         this.init();
     }
     
-    init() {
-        document.addEventListener('DOMContentLoaded', () => this.setup());
+    async init() {
+        console.log('🚀 Enhanced Template Editor initializing...');
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.setup());
+        } else {
+            this.setup();
+        }
     }
     
-    setup() {
+    async setup() {
+        console.log('🔧 Setting up Template Editor...');
+        
         this.messageArea = document.getElementById('messageArea');
         this.templatesGrid = document.getElementById('templatesGrid');
         this.editorSection = document.getElementById('editorSection');
         
-        this.setupEventListeners();
-        this.loadTemplates();
-        this.setupCanvas();
+        console.log('📋 DOM elements found:', {
+            messageArea: !!this.messageArea,
+            templatesGrid: !!this.templatesGrid,
+            editorSection: !!this.editorSection
+        });
         
-        console.log('✅ Template Editor Manager initialized');
+        // Load data first
+        await this.loadClasses();
+        this.loadTemplates();
+        
+        // Setup UI components in proper order
+        this.setupCanvas();
+        this.setupEventListeners();
+        
+        // Render element palette after canvas is ready
+        setTimeout(() => {
+            this.renderElementPalette();
+        }, 200);
+        
+        console.log('✅ Enhanced Template Editor initialized');
+    }
+    
+    async loadClasses() {
+        try {
+            console.log('📚 Loading classes...');
+            
+            const response = await fetch('http://localhost:9000/classes');
+            const result = await response.json();
+            
+            if (result.success) {
+                this.classes = result.classes || [];
+                this.populateClassDropdown();
+                console.log(`✅ Loaded ${this.classes.length} classes`);
+            } else {
+                throw new Error(result.message || 'Failed to load classes');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error loading classes:', error);
+            this.showMessage('Failed to load classes: ' + error.message, 'error');
+            this.classes = [];
+        }
+    }
+    
+    populateClassDropdown() {
+        const assignedClassesSelect = document.getElementById('assignedClasses');
+        if (!assignedClassesSelect) return;
+        
+        assignedClassesSelect.innerHTML = '<option value="">Select Classes (Optional)</option>';
+        
+        this.classes.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls.id;
+            option.textContent = `${cls.ClassName} - ${cls.Section}`;
+            assignedClassesSelect.appendChild(option);
+        });
+    }
+    
+    renderElementPalette() {
+        // The HTML already has elements-list structures, we just need to make them interactive
+        const elementItems = document.querySelectorAll('.element-item');
+        
+        if (elementItems.length === 0) {
+            console.warn('No element items found in HTML');
+            return;
+        }
+
+        // Make all element items draggable and clickable
+        elementItems.forEach(item => {
+            const elementType = item.dataset.type;
+            if (!elementType) return;
+
+            // Make draggable
+            item.draggable = true;
+            
+            // Add drag start event
+            item.addEventListener('dragstart', (e) => {
+                const dragData = {
+                    type: elementType,
+                    label: item.querySelector('span').textContent,
+                    icon: item.querySelector('i').className
+                };
+                e.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+                e.dataTransfer.effectAllowed = 'copy';
+                console.log('🚀 Drag started for:', elementType, 'Data:', dragData);
+            });
+
+            // Add click event for adding element to center
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.addElementToCenter(elementType);
+                console.log('Element clicked:', elementType);
+            });
+
+            // Add hover effects
+            item.style.cursor = 'pointer';
+            item.addEventListener('mouseenter', () => {
+                item.style.backgroundColor = '#e8f4fd';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.backgroundColor = '';
+            });
+        });
+
+        console.log('Element palette made interactive with', elementItems.length, 'items');
+        
+        // Setup canvas drop zone immediately after element setup
+        this.setupCanvasDropZone();
+    }
+    
+    setupCanvasDropZone() {
+        const canvasContainer = document.querySelector('.canvas-container');
+        const canvasElement = document.getElementById('templateCanvas');
+        
+        if (!canvasContainer || !canvasElement || !this.canvas) {
+            console.warn('⚠️ Canvas setup incomplete for drop zone:', {
+                container: !!canvasContainer,
+                element: !!canvasElement, 
+                fabric: !!this.canvas
+            });
+            return;
+        }
+        
+        // Remove existing listeners to avoid duplicates
+        if (this.canvasDragOver) {
+            canvasContainer.removeEventListener('dragover', this.canvasDragOver);
+            canvasElement.removeEventListener('dragover', this.canvasDragOver);
+        }
+        if (this.canvasDrop) {
+            canvasContainer.removeEventListener('drop', this.canvasDrop);
+            canvasElement.removeEventListener('drop', this.canvasDrop);
+        }
+        
+        // Create bound functions
+        this.canvasDragOver = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'copy';
+            console.log('🎯 Drag over canvas');
+        };
+        
+        this.canvasDrop = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            try {
+                const dragData = e.dataTransfer.getData('text/plain');
+                console.log('🎯 Drop event - Raw data:', dragData);
+                
+                let elementType;
+                
+                // Check if it's JSON (from drag event) or plain string
+                if (dragData.startsWith('{')) {
+                    const elementData = JSON.parse(dragData);
+                    elementType = elementData.type;
+                    console.log('📦 Parsed element data:', elementData);
+                } else {
+                    elementType = dragData;
+                }
+                
+                if (elementType) {
+                    console.log('✅ Adding element to canvas:', elementType);
+                    this.addElementToCanvas(elementType, e);
+                } else {
+                    console.error('❌ No element type found in drop data');
+                }
+            } catch (error) {
+                console.error('❌ Error processing drop:', error);
+                this.showMessage('Error adding element to canvas', 'error');
+            }
+        };
+        
+        // Add event listeners to both container and canvas
+        canvasContainer.addEventListener('dragover', this.canvasDragOver);
+        canvasContainer.addEventListener('drop', this.canvasDrop);
+        canvasElement.addEventListener('dragover', this.canvasDragOver);  
+        canvasElement.addEventListener('drop', this.canvasDrop);
+        
+        console.log('🎯 Canvas drop zone setup complete');
+    }
+    
+    showTemplatesError() {
+        if (!this.templatesGrid) return;
+        
+        this.templatesGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <i class="fa fa-exclamation-triangle" style="font-size: 2rem; color: #e74c3c; margin-bottom: 10px; display: block;"></i>
+                <p style="color: #e74c3c; margin-bottom: 15px;">Failed to load templates</p>
+                <button class="btn btn-primary" onclick="templateEditorManager.loadTemplates()">
+                    <i class="fa fa-refresh"></i> Retry
+                </button>
+            </div>
+        `;
+    }
+    
+    async editTemplate(templateId) {
+        try {
+            this.setLoading(true);
+            
+            const response = await fetch(`http://localhost:9000/idcards/templates/${templateId}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                this.currentTemplate = result.template;
+                this.loadTemplateForEditing(result.template);
+                this.showMessage('Template loaded for editing', 'info');
+            } else {
+                throw new Error(result.message || 'Failed to load template');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error loading template:', error);
+            this.showMessage('Failed to load template: ' + error.message, 'error');
+        } finally {
+            this.setLoading(false);
+        }
+    }
+    
+    loadTemplateForEditing(template) {
+        // Show editor section
+        const editorSection = document.getElementById('editorSection');
+        if (editorSection) {
+            editorSection.style.display = 'block';
+        }
+        
+        // Load template data
+        document.getElementById('templateName').value = template.TemplateName;
+        
+        // Parse position data
+        if (template.PositionData) {
+            try {
+                this.positionData = JSON.parse(template.PositionData);
+            } catch (e) {
+                console.error('Error parsing position data:', e);
+                this.positionData = { front: {}, back: {} };
+            }
+        }
+        
+        // Load images if available
+        if (template.FrontImagePath) {
+            this.loadTemplateImage(template.FrontImagePath, 'front');
+        }
+        
+        if (template.BackImagePath) {
+            this.loadTemplateImage(template.BackImagePath, 'back');
+        }
+    }
+    
+    loadTemplateImage(imagePath, side) {
+        const imageUrl = `http://localhost:9000/idcards/templates/${imagePath.split('/').pop()}`;
+        
+        // Update UI
+        const preview = document.getElementById(`${side}Preview`);
+        const previewImg = document.getElementById(`${side}PreviewImg`);
+        const uploadZone = document.getElementById(`${side}UploadZone`);
+        
+        if (preview && previewImg && uploadZone) {
+            previewImg.src = imageUrl;
+            preview.style.display = 'block';
+            uploadZone.style.display = 'none';
+        }
+        
+        // Load to canvas if current side
+        if (side === this.currentSide) {
+            this.loadImageToCanvas(imageUrl);
+        }
+    }
+    
+    async deleteTemplate(templateId) {
+        if (!confirm('Are you sure you want to delete this template?')) {
+            return;
+        }
+        
+        try {
+            this.setLoading(true);
+            
+            const response = await fetch(`http://localhost:9000/idcards/templates/${templateId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showMessage('Template deleted successfully', 'success');
+                this.loadTemplates();
+            } else {
+                throw new Error(result.message || 'Failed to delete template');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error deleting template:', error);
+            this.showMessage('Failed to delete template: ' + error.message, 'error');
+        } finally {
+            this.setLoading(false);
+        }
+    }
+    
+    cancelEdit() {
+        // Hide editor section
+        const editorSection = document.getElementById('editorSection');
+        if (editorSection) {
+            editorSection.style.display = 'none';
+        }
+        
+        // Clear form
+        this.resetForm();
+        this.currentTemplate = null;
+        
+        this.showMessage('Edit cancelled', 'info');
     }
     
     setupEventListeners() {
@@ -35,18 +364,38 @@ class TemplateEditorManager {
         this.setupUploadZones();
         
         // Template configuration
-        document.getElementById('templateName').addEventListener('input', () => this.validateForm());
+        const templateNameInput = document.getElementById('templateName');
+        if (templateNameInput) {
+            templateNameInput.addEventListener('input', () => this.validateForm());
+        }
         
-        // Side toggle
-        document.querySelectorAll('input[name="cardSide"]').forEach(radio => {
-            radio.addEventListener('change', (e) => this.switchSide(e.target.value));
-        });
+        // Side toggle - set up after a delay to ensure DOM is ready
+        setTimeout(() => {
+            const radioButtons = document.querySelectorAll('input[name="cardSide"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    console.log('Radio button changed to:', e.target.value);
+                    this.switchSide(e.target.value);
+                });
+                
+                // Set initial visual state
+                const label = radio.closest('.toggle-switch');
+                if (label && radio.checked) {
+                    label.classList.add('active');
+                }
+            });
+            console.log(`🎯 Set up ${radioButtons.length} radio button listeners`);
+        }, 500);
         
         // Canvas controls
         this.setupCanvasControls();
         
-        // Element dragging
-        this.setupElementDragging();
+        // Delete key for selected elements
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete' && this.canvas && this.canvas.getActiveObject()) {
+                this.deleteSelectedElement();
+            }
+        });
         
         console.log('🎯 Event listeners setup');
     }
@@ -91,7 +440,12 @@ class TemplateEditorManager {
     
     setupCanvas() {
         const canvasElement = document.getElementById('templateCanvas');
-        if (!canvasElement) return;
+        if (!canvasElement) {
+            console.error('❌ Canvas element not found!');
+            return;
+        }
+        
+        console.log('🎨 Initializing Fabric.js canvas...');
         
         this.canvas = new fabric.Canvas('templateCanvas', {
             width: 1050,
@@ -106,7 +460,11 @@ class TemplateEditorManager {
         this.canvas.on('selection:cleared', () => this.clearProperties());
         this.canvas.on('object:modified', () => this.updatePositionData());
         
-        console.log('🎨 Fabric.js canvas initialized');
+        // Ensure canvas is rendered
+        this.canvas.renderAll();
+        
+        console.log('🎨 Fabric.js canvas initialized successfully');
+        console.log('Canvas dimensions:', this.canvas.width, 'x', this.canvas.height);
     }
     
     setupCanvasControls() {
@@ -114,32 +472,6 @@ class TemplateEditorManager {
         document.getElementById('zoomIn')?.addEventListener('click', () => this.zoomCanvas(1.1));
         document.getElementById('zoomOut')?.addEventListener('click', () => this.zoomCanvas(0.9));
         document.getElementById('resetZoom')?.addEventListener('click', () => this.resetZoom());
-    }
-    
-    setupElementDragging() {
-        const elementItems = document.querySelectorAll('.element-item');
-        
-        elementItems.forEach(item => {
-            item.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('text/plain', item.dataset.type);
-                item.classList.add('dragging');
-            });
-            
-            item.addEventListener('dragend', () => {
-                item.classList.remove('dragging');
-            });
-            
-            item.setAttribute('draggable', 'true');
-        });
-        
-        // Canvas drop zone
-        const canvasContainer = document.querySelector('.canvas-container');
-        canvasContainer.addEventListener('dragover', (e) => e.preventDefault());
-        canvasContainer.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const elementType = e.dataTransfer.getData('text/plain');
-            this.addElementToCanvas(elementType, e);
-        });
     }
     
     async loadTemplates() {
@@ -274,32 +606,91 @@ class TemplateEditorManager {
         if (!this.canvas) return;
         
         fabric.Image.fromURL(imageSrc, (img) => {
-            // Scale image to fit canvas
-            const scaleX = this.canvas.width / img.width;
-            const scaleY = this.canvas.height / img.height;
-            const scale = Math.min(scaleX, scaleY);
+            // Calculate proper scaling to fit canvas while maintaining aspect ratio
+            const canvasWidth = this.canvas.width;
+            const canvasHeight = this.canvas.height;
+            
+            const scaleX = canvasWidth / img.width;
+            const scaleY = canvasHeight / img.height;
+            const scale = Math.min(scaleX, scaleY, 1); // Don't scale up
+            
+            // Center the image
+            const scaledWidth = img.width * scale;
+            const scaledHeight = img.height * scale;
+            const left = (canvasWidth - scaledWidth) / 2;
+            const top = (canvasHeight - scaledHeight) / 2;
             
             img.set({
+                left: left,
+                top: top,
                 scaleX: scale,
                 scaleY: scale,
                 selectable: false,
-                evented: false
+                evented: false,
+                originX: 'left',
+                originY: 'top'
             });
             
             // Clear canvas and add background image
             this.canvas.clear();
             this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas));
             
+            // Reset zoom to fit
+            this.canvas.setZoom(1);
+            this.updateZoomDisplay();
+            
             // Restore positioned elements for this side
             this.loadPositionedElements();
+            
+            console.log(`📸 Image loaded to canvas: ${scaledWidth}x${scaledHeight} at scale ${scale}`);
         });
     }
     
     addElementToCanvas(elementType, dropEvent) {
-        const canvasRect = this.canvas.getElement().getBoundingClientRect();
-        const x = dropEvent.clientX - canvasRect.left;
-        const y = dropEvent.clientY - canvasRect.top;
+        if (!this.canvas) {
+            console.error('❌ Canvas not initialized');
+            this.showMessage('Canvas not ready. Please try again.', 'error');
+            return;
+        }
         
+        let x, y;
+        
+        if (dropEvent && dropEvent.type === 'drop') {
+            // Get canvas coordinates from drop event
+            try {
+                const pointer = this.canvas.getPointer(dropEvent);
+                x = Math.max(10, Math.min(pointer.x, this.canvas.width - 100));
+                y = Math.max(10, Math.min(pointer.y, this.canvas.height - 50));
+                console.log('📍 Drop coordinates:', { x, y, pointer });
+            } catch (error) {
+                console.warn('⚠️ Error getting pointer coordinates, using center:', error);
+                x = this.canvas.width / 2;
+                y = this.canvas.height / 2;
+            }
+        } else {
+            // Default to center if no drop event
+            x = this.canvas.width / 2;
+            y = this.canvas.height / 2;
+        }
+        
+        this.createElementAtPosition(elementType, x, y);
+    }
+    
+    addElementToCenter(elementType) {
+        if (!this.canvas) {
+            console.error('❌ Canvas not initialized');
+            this.showMessage('Canvas not ready. Please try again.', 'error');
+            return;
+        }
+        
+        // Add element to center of canvas
+        const x = this.canvas.width / 2;
+        const y = this.canvas.height / 2;
+        
+        this.createElementAtPosition(elementType, x, y);
+    }
+    
+    createElementAtPosition(elementType, x, y) {
         let element;
         
         switch (elementType) {
@@ -313,7 +704,7 @@ class TemplateEditorManager {
                 element = this.createTextElement('Class 10-A', x, y, { fontSize: 16 });
                 break;
             case 'studentId':
-                element = this.createTextElement('12345', x, y, { fontSize: 14, fontFamily: 'Courier New' });
+                element = this.createTextElement('ST001', x, y, { fontSize: 14 });
                 break;
             case 'photo':
                 element = this.createPhotoPlaceholder(x, y);
@@ -324,16 +715,39 @@ class TemplateEditorManager {
             case 'barcode':
                 element = this.createBarcodePlaceholder(x, y);
                 break;
+            default:
+                console.warn('Unknown element type:', elementType);
+                element = this.createTextElement('Text Element', x, y);
         }
         
         if (element) {
-            element.set('elementType', elementType);
+            element.set({
+                elementType: elementType,
+                selectable: true,
+                evented: true
+            });
+            
             this.canvas.add(element);
             this.canvas.setActiveObject(element);
-            this.updatePositionData();
+            this.canvas.renderAll();
+            
+            console.log('✅ Added element:', elementType, 'at position:', x, y);
+            this.showMessage(`Added ${elementType} to canvas`, 'success');
         }
     }
-    
+
+    // Debug method to test element addition
+    testElementAddition() {
+        console.log('🧪 Testing element addition...');
+        if (!this.canvas) {
+            console.error('❌ Canvas not available for testing');
+            return;
+        }
+        
+        console.log('✅ Canvas is available, testing studentName element');
+        this.addElementToCenter('studentName');
+    }
+
     createTextElement(text, x, y, options = {}) {
         return new fabric.Text(text, {
             left: x,
@@ -384,6 +798,17 @@ class TemplateEditorManager {
         });
     }
     
+    createLogoPlaceholder(x, y) {
+        return new fabric.Circle({
+            left: x,
+            top: y,
+            radius: 50,
+            fill: '#3498db',
+            stroke: '#2980b9',
+            strokeWidth: 2
+        });
+    }
+    
     onObjectSelected(obj) {
         if (!obj) return;
         
@@ -394,6 +819,14 @@ class TemplateEditorManager {
         const propertiesContent = document.getElementById('propertiesContent');
         
         let propertiesHTML = `
+            <div class="property-group">
+                <h5>Element Actions</h5>
+                <div class="form-group">
+                    <button class="btn btn-danger btn-sm" onclick="templateEditorManager.deleteSelectedElement()">
+                        <i class="fa fa-trash"></i> Delete Element
+                    </button>
+                </div>
+            </div>
             <div class="property-group">
                 <h5>Position & Size</h5>
                 <div class="form-group">
@@ -406,11 +839,11 @@ class TemplateEditorManager {
                 </div>
                 <div class="form-group">
                     <label>Width</label>
-                    <input type="number" id="propWidth" value="${Math.round(obj.width * obj.scaleX)}" onchange="templateEditorManager.updateObjectSize('width', this.value)">
+                    <input type="number" id="propWidth" value="${Math.round(obj.width * (obj.scaleX || 1))}" onchange="templateEditorManager.updateObjectSize('width', this.value)">
                 </div>
                 <div class="form-group">
                     <label>Height</label>
-                    <input type="number" id="propHeight" value="${Math.round(obj.height * obj.scaleY)}" onchange="templateEditorManager.updateObjectSize('height', this.value)">
+                    <input type="number" id="propHeight" value="${Math.round(obj.height * (obj.scaleY || 1))}" onchange="templateEditorManager.updateObjectSize('height', this.value)">
                 </div>
             </div>
         `;
@@ -504,49 +937,144 @@ class TemplateEditorManager {
     }
     
     switchSide(side) {
+        console.log(`🔄 Switching to ${side} side from ${this.currentSide}`);
+        
+        // Save current side position data before switching
+        if (this.canvas) {
+            this.updatePositionData();
+        }
+        
         this.currentSide = side;
+        
+        // Update radio button state and visual styling
+        const radioButtons = document.querySelectorAll('input[name="cardSide"]');
+        console.log(`Found ${radioButtons.length} radio buttons`);
+        radioButtons.forEach(radio => {
+            radio.checked = radio.value === side;
+            console.log(`Radio ${radio.value} checked: ${radio.checked}`);
+            
+            // Update visual state for toggle switches
+            const label = radio.closest('.toggle-switch');
+            if (label) {
+                if (radio.checked) {
+                    label.classList.add('active');
+                } else {
+                    label.classList.remove('active');
+                }
+            }
+        });
+        
+        // Clear canvas first
+        if (this.canvas) {
+            this.canvas.clear();
+        }
         
         // Load appropriate image
         if (side === 'front' && this.frontImage) {
+            console.log('Loading front image...');
             const reader = new FileReader();
             reader.onload = (e) => this.loadImageToCanvas(e.target.result);
             reader.readAsDataURL(this.frontImage);
         } else if (side === 'back' && this.backImage) {
+            console.log('Loading back image...');
             const reader = new FileReader();
             reader.onload = (e) => this.loadImageToCanvas(e.target.result);
             reader.readAsDataURL(this.backImage);
         } else {
-            this.canvas.clear();
-            this.canvas.setBackgroundColor('#ffffff', this.canvas.renderAll.bind(this.canvas));
+            console.log(`No image for ${side} side - using white background`);
+            // No image for this side - clear canvas and set white background
+            if (this.canvas) {
+                this.canvas.clear();
+                this.canvas.setBackgroundColor('#ffffff');
+                this.canvas.renderAll();
+                
+                // Still load positioned elements even without background image
+                this.loadPositionedElements();
+            }
         }
+        
+        console.log(`✅ Successfully switched to ${side} side`);
     }
     
     loadPositionedElements() {
         const positions = this.positionData[this.currentSide];
         
+        if (!positions || Object.keys(positions).length === 0) {
+            console.log(`No positioned elements for ${this.currentSide} side`);
+            return;
+        }
+        
+        console.log(`Loading ${Object.keys(positions).length} positioned elements for ${this.currentSide} side`);
+        
         Object.entries(positions).forEach(([elementType, position]) => {
             let element;
             
-            if (['studentName', 'rollId', 'className', 'studentId'].includes(elementType)) {
-                element = this.createTextElement(
-                    elementType === 'studentName' ? 'John Doe' :
-                    elementType === 'rollId' ? '001' :
-                    elementType === 'className' ? 'Class 10-A' : '12345',
-                    position.x, position.y, position
-                );
+            // Handle new element type names (studentName, rollId, etc.)
+            if (['studentName', 'rollId', 'className', 'studentId', 'student-name', 'roll-id', 'class-name', 'student-email', 'gender', 'dob', 'issue-date', 'valid-until'].includes(elementType)) {
+                let defaultText = '';
+                switch (elementType) {
+                    case 'studentName':
+                    case 'student-name': 
+                        defaultText = 'John Doe'; 
+                        break;
+                    case 'rollId':
+                    case 'roll-id': 
+                        defaultText = '001'; 
+                        break;
+                    case 'className':
+                    case 'class-name': 
+                        defaultText = 'Class 10-A'; 
+                        break;
+                    case 'studentId':
+                        defaultText = 'ST001';
+                        break;
+                    case 'student-email': 
+                        defaultText = 'student@school.edu'; 
+                        break;
+                    case 'gender': 
+                        defaultText = 'Male'; 
+                        break;
+                    case 'dob': 
+                        defaultText = '01/01/2000'; 
+                        break;
+                    case 'issue-date': 
+                        defaultText = 'Issue Date: ' + new Date().toLocaleDateString(); 
+                        break;
+                    case 'valid-until': 
+                        defaultText = 'Valid Until: 2025'; 
+                        break;
+                }
+                
+                element = this.createTextElement(defaultText, position.x, position.y, position);
+                
             } else if (elementType === 'photo') {
                 element = this.createPhotoPlaceholder(position.x, position.y);
-            } else if (elementType === 'qrCode') {
+                element.set({ width: position.width || 150, height: position.height || 200 });
+                
+            } else if (elementType === 'qrCode' || elementType === 'qr-code') {
                 element = this.createQRPlaceholder(position.x, position.y);
+                element.set({ width: position.width || 100, height: position.height || 100 });
+                
             } else if (elementType === 'barcode') {
                 element = this.createBarcodePlaceholder(position.x, position.y);
+                element.set({ width: position.width || 200, height: position.height || 50 });
+                
+            } else if (elementType === 'school-logo') {
+                element = this.createLogoPlaceholder(position.x, position.y);
+                if (position.width && position.height) {
+                    element.set({ radius: Math.min(position.width, position.height) / 2 });
+                }
             }
             
             if (element) {
                 element.set('elementType', elementType);
                 this.canvas.add(element);
+                console.log(`✅ Restored ${elementType} element at (${position.x}, ${position.y})`);
             }
         });
+        
+        this.canvas.renderAll();
+        console.log(`✅ Loaded ${Object.keys(positions).length} positioned elements for ${this.currentSide} side`);
     }
     
     validateForm() {
@@ -638,6 +1166,429 @@ class TemplateEditorManager {
         this.isLoading = loading;
         // Update UI loading states
     }
+    
+    createNewTemplate() {
+        // Show the editor section
+        const editorSection = document.getElementById('editorSection');
+        if (editorSection) {
+            editorSection.style.display = 'block';
+        }
+        
+        // Show the editor panel immediately so users can see the interface
+        const editorPanel = document.getElementById('editorPanel');
+        if (editorPanel) {
+            editorPanel.style.display = 'block';
+            console.log('📊 Editor panel made visible');
+        }
+        
+        // Reset form to clean state
+        this.resetForm();
+        this.showMessage('Ready to create new template - Upload an image to begin or drag elements to the canvas', 'info');
+    }
+    
+    resetForm() {
+        // Clear template name
+        const templateNameInput = document.getElementById('templateName');
+        if (templateNameInput) {
+            templateNameInput.value = '';
+        }
+        
+        // Reset images
+        this.frontImage = null;
+        this.backImage = null;
+        this.positionData = { front: {}, back: {} };
+        this.currentSide = 'front';
+        
+        // Reset upload zones
+        this.removeImage('front');
+        this.removeImage('back');
+        
+        // Clear canvas
+        this.clearCanvas();
+        this.clearProperties();
+        
+        // Reset class selection
+        const assignedClassesSelect = document.getElementById('assignedClasses');
+        if (assignedClassesSelect) {
+            assignedClassesSelect.selectedIndex = 0;
+        }
+        
+        // Enable form
+        this.validateForm();
+    }
+    
+    removeImage(side) {
+        if (side === 'front') {
+            this.frontImage = null;
+        } else {
+            this.backImage = null;
+        }
+        
+        // Reset the upload zone
+        const uploadZone = document.getElementById(`${side}UploadZone`);
+        const preview = document.getElementById(`${side}Preview`);
+        
+        if (uploadZone && preview) {
+            uploadZone.innerHTML = `
+                <i class="fa fa-cloud-upload"></i>
+                <p>Drop ${side} image here or click to browse</p>
+                <small>Supports PNG, JPG, PDF • Max 10MB</small>
+            `;
+            uploadZone.style.display = 'block';
+            preview.style.display = 'none';
+        }
+        
+        // Clear canvas if this side is currently displayed
+        if (side === this.currentSide) {
+            this.clearCanvas();
+            this.canvas.setBackgroundColor('#ffffff');
+            this.canvas.renderAll();
+        }
+        
+        // Reset the file input
+        const fileInput = document.getElementById(`${side}ImageInput`);
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        
+        this.validateForm();
+        this.showMessage(`${side.charAt(0).toUpperCase() + side.slice(1)} image removed`, 'info');
+    }
+    
+    clearCanvas() {
+        if (this.canvas) {
+            this.canvas.clear();
+            this.canvas.backgroundColor = '#ffffff';
+        }
+    }
+    
+    clearProperties() {
+        const propertiesContent = document.getElementById('propertiesContent');
+        if (propertiesContent) {
+            propertiesContent.innerHTML = `
+                <div class="no-selection">
+                    <i class="fa fa-mouse-pointer"></i>
+                    <p>Select an element to edit its properties</p>
+                </div>
+            `;
+        }
+    }
+    
+    validateForm() {
+        const templateName = document.getElementById('templateName')?.value;
+        const hasImages = this.frontImage !== null;
+        
+        const isValid = templateName && templateName.trim().length > 0 && hasImages;
+        
+        const saveBtn = document.getElementById('saveTemplateBtn');
+        if (saveBtn) {
+            saveBtn.disabled = !isValid;
+        }
+        
+        return isValid;
+    }
+    
+    previewTemplate() {
+        if (!this.canvas) {
+            this.showMessage('No template to preview', 'error');
+            return;
+        }
+        
+        try {
+            // For Electron, use a different approach - create an in-page modal
+            const canvasDataURL = this.canvas.toDataURL('image/png');
+            
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+            `;
+            
+            // Create modal content
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    max-width: 90%;
+                    max-height: 90%;
+                    overflow: auto;
+                    text-align: center;
+                    position: relative;
+                ">
+                    <h2 style="margin-top: 0; color: #333;">Template Preview - ${this.currentSide.toUpperCase()} Side</h2>
+                    <p style="color: #666; font-size: 14px;">Click anywhere to close</p>
+                    <img src="${canvasDataURL}" alt="Template Preview" style="
+                        max-width: 100%;
+                        height: auto;
+                        border: 1px solid #ccc;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        margin-top: 10px;
+                    ">
+                </div>
+            `;
+            
+            // Close modal on click
+            modal.addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+            
+            // Add to page
+            document.body.appendChild(modal);
+            
+            console.log('✅ Preview modal opened for', this.currentSide, 'side');
+            
+        } catch (error) {
+            console.error('Preview error:', error);
+            this.showMessage('Failed to create preview: ' + error.message, 'error');
+        }
+    }
+    
+    deleteSelectedElement() {
+        const activeObject = this.canvas.getActiveObject();
+        if (!activeObject) {
+            this.showMessage('Please select an element to delete', 'error');
+            return;
+        }
+        
+        if (confirm('Are you sure you want to delete this element?')) {
+            this.canvas.remove(activeObject);
+            this.canvas.discardActiveObject();
+            this.canvas.renderAll();
+            this.updatePositionData();
+            this.clearProperties();
+            this.showMessage('Element deleted successfully', 'success');
+        }
+    }
+}
+
+// Test functions for debugging
+function testElementAddition() {
+    if (window.templateEditorManager) {
+        window.templateEditorManager.testElementAddition();
+    } else {
+        console.error('❌ templateEditorManager not available');
+    }
+}
+
+function forceSetupDragDrop() {
+    console.log('🔧 Force setting up drag/drop...');
+    if (window.templateEditorManager) {
+        window.templateEditorManager.renderElementPalette();
+        console.log('✅ Drag/drop setup forced');
+    } else {
+        console.error('❌ templateEditorManager not available');
+    }
+}
+
+function testSideSwitch() {
+    console.log('🔄 Testing side switching...');
+    const manager = window.templateEditorManager;
+    if (!manager) {
+        console.error('❌ templateEditorManager not available');
+        return;
+    }
+    
+    console.log('Current side:', manager.currentSide);
+    
+    // Make sure editor panel is visible
+    const editorPanel = document.getElementById('editorPanel');
+    if (editorPanel) {
+        editorPanel.style.display = 'block';
+        console.log('📊 Editor panel made visible for testing');
+    }
+    
+    // Test switching to back
+    console.log('🎯 Switching to back...');
+    manager.switchSide('back');
+    
+    setTimeout(() => {
+        console.log('Current side after switch:', manager.currentSide);
+        console.log('Radio buttons state:');
+        document.querySelectorAll('input[name="cardSide"]').forEach(radio => {
+            const label = radio.closest('.toggle-switch');
+            console.log(`  ${radio.value}: ${radio.checked} (label has active: ${label?.classList.contains('active')})`);
+        });
+        
+        // Test switch back to front
+        setTimeout(() => {
+            console.log('🎯 Switching back to front...');
+            manager.switchSide('front');
+            
+            setTimeout(() => {
+                console.log('Final state - Current side:', manager.currentSide);
+                console.log('Final radio buttons state:');
+                document.querySelectorAll('input[name="cardSide"]').forEach(radio => {
+                    const label = radio.closest('.toggle-switch');
+                    console.log(`  ${radio.value}: ${radio.checked} (label has active: ${label?.classList.contains('active')})`);
+                });
+            }, 300);
+        }, 1000);
+    }, 500);
+}
+
+function showSideButtons() {
+    console.log('🔍 Making side toggle buttons visible...');
+    
+    // Force show editor panel
+    const editorPanel = document.getElementById('editorPanel');
+    if (editorPanel) {
+        editorPanel.style.display = 'block';
+        console.log('📊 Editor panel forced visible');
+    }
+    
+    // Force show editor section
+    const editorSection = document.getElementById('editorSection');
+    if (editorSection) {
+        editorSection.style.display = 'block';
+        console.log('📊 Editor section forced visible');
+    }
+    
+    // Find and highlight the canvas header area
+    const canvasHeader = document.querySelector('.canvas-header');
+    if (canvasHeader) {
+        canvasHeader.style.backgroundColor = '#ffeb3b';
+        canvasHeader.style.padding = '20px';
+        canvasHeader.style.border = '3px solid #f44336';
+        canvasHeader.style.margin = '10px 0';
+        console.log('🎯 Canvas header highlighted');
+    } else {
+        console.warn('⚠️ Canvas header not found');
+    }
+    
+    // Find and style side toggle area
+    const sideToggle = document.querySelector('.side-toggle');
+    if (sideToggle) {
+        sideToggle.style.backgroundColor = '#4caf50';
+        sideToggle.style.border = '5px solid #f44336';
+        sideToggle.style.padding = '10px';
+        sideToggle.style.fontSize = '18px';
+        sideToggle.style.fontWeight = 'bold';
+        console.log('🎯 Side toggle area highlighted');
+    } else {
+        console.warn('⚠️ Side toggle not found');
+    }
+    
+    // Log toggle buttons status
+    const toggles = document.querySelectorAll('.toggle-switch');
+    console.log(`Found ${toggles.length} toggle switches`);
+    
+    toggles.forEach((toggle, index) => {
+        const radio = toggle.querySelector('input[type="radio"]');
+        const span = toggle.querySelector('span');
+        console.log(`Toggle ${index}:`, {
+            text: span?.textContent,
+            value: radio?.value,
+            checked: radio?.checked,
+            visible: toggle.offsetWidth > 0 && toggle.offsetHeight > 0,
+            position: {
+                top: toggle.offsetTop,
+                left: toggle.offsetLeft,
+                width: toggle.offsetWidth,
+                height: toggle.offsetHeight
+            }
+        });
+        
+        // Add extreme visual highlighting for testing
+        toggle.style.border = '5px solid #ff0000';
+        toggle.style.fontSize = '20px';
+        toggle.style.fontWeight = 'bold';
+        toggle.style.padding = '15px 25px';
+        toggle.style.margin = '5px';
+        toggle.style.backgroundColor = radio?.checked ? '#00ff00' : '#ffff00';
+        toggle.style.color = '#000000';
+        toggle.style.minWidth = '100px';
+        toggle.style.minHeight = '50px';
+    });
+    
+    // Check if canvas area exists
+    const canvasArea = document.querySelector('.canvas-area');
+    if (canvasArea) {
+        console.log('📊 Canvas area found and visible');
+        canvasArea.style.border = '3px solid blue';
+    } else {
+        console.warn('⚠️ Canvas area not found');
+    }
+    
+    // Check all parent containers
+    const editorWorkspace = document.querySelector('.editor-workspace');
+    if (editorWorkspace) {
+        console.log('📊 Editor workspace found');
+        editorWorkspace.style.border = '2px solid orange';
+    }
+    
+    // Scroll to the canvas header area
+    if (canvasHeader) {
+        canvasHeader.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        console.log('📍 Scrolled to canvas header');
+    }
+}
+
+function testDragDrop() {
+    console.log('🧪 Testing drag/drop setup...');
+    const elementItems = document.querySelectorAll('.element-item');
+    console.log(`Found ${elementItems.length} element items`);
+    
+    // Test element setup
+    elementItems.forEach((item, index) => {
+        console.log(`Item ${index}:`, {
+            type: item.dataset.type,
+            draggable: item.draggable,
+            text: item.querySelector('span')?.textContent,
+            hasDataType: !!item.dataset.type
+        });
+    });
+    
+    // Test canvas setup
+    const canvasContainer = document.querySelector('.canvas-container');
+    const canvasElement = document.getElementById('templateCanvas');
+    console.log('Canvas container found:', !!canvasContainer);
+    console.log('Canvas element found:', !!canvasElement);
+    console.log('Fabric canvas initialized:', !!window.templateEditorManager?.canvas);
+    
+    if (window.templateEditorManager?.canvas) {
+        console.log('Canvas dimensions:', {
+            width: window.templateEditorManager.canvas.width,
+            height: window.templateEditorManager.canvas.height
+        });
+    }
+    
+    // Test drag/drop handlers
+    const manager = window.templateEditorManager;
+    if (manager) {
+        console.log('Drop handlers bound:', {
+            canvasDragOver: typeof manager.canvasDragOver,
+            canvasDrop: typeof manager.canvasDrop
+        });
+    }
+    
+    // Simulate drag start on first element
+    if (elementItems.length > 0) {
+        const firstItem = elementItems[0];
+        console.log('🎯 Testing drag start on first element:', firstItem.dataset.type);
+        
+        // Create a fake drag event
+        const fakeEvent = new Event('dragstart');
+        fakeEvent.dataTransfer = {
+            setData: (type, data) => {
+                console.log('📤 Drag data set:', { type, data });
+            },
+            effectAllowed: null
+        };
+        
+        // Trigger drag start
+        firstItem.dispatchEvent(fakeEvent);
+    }
 }
 
 // Global functions
@@ -653,8 +1604,288 @@ function refreshTemplates() {
     }
 }
 
+function zoomIn() {
+    if (window.templateEditorManager) {
+        window.templateEditorManager.zoomCanvas(1.1);
+    }
+}
+
+function zoomOut() {
+    if (window.templateEditorManager) {
+        window.templateEditorManager.zoomCanvas(0.9);
+    }
+}
+
+function resetZoom() {
+    if (window.templateEditorManager) {
+        window.templateEditorManager.resetZoom();
+    }
+}
+
+function previewTemplate() {
+    if (window.templateEditorManager) {
+        window.templateEditorManager.previewTemplate();
+    }
+}
+
+function deleteSelectedElement() {
+    if (window.templateEditorManager) {
+        window.templateEditorManager.deleteSelectedElement();
+    }
+}
+
+function switchSide(side) {
+    if (window.templateEditorManager) {
+        window.templateEditorManager.switchSide(side);
+    }
+}
+
+function removeFrontImage() {
+    if (window.templateEditorManager) {
+        window.templateEditorManager.removeImage('front');
+    }
+}
+
+function removeBackImage() {
+    if (window.templateEditorManager) {
+        window.templateEditorManager.removeImage('back');
+    }
+}
+
+function cancelEdit() {
+    if (window.templateEditorManager) {
+        window.templateEditorManager.cancelEdit();
+    }
+}
+
+function saveTemplate() {
+    if (window.templateEditorManager) {
+        window.templateEditorManager.saveTemplate();
+    }
+}
+
 // Initialize
 const templateEditorManager = new TemplateEditorManager();
 window.templateEditorManager = templateEditorManager;
+
+// Debug functions
+function debugDOMStructure() {
+    console.log('🔍 Debugging DOM structure...');
+    
+    // Check all levels of containers
+    const containers = [
+        { name: 'editorSection', selector: '#editorSection' },
+        { name: 'editorPanel', selector: '#editorPanel' },
+        { name: 'editorWorkspace', selector: '.editor-workspace' },
+        { name: 'canvasArea', selector: '.canvas-area' },
+        { name: 'canvasHeader', selector: '.canvas-header' },
+        { name: 'sideToggle', selector: '.side-toggle' },
+        { name: 'toggleSwitches', selector: '.toggle-switch' }
+    ];
+    
+    containers.forEach(container => {
+        const element = document.querySelector(container.selector);
+        if (element) {
+            const styles = window.getComputedStyle(element);
+            console.log(`✅ ${container.name}:`, {
+                exists: true,
+                display: styles.display,
+                visibility: styles.visibility,
+                position: {
+                    top: element.offsetTop,
+                    left: element.offsetLeft,
+                    width: element.offsetWidth,
+                    height: element.offsetHeight
+                },
+                isVisible: element.offsetWidth > 0 && element.offsetHeight > 0,
+                zIndex: styles.zIndex
+            });
+            
+            // Force make visible
+            if (styles.display === 'none') {
+                element.style.display = 'block';
+                console.log(`🔧 Forced ${container.name} display to block`);
+            }
+            if (styles.visibility === 'hidden') {
+                element.style.visibility = 'visible';
+                console.log(`🔧 Forced ${container.name} visibility to visible`);
+            }
+        } else {
+            console.error(`❌ ${container.name} not found with selector: ${container.selector}`);
+        }
+    });
+}
+
+function showNormalSideButtons() {
+    console.log('🔍 Making side toggle buttons visible with normal styling...');
+    
+    // Ensure all necessary containers are visible
+    const containers = [
+        '#editorSection',
+        '#editorPanel', 
+        '.editor-workspace',
+        '.canvas-area',
+        '.canvas-header',
+        '.side-toggle'
+    ];
+    
+    containers.forEach(selector => {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.style.display = 'block';
+            element.style.visibility = 'visible';
+            element.style.opacity = '1';
+        }
+    });
+    
+    // Find and ensure side toggle area is properly styled
+    const sideToggle = document.querySelector('.side-toggle');
+    if (sideToggle) {
+        sideToggle.style.display = 'flex';
+        sideToggle.style.background = 'white';
+        sideToggle.style.borderRadius = '6px';
+        sideToggle.style.overflow = 'hidden';
+        sideToggle.style.border = '2px solid #e9ecef';
+        console.log('🎯 Side toggle area made visible with normal styling');
+    } else {
+        console.warn('⚠️ Side toggle not found');
+    }
+    
+    // Style toggle switches normally
+    const toggles = document.querySelectorAll('.toggle-switch');
+    console.log(`Found ${toggles.length} toggle switches`);
+    
+    toggles.forEach((toggle, index) => {
+        const radio = toggle.querySelector('input[type="radio"]');
+        const span = toggle.querySelector('span');
+        
+        // Apply normal toggle switch styling
+        toggle.style.padding = '8px 16px';
+        toggle.style.cursor = 'pointer';
+        toggle.style.border = 'none';
+        toggle.style.background = 'white';
+        toggle.style.color = '#7f8c8d';
+        toggle.style.fontWeight = '500';
+        toggle.style.transition = 'all 0.2s';
+        toggle.style.display = 'flex';
+        toggle.style.alignItems = 'center';
+        toggle.style.gap = '8px';
+        toggle.style.margin = '0';
+        toggle.style.borderRadius = '0';
+        
+        // Apply active state styling
+        if (radio?.checked) {
+            toggle.style.background = '#9b59b6';
+            toggle.style.color = 'white';
+            toggle.classList.add('active');
+        } else {
+            toggle.style.background = 'white';
+            toggle.style.color = '#7f8c8d';
+            toggle.classList.remove('active');
+        }
+        
+        // Add hover effect
+        toggle.addEventListener('mouseenter', () => {
+            if (!radio?.checked) {
+                toggle.style.background = '#f8f9fa';
+            }
+        });
+        
+        toggle.addEventListener('mouseleave', () => {
+            if (!radio?.checked) {
+                toggle.style.background = 'white';
+            }
+        });
+        
+        console.log(`✅ Toggle ${index} (${span?.textContent}): checked=${radio?.checked}, visible=${toggle.offsetWidth > 0}`);
+    });
+    
+    // Scroll to make sure buttons are in view
+    const canvasHeader = document.querySelector('.canvas-header');
+    if (canvasHeader) {
+        canvasHeader.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        console.log('📍 Scrolled to canvas header area');
+    }
+    
+    console.log('✅ Side toggle buttons are now visible with proper styling!');
+}
+
+function resetSideButtonStyling() {
+    console.log('🔧 Resetting side button styling to normal...');
+    
+    // Reset canvas header to normal
+    const canvasHeader = document.querySelector('.canvas-header');
+    if (canvasHeader) {
+        canvasHeader.style.backgroundColor = '';
+        canvasHeader.style.padding = '';
+        canvasHeader.style.border = '';
+        canvasHeader.style.margin = '';
+        console.log('✅ Canvas header styling reset');
+    }
+    
+    // Reset side toggle area to normal but keep it visible
+    const sideToggle = document.querySelector('.side-toggle');
+    if (sideToggle) {
+        sideToggle.style.backgroundColor = '';
+        sideToggle.style.border = '';
+        sideToggle.style.padding = '';
+        sideToggle.style.fontSize = '';
+        sideToggle.style.fontWeight = '';
+        console.log('✅ Side toggle area styling reset');
+    }
+    
+    // Reset toggle switches to normal size but keep them visible
+    const toggles = document.querySelectorAll('.toggle-switch');
+    console.log(`Resetting ${toggles.length} toggle switches`);
+    
+    toggles.forEach((toggle, index) => {
+        const radio = toggle.querySelector('input[type="radio"]');
+        
+        // Reset all the extreme styling
+        toggle.style.border = '';
+        toggle.style.fontSize = '';
+        toggle.style.fontWeight = '';
+        toggle.style.padding = '';
+        toggle.style.margin = '';
+        toggle.style.backgroundColor = '';
+        toggle.style.color = '';
+        toggle.style.minWidth = '';
+        toggle.style.minHeight = '';
+        
+        // Apply normal styling that matches the design
+        toggle.style.display = 'flex';
+        toggle.style.alignItems = 'center';
+        toggle.style.gap = '8px';
+        toggle.style.padding = '8px 16px';
+        toggle.style.cursor = 'pointer';
+        toggle.style.transition = 'all 0.2s';
+        
+        // Apply active state if checked
+        if (radio?.checked) {
+            toggle.style.backgroundColor = '#9b59b6';
+            toggle.style.color = 'white';
+            toggle.classList.add('active');
+        } else {
+            toggle.style.backgroundColor = 'white';
+            toggle.style.color = '#7f8c8d';
+            toggle.classList.remove('active');
+        }
+        
+        console.log(`✅ Reset toggle ${index} (${radio?.value}): checked=${radio?.checked}`);
+    });
+    
+    // Reset other highlighted areas
+    const canvasArea = document.querySelector('.canvas-area');
+    if (canvasArea) {
+        canvasArea.style.border = '';
+    }
+    
+    const editorWorkspace = document.querySelector('.editor-workspace');
+    if (editorWorkspace) {
+        editorWorkspace.style.border = '';
+    }
+    
+    console.log('🎯 All styling reset to normal - buttons should now be properly sized and visible');
+}
 
 console.log('🚀 Template Editor page loaded');

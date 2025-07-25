@@ -97,25 +97,47 @@
     <script src="dashboard.js"></script>
     
     <script>
-        // Load includes efficiently
+        // Load includes efficiently with enhanced error handling
         document.addEventListener('DOMContentLoaded', () => {
             loadInclude('topbar', '../includes/topbar.html');
             loadInclude('leftbar', '../includes/leftbar.html', () => {
                 // Load leftbar JS after HTML is loaded
-                const script = document.createElement('script');
-                script.src = '../includes/leftbar.js';
-                document.head.appendChild(script);
+                loadScript('../includes/leftbar.js');
             });
         });
 
         function loadInclude(id, url, callback) {
             fetch(url)
-                .then(r => r.text())
-                .then(html => {
-                    document.getElementById(id).innerHTML = html;
-                    if (callback) callback();
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.text();
                 })
-                .catch(e => console.error(`Failed to load ${id}:`, e));
+                .then(html => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.innerHTML = html;
+                        console.log(`✅ ${id} loaded successfully`);
+                        if (callback) callback();
+                    } else {
+                        throw new Error(`Element #${id} not found`);
+                    }
+                })
+                .catch(e => {
+                    console.error(`❌ Failed to load ${id}:`, e);
+                    // Graceful fallback
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.innerHTML = `<div class="error-fallback">Failed to load ${id}</div>`;
+                    }
+                });
+        }
+
+        function loadScript(src) {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => console.log(`✅ Script ${src} loaded`);
+            script.onerror = () => console.error(`❌ Failed to load script ${src}`);
+            document.head.appendChild(script);
         }
     </script>
 </body>

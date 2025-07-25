@@ -609,6 +609,12 @@ body.sidebar-expanded .template-editor-page {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin: 0;
+    border-radius: 0;
+}
+
+.toggle-switch:hover {
+    background: #f8f9fa;
 }
 
 .toggle-switch input[type="radio"] {
@@ -616,6 +622,17 @@ body.sidebar-expanded .template-editor-page {
 }
 
 .toggle-switch input[type="radio"]:checked + span {
+    color: white;
+    font-weight: 600;
+}
+
+.toggle-switch:has(input[type="radio"]:checked) {
+    background: #9b59b6;
+    color: white;
+}
+
+/* Fallback for browsers that don't support :has() */
+.toggle-switch.active {
     background: #9b59b6;
     color: white;
 }
