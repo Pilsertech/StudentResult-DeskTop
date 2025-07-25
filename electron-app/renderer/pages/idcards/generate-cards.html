@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRMS - Generate ID Cards</title>
+    
+    <!-- Essential CSS -->
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../includes/leftbar.css">
+    <link rel="stylesheet" href="../includes/topbar.css">
+    <link rel="stylesheet" href="generate-cards.css">
+    
+    <!-- Card Generation Libraries - LOCAL OFFLINE VERSIONS -->
+    <script src="../../../../shared/js/html2canvas/html2canvas.min.js"></script>
+    <script src="../../../../shared/js/jspdf/jspdf.umd.min.js"></script>
+    <script src="../../../../shared/js/qrcode/qrcode.min.js"></script>
+    <script src="../../../../shared/js/barcode/JsBarcode.all.min.js"></script>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div id="topbar"></div>
+    
+    <!-- Left Sidebar -->
+    <div id="leftbar"></div>
+    
+    <!-- Main Generate Cards Page -->
+    <main class="generate-cards-page">
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <div class="title-area">
+                    <h1><i class="fa fa-id-card"></i> Generate ID Cards</h1>
+                    <p>Create professional ID cards for students with customizable templates</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="resetSelection()">
+                        <i class="fa fa-refresh"></i> Reset
+                    </button>
+                    <a href="card-templates.html" class="btn btn-warning">
+                        <i class="fa fa-paint-brush"></i> Manage Templates
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <section class="content-section">
+            <div class="content-container">
+                
+                <!-- Generation Wizard -->
+                <div class="generation-wizard">
+                    <!-- Step 1: Template Selection -->
+                    <div class="wizard-step active" id="step1">
+                        <div class="step-card">
+                            <div class="step-header">
+                                <div class="step-number">1</div>
+                                <div class="step-info">
+                                    <h3>Select Template</h3>
+                                    <p>Choose an ID card template design</p>
+                                </div>
+                                <div class="step-status">
+                                    <i class="fa fa-circle-o" id="step1Status"></i>
+                                </div>
+                            </div>
+                            <div class="step-content">
+                                <div class="templates-selection" id="templatesSelection">
+                                    <!-- Templates will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Student Selection -->
+                    <div class="wizard-step" id="step2">
+                        <div class="step-card">
+                            <div class="step-header">
+                                <div class="step-number">2</div>
+                                <div class="step-info">
+                                    <h3>Select Students</h3>
+                                    <p>Choose students for ID card generation</p>
+                                </div>
+                                <div class="step-status">
+                                    <i class="fa fa-circle-o" id="step2Status"></i>
+                                </div>
+                            </div>
+                            <div class="step-content">
+                                <div class="selection-options">
+                                    <div class="selection-modes">
+                                        <label class="mode-option">
+                                            <input type="radio" name="selectionMode" value="individual" checked>
+                                            <div class="mode-card">
+                                                <i class="fa fa-user"></i>
+                                                <h4>Individual Students</h4>
+                                                <p>Select specific students</p>
+                                            </div>
+                                        </label>
+                                        <label class="mode-option">
+                                            <input type="radio" name="selectionMode" value="class">
+                                            <div class="mode-card">
+                                                <i class="fa fa-users"></i>
+                                                <h4>Entire Class</h4>
+                                                <p>Generate for all students in a class</p>
+                                            </div>
+                                        </label>
+                                        <label class="mode-option">
+                                            <input type="radio" name="selectionMode" value="bulk">
+                                            <div class="mode-card">
+                                                <i class="fa fa-list"></i>
+                                                <h4>Bulk Selection</h4>
+                                                <p>Upload student list or IDs</p>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <!-- Individual Selection -->
+                                    <div class="selection-panel" id="individualPanel">
+                                        <div class="panel-header">
+                                            <h4><i class="fa fa-search"></i> Search & Select Students</h4>
+                                            <div class="search-controls">
+                                                <input type="text" id="studentSearch" placeholder="Search by name or roll ID..." class="form-control">
+                                                <select id="classFilter" class="form-control">
+                                                    <option value="">All Classes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="students-grid" id="studentsGrid">
+                                            <!-- Students will be loaded here -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Class Selection -->
+                                    <div class="selection-panel" id="classPanel" style="display: none;">
+                                        <div class="panel-header">
+                                            <h4><i class="fa fa-graduation-cap"></i> Select Class</h4>
+                                        </div>
+                                        <div class="classes-grid" id="classesGrid">
+                                            <!-- Classes will be loaded here -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Bulk Selection -->
+                                    <div class="selection-panel" id="bulkPanel" style="display: none;">
+                                        <div class="panel-header">
+                                            <h4><i class="fa fa-upload"></i> Bulk Import</h4>
+                                        </div>
+                                        <div class="bulk-options">
+                                            <div class="bulk-option">
+                                                <h5>Upload Student IDs</h5>
+                                                <div class="file-upload-area" id="csvUploadArea">
+                                                    <i class="fa fa-file-text"></i>
+                                                    <p>Upload CSV file with student IDs</p>
+                                                    <small>Format: StudentID per line or CSV with ID column</small>
+                                                    <input type="file" id="csvInput" accept=".csv,.txt" hidden>
+                                                </div>
+                                            </div>
+                                            <div class="bulk-option">
+                                                <h5>Manual Entry</h5>
+                                                <textarea id="manualIds" placeholder="Enter student IDs, one per line&#10;Example:&#10;12345&#10;12346&#10;12347" rows="6" class="form-control"></textarea>
+                                                <button class="btn btn-outline" onclick="processManualIds()">
+                                                    <i class="fa fa-check"></i> Process IDs
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Selected Students Summary -->
+                                <div class="selection-summary" id="selectionSummary" style="display: none;">
+                                    <div class="summary-header">
+                                        <h4><i class="fa fa-check-square"></i> Selected Students</h4>
+                                        <div class="summary-actions">
+                                            <span class="selection-count" id="selectionCount">0 students selected</span>
+                                            <button class="btn btn-outline btn-sm" onclick="clearSelection()">
+                                                <i class="fa fa-times"></i> Clear All
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="selected-students" id="selectedStudents">
+                                        <!-- Selected students will appear here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Generation Options -->
+                    <div class="wizard-step" id="step3">
+                        <div class="step-card">
+                            <div class="step-header">
+                                <div class="step-number">3</div>
+                                <div class="step-info">
+                                    <h3>Generation Options</h3>
+                                    <p>Configure output settings and preview</p>
+                                </div>
+                                <div class="step-status">
+                                    <i class="fa fa-circle-o" id="step3Status"></i>
+                                </div>
+                            </div>
+                            <div class="step-content">
+                                <div class="options-grid">
+                                    <div class="options-panel">
+                                        <h4><i class="fa fa-cogs"></i> Output Options</h4>
+                                        
+                                        <div class="option-group">
+                                            <label class="option-label">Output Format</label>
+                                            <div class="radio-group">
+                                                <label class="radio-option">
+                                                    <input type="radio" name="outputFormat" value="pdf" checked>
+                                                    <div class="radio-custom"></div>
+                                                    <span>PDF (Print Ready)</span>
+                                                </label>
+                                                <label class="radio-option">
+                                                    <input type="radio" name="outputFormat" value="png">
+                                                    <div class="radio-custom"></div>
+                                                    <span>PNG Images</span>
+                                                </label>
+                                                <label class="radio-option">
+                                                    <input type="radio" name="outputFormat" value="both">
+                                                    <div class="radio-custom"></div>
+                                                    <span>Both PDF & PNG</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="option-group">
+                                            <label class="option-label">Card Layout</label>
+                                            <div class="radio-group">
+                                                <label class="radio-option">
+                                                    <input type="radio" name="cardLayout" value="single" checked>
+                                                    <div class="radio-custom"></div>
+                                                    <span>Single Card per Page</span>
+                                                </label>
+                                                <label class="radio-option">
+                                                    <input type="radio" name="cardLayout" value="multiple">
+                                                    <div class="radio-custom"></div>
+                                                    <span>Multiple Cards per Page</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="option-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="includeQR" checked>
+                                                <div class="checkbox-custom"></div>
+                                                <span>Include QR Codes</span>
+                                            </label>
+                                        </div>
+
+                                        <div class="option-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="includeBarcodes" checked>
+                                                <div class="checkbox-custom"></div>
+                                                <span>Include Barcodes</span>
+                                            </label>
+                                        </div>
+
+                                        <div class="option-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="highQuality">
+                                                <div class="checkbox-custom"></div>
+                                                <span>High Quality (Slower)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="preview-panel">
+                                        <h4><i class="fa fa-eye"></i> Preview</h4>
+                                        <div class="card-preview" id="cardPreview">
+                                            <div class="preview-placeholder">
+                                                <i class="fa fa-id-card"></i>
+                                                <p>Select template and students to see preview</p>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-outline" onclick="refreshPreview()" id="refreshPreviewBtn" style="display: none;">
+                                            <i class="fa fa-refresh"></i> Refresh Preview
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generation Controls -->
+                    <div class="generation-controls">
+                        <div class="controls-left">
+                            <button class="btn btn-secondary" onclick="previousStep()" id="prevBtn" style="display: none;">
+                                <i class="fa fa-arrow-left"></i> Previous
+                            </button>
+                        </div>
+                        <div class="controls-center">
+                            <div class="progress-indicator">
+                                <div class="progress-step active" data-step="1">1</div>
+                                <div class="progress-line"></div>
+                                <div class="progress-step" data-step="2">2</div>
+                                <div class="progress-line"></div>
+                                <div class="progress-step" data-step="3">3</div>
+                            </div>
+                        </div>
+                        <div class="controls-right">
+                            <button class="btn btn-primary" onclick="nextStep()" id="nextBtn">
+                                Next <i class="fa fa-arrow-right"></i>
+                            </button>
+                            <button class="btn btn-success" onclick="generateCards()" id="generateBtn" style="display: none;">
+                                <i class="fa fa-magic"></i> Generate Cards
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Generation Progress Modal -->
+    <div class="modal-overlay" id="generationModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3><i class="fa fa-magic"></i> Generating ID Cards</h3>
+            </div>
+            <div class="modal-body">
+                <div class="generation-progress">
+                    <div class="progress-circle" id="progressCircle">
+                        <svg width="100" height="100">
+                            <circle cx="50" cy="50" r="45" stroke="#e9ecef" stroke-width="10" fill="none"/>
+                            <circle cx="50" cy="50" r="45" stroke="#3498db" stroke-width="10" fill="none" 
+                                    stroke-dasharray="283" stroke-dashoffset="283" id="progressBar"/>
+                        </svg>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                    <div class="progress-info">
+                        <h4 id="progressTitle">Preparing generation...</h4>
+                        <p id="progressMessage">Please wait while we generate your ID cards</p>
+                        <div class="progress-details" id="progressDetails">
+                            <span>Processing: <span id="currentCard">0</span> of <span id="totalCards">0</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Area -->
+    <div id="messageArea" class="message-area"></div>
+
+    <!-- Scripts -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="generate-cards.js"></script>
+    
+    <script>
+        // Load includes
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInclude('topbar', '../includes/topbar.html');
+            loadInclude('leftbar', '../includes/leftbar.html', () => {
+                const script = document.createElement('script');
+                script.src = '../includes/leftbar.js';
+                document.head.appendChild(script);
+            });
+        });
+
+        function loadInclude(id, url, callback) {
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById(id).innerHTML = html;
+                    if (callback) callback();
+                })
+                .catch(e => console.error(`Failed to load ${id}:`, e));
+        }
+    </script>
+</body>
+</html>

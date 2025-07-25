@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRMS - Attendance Settings</title>
+    
+    <!-- Essential CSS -->
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../includes/leftbar.css">
+    <link rel="stylesheet" href="../includes/topbar.css">
+    <link rel="stylesheet" href="attendance-settings.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div id="topbar"></div>
+    
+    <!-- Left Sidebar -->
+    <div id="leftbar"></div>
+    
+    <!-- Main Attendance Settings Page -->
+    <main class="attendance-settings-page">
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <div class="title-area">
+                    <h1><i class="fa fa-cogs"></i> Attendance Settings</h1>
+                    <p>Configure attendance rules and preferences for classes</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="resetToDefaults()">
+                        <i class="fa fa-undo"></i> Reset Defaults
+                    </button>
+                    <button class="btn btn-primary" onclick="saveAllSettings()">
+                        <i class="fa fa-save"></i> Save All Settings
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <section class="content-section">
+            <div class="content-container">
+                
+                <!-- Class Selection Card -->
+                <div class="class-selection-card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-graduation-cap"></i> Select Class to Configure</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="class-grid" id="classGrid">
+                            <!-- Classes will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Form Card -->
+                <div class="settings-card" id="settingsCard" style="display: none;">
+                    <div class="card-header">
+                        <h3><i class="fa fa-cogs"></i> Attendance Configuration</h3>
+                        <div class="selected-class-info" id="selectedClassInfo">
+                            <!-- Selected class info -->
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Message Area -->
+                        <div id="messageArea" class="message-area"></div>
+                        
+                        <form id="settingsForm" class="settings-form">
+                            <input type="hidden" id="classId" name="classId">
+                            
+                            <!-- General Settings -->
+                            <div class="settings-section">
+                                <h4><i class="fa fa-clock-o"></i> General Settings</h4>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Late Threshold</label>
+                                        <p class="setting-description">Minutes after session start time to mark as late</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="number" id="lateThreshold" name="lateThreshold" class="form-control" min="0" max="60" value="15">
+                                        <span class="input-suffix">minutes</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Allow Late Entry</label>
+                                        <p class="setting-description">Allow marking attendance after session starts</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="allowLateEntry" name="allowLateEntry" checked>
+                                            <label for="allowLateEntry" class="toggle-label"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Auto Mark Absent</label>
+                                        <p class="setting-description">Automatically mark students absent if not present by specified time</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="autoMarkAbsent" name="autoMarkAbsent" checked>
+                                            <label for="autoMarkAbsent" class="toggle-label"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item" id="autoMarkTimeContainer">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Auto Mark Time</label>
+                                        <p class="setting-description">Time to automatically mark absent students</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="time" id="autoMarkTime" name="autoMarkTime" class="form-control" value="10:00">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Attendance Methods -->
+                            <div class="settings-section">
+                                <h4><i class="fa fa-qrcode"></i> Attendance Methods</h4>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label class="setting-label">QR Code Attendance</label>
+                                        <p class="setting-description">Enable QR code scanning for attendance</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="qrCodeEnabled" name="qrCodeEnabled" checked>
+                                            <label for="qrCodeEnabled" class="toggle-label"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Fingerprint Attendance</label>
+                                        <p class="setting-description">Enable fingerprint authentication for attendance</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="fingerprintEnabled" name="fingerprintEnabled">
+                                            <label for="fingerprintEnabled" class="toggle-label"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Require Photo</label>
+                                        <p class="setting-description">Require photo capture during attendance marking</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="requirePhoto" name="requirePhoto">
+                                            <label for="requirePhoto" class="toggle-label"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Location Settings -->
+                            <div class="settings-section">
+                                <h4><i class="fa fa-map-marker"></i> Location Settings</h4>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Geofence Enabled</label>
+                                        <p class="setting-description">Restrict attendance to specific location</p>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="geofenceEnabled" name="geofenceEnabled">
+                                            <label for="geofenceEnabled" class="toggle-label"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="geofence-settings" id="geofenceSettings" style="display: none;">
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <label class="setting-label">Geofence Radius</label>
+                                            <p class="setting-description">Allowed distance from center point</p>
+                                        </div>
+                                        <div class="setting-control">
+                                            <input type="number" id="geofenceRadius" name="geofenceRadius" class="form-control" min="10" max="1000" value="100">
+                                            <span class="input-suffix">meters</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="setting-item">
+                                        <div class="setting-info">
+                                            <label class="setting-label">Center Coordinates</label>
+                                            <p class="setting-description">Latitude and longitude of center point</p>
+                                        </div>
+                                        <div class="setting-control">
+                                            <div class="coordinate-inputs">
+                                                <input type="number" id="geofenceLatitude" name="geofenceLatitude" 
+                                                       class="form-control" placeholder="Latitude" step="0.000001">
+                                                <input type="number" id="geofenceLongitude" name="geofenceLongitude" 
+                                                       class="form-control" placeholder="Longitude" step="0.000001">
+                                            </div>
+                                            <button type="button" class="btn btn-outline" onclick="getCurrentLocation()">
+                                                <i class="fa fa-crosshairs"></i> Use Current Location
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="cancelSettings()">
+                                    <i class="fa fa-times"></i> Cancel
+                                </button>
+                                <button type="button" class="btn btn-warning" onclick="previewSettings()">
+                                    <i class="fa fa-eye"></i> Preview
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="saveBtn">
+                                    <i class="fa fa-save"></i> Save Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3><i class="fa fa-eye"></i> Settings Preview</h3>
+                <button class="modal-close" onclick="closePreviewModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="previewContent">
+                <!-- Preview content will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePreviewModal()">Close</button>
+                <button class="btn btn-primary" onclick="applyPreviewedSettings()">Apply Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="attendance-settings.js"></script>
+    
+    <script>
+        // Load includes
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInclude('topbar', '../includes/topbar.html');
+            loadInclude('leftbar', '../includes/leftbar.html', () => {
+                const script = document.createElement('script');
+                script.src = '../includes/leftbar.js';
+                document.head.appendChild(script);
+            });
+        });
+
+        function loadInclude(id, url, callback) {
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById(id).innerHTML = html;
+                    if (callback) callback();
+                })
+                .catch(e => console.error(`Failed to load ${id}:`, e));
+        }
+    </script>
+</body>
+</html>

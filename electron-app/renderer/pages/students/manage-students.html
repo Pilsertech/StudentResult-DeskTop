@@ -2,120 +2,211 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SRMS Admin Manage Students</title>
-    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css" media="screen">
-    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css" media="screen">
-    <link rel="stylesheet" href="../../../../shared/css/animate-css/animate.min.css" media="screen">
-    <link rel="stylesheet" href="../../../../shared/css/lobipanel/lobipanel.min.css" media="screen">
-    <link rel="stylesheet" href="../../../../shared/css/prism/prism.css" media="screen">
-    <link rel="stylesheet" href="../../../../shared/js/DataTables/datatables.min.css" media="screen">
-    <link rel="stylesheet" href="../../../../shared/css/main.css" media="screen">
+    <title>SRMS - Manage Students</title>
+    
+    <!-- Essential CSS -->
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../includes/leftbar.css">
+    <link rel="stylesheet" href="../includes/topbar.css">
     <link rel="stylesheet" href="manage-students.css">
-    <script src="../../../../shared/js/modernizr/modernizr.min.js"></script>
+    
+    <!-- Enhanced Libraries - LOCAL OFFLINE VERSIONS -->
+    <script src="../../../../shared/js/qrcode/qrcode.min.js"></script>
+    <script src="../../../../shared/js/barcode/JsBarcode.all.min.js"></script>
 </head>
-<body class="top-navbar-fixed">
-    <div class="main-wrapper">
-        <!-- ========== TOP NAVBAR ========== -->
-        <div id="topbar-include"></div>
-        <!-- ========== WRAPPER FOR BOTH SIDEBARS & MAIN CONTENT ========== -->
-        <div class="content-wrapper">
-            <div class="content-container">
-                <!-- ========== LEFT SIDEBAR ========== -->
-                <div id="leftbar-include"></div>
-                <!-- ========== MAIN PAGE ========== -->
-                <div class="main-page">
-                    <div class="container-fluid">
-                        <div class="row page-title-div">
-                            <div class="col-md-6">
-                                <h2 class="title">Manage Students</h2>
+<body>
+    <!-- Top Navigation -->
+    <div id="topbar"></div>
+    
+    <!-- Left Sidebar -->
+    <div id="leftbar"></div>
+    
+    <!-- Main Manage Students Page -->
+    <main class="manage-students-page">
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <div class="title-area">
+                    <h1><i class="fa fa-users"></i> Manage Students</h1>
+                    <p>View, edit, and manage student records</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="refreshTable()">
+                        <i class="fa fa-refresh"></i> Refresh
+                    </button>
+                    <a href="add-students.html" class="btn btn-primary">
+                        <i class="fa fa-plus"></i> Add Student
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <section class="table-content">
+            <div class="table-container">
+                <!-- Students Table Card -->
+                <div class="table-card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-table"></i> Students List</h3>
+                        <div class="table-stats">
+                            <span class="stat-item">
+                                <i class="fa fa-users"></i>
+                                <span id="totalCount">0</span> Total
+                            </span>
+                            <span class="stat-item">
+                                <i class="fa fa-check-circle"></i>
+                                <span id="activeCount">0</span> Active
+                            </span>
+                            <span class="stat-item">
+                                <i class="fa fa-ban"></i>
+                                <span id="blockedCount">0</span> Blocked
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Message Area -->
+                        <div id="messageArea" class="message-area"></div>
+                        
+                        <!-- Filter Controls -->
+                        <div class="filter-controls">
+                            <div class="filter-group">
+                                <label for="statusFilter">Filter by Status:</label>
+                                <select id="statusFilter" class="form-control">
+                                    <option value="">All Students</option>
+                                    <option value="1">Active Only</option>
+                                    <option value="0">Blocked Only</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="classFilter">Filter by Class:</label>
+                                <select id="classFilter" class="form-control">
+                                    <option value="">All Classes</option>
+                                    <!-- Populated by JS -->
+                                </select>
                             </div>
                         </div>
-                        <div class="row breadcrumb-div">
-                            <div class="col-md-6">
-                                <ul class="breadcrumb">
-                                    <li><a href="../dashboard/dashboard.html"><i class="fa fa-home"></i> Home</a></li>
-                                    <li>Students</li>
-                                    <li class="active">Manage Students</li>
-                                </ul>
+                        
+                        <!-- Students Table -->
+                        <div class="table-wrapper">
+                            <table id="studentsTable" class="students-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">#</th>
+                                        <th width="60">Photo</th>
+                                        <th>Student Name</th>
+                                        <th width="100">Roll ID</th>
+                                        <th>Class</th>
+                                        <th width="120">Registration</th>
+                                        <th width="80">Status</th>
+                                        <th width="100">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Enhanced Student Details Modal -->
+    <div class="modal-overlay" id="studentModal">
+        <div class="modal-container large">
+            <div class="modal-header">
+                <h3><i class="fa fa-user"></i> Student Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="studentModalBody">
+                <div class="student-details-grid">
+                    <div class="student-info">
+                        <!-- Basic info will be populated here -->
+                    </div>
+                    <div class="student-codes">
+                        <div class="codes-section">
+                            <h4><i class="fa fa-qrcode"></i> QR Code</h4>
+                            <div class="qr-container" id="studentQRContainer">
+                                <div class="loading-placeholder">Loading QR...</div>
+                            </div>
+                            <button class="btn btn-outline btn-sm" onclick="downloadQR()">
+                                <i class="fa fa-download"></i> Download QR
+                            </button>
+                        </div>
+                        <div class="codes-section">
+                            <h4><i class="fa fa-barcode"></i> Barcode</h4>
+                            <div class="barcode-container" id="studentBarcodeContainer">
+                                <div class="loading-placeholder">Loading Barcode...</div>
+                            </div>
+                            <button class="btn btn-outline btn-sm" onclick="downloadBarcode()">
+                                <i class="fa fa-download"></i> Download Barcode
+                            </button>
+                        </div>
+                        <div class="codes-section">
+                            <h4><i class="fa fa-fingerprint"></i> Fingerprint</h4>
+                            <div class="fingerprint-status" id="fingerprintStatus">
+                                <div class="loading-placeholder">Checking status...</div>
                             </div>
                         </div>
                     </div>
-                    <section class="section">
-                        <div class="container-fluid">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="panel">
-                                        <div class="panel-heading">
-                                            <div class="panel-title">
-                                                <h5>View Students Info</h5>
-                                            </div>
-                                        </div>
-                                        <div id="message"></div>
-                                        <div class="panel-body p-20">
-                                            <table id="students-table" class="display table table-striped table-bordered" cellspacing="0" width="100%">
-                                                <thead>
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Student Name</th>
-                                                        <th>Roll Id</th>
-                                                        <th>Class</th>
-                                                        <th>Reg Date</th>
-                                                        <th>Status</th>
-                                                        <th>Action</th>
-                                                    </tr>
-                                                </thead>
-                                                <tfoot>
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Student Name</th>
-                                                        <th>Roll Id</th>
-                                                        <th>Class</th>
-                                                        <th>Reg Date</th>
-                                                        <th>Status</th>
-                                                        <th>Action</th>
-                                                    </tr>
-                                                </tfoot>
-                                                <tbody>
-                                                    <!-- Populated by JS -->
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- /.col-md-12 -->
-                            </div>
-                            <!-- /.row -->
-                        </div>
-                        <!-- /.container-fluid -->
-                    </section>
-                    <!-- /.section -->
                 </div>
-                <!-- /.main-page -->
             </div>
-            <!-- /.content-container -->
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                <button class="btn btn-primary" onclick="editStudent()" id="editStudentBtn">
+                    <i class="fa fa-edit"></i> Edit Student
+                </button>
+            </div>
         </div>
-        <!-- /.content-wrapper -->
     </div>
-    <!-- /.main-wrapper -->
 
-    <!-- ========== COMMON JS FILES ========== -->
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-container small">
+            <div class="modal-header">
+                <h3><i class="fa fa-question-circle"></i> Confirm Action</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure you want to perform this action?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="confirmAction()" id="confirmBtn">
+                    <i class="fa fa-check"></i> Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
-    <script src="../../../../shared/js/bootstrap/bootstrap.min.js"></script>
-    <script src="../../../../shared/js/pace/pace.min.js"></script>
-    <script src="../../../../shared/js/lobipanel/lobipanel.min.js"></script>
-    <script src="../../../../shared/js/iscroll/iscroll.js"></script>
-    <script src="../../../../shared/js/prism/prism.js"></script>
-    <script src="../../../../shared/js/DataTables/datatables.min.js"></script>
-    <script src="../../../../shared/js/main.js"></script>
     <script src="manage-students.js"></script>
+    
     <script>
-        // Load topbar and leftbar includes
-        $(function() {
-            $("#topbar-include").load("../includes/topbar.html");
-            $("#leftbar-include").load("../includes/leftbar.html");
+        // Load includes
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInclude('topbar', '../includes/topbar.html');
+            loadInclude('leftbar', '../includes/leftbar.html', () => {
+                const script = document.createElement('script');
+                script.src = '../includes/leftbar.js';
+                document.head.appendChild(script);
+            });
         });
+
+        function loadInclude(id, url, callback) {
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById(id).innerHTML = html;
+                    if (callback) callback();
+                })
+                .catch(e => console.error(`Failed to load ${id}:`, e));
+        }
     </script>
 </body>
 </html>

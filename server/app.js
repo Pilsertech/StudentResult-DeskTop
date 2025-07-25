@@ -7,11 +7,14 @@ const path = require('path');
 
 // --- ROUTES ---
 const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
-const classRoutes = require('./routes/classRoutes'); // <-- ADDED: Class CRUD routes
+const classRoutes = require('./routes/classRoutes');
 const subjectRoutes = require('./routes/subjectRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const resultRoutes = require('./routes/resultRoutes');
+const idCardRoutes = require('./routes/idCardRoutes'); // Enhanced with templates
+const attendanceRoutes = require('./routes/attendanceRoutes');
 
 // --- INITIALIZATION ---
 const app = express();
@@ -45,10 +48,13 @@ app.use(express.urlencoded({ extended: true }));
 // Registers the route files for different parts of the application.
 app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
-app.use('/classes', classRoutes); // <-- ADDED: Class CRUD endpoints
+app.use('/classes', classRoutes);
 app.use('/subjects', subjectRoutes);
 app.use('/students', studentRoutes);
 app.use('/api/results', resultRoutes);
+app.use('/admin', adminRoutes);
+app.use('/idcards', idCardRoutes); // Enhanced with QR/Barcode generation
+app.use('/attendance', attendanceRoutes);
 
 
 // Log all incoming requests

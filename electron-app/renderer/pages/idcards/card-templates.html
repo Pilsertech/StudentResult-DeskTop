@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRMS - ID Card Templates</title>
+    
+    <!-- Essential CSS -->
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../includes/leftbar.css">
+    <link rel="stylesheet" href="../includes/topbar.css">
+    <link rel="stylesheet" href="card-templates.css">
+    
+    <!-- Template Editor Libraries - LOCAL OFFLINE VERSIONS -->
+    <script src="../../../../shared/js/fabric/fabric.min.js"></script>
+    <script src="../../../../shared/js/qrcode/qrcode.min.js"></script>
+    <script src="../../../../shared/js/barcode/JsBarcode.all.min.js"></script>
+    <script src="../../../../shared/js/dropzone/dropzone.min.js"></script>
+    <link rel="stylesheet" href="../../../../shared/css/dropzone/dropzone.min.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div id="topbar"></div>
+    
+    <!-- Left Sidebar -->
+    <div id="leftbar"></div>
+    
+    <!-- Main Template Editor Page -->
+    <main class="template-editor-page">
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <div class="title-area">
+                    <h1><i class="fa fa-paint-brush"></i> ID Card Templates</h1>
+                    <p>Design and manage ID card templates with visual editor</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="refreshTemplates()">
+                        <i class="fa fa-refresh"></i> Refresh
+                    </button>
+                    <button class="btn btn-primary" onclick="createNewTemplate()">
+                        <i class="fa fa-plus"></i> Create Template
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Sections -->
+        <section class="content-section">
+            <div class="content-container">
+                
+                <!-- Templates List Section -->
+                <div class="templates-section" id="templatesSection">
+                    <div class="section-header">
+                        <h3><i class="fa fa-list"></i> Existing Templates</h3>
+                        <div class="section-actions">
+                            <select id="templateFilter" class="form-control">
+                                <option value="">All Templates</option>
+                                <option value="active">Active Templates</option>
+                                <option value="inactive">Inactive Templates</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="templates-grid" id="templatesGrid">
+                        <!-- Templates will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Template Editor Section -->
+                <div class="editor-section" id="editorSection" style="display: none;">
+                    <div class="editor-header">
+                        <h3><i class="fa fa-edit"></i> Template Editor</h3>
+                        <div class="editor-actions">
+                            <button class="btn btn-secondary" onclick="cancelEdit()">
+                                <i class="fa fa-times"></i> Cancel
+                            </button>
+                            <button class="btn btn-warning" onclick="previewTemplate()">
+                                <i class="fa fa-eye"></i> Preview
+                            </button>
+                            <button class="btn btn-primary" onclick="saveTemplate()">
+                                <i class="fa fa-save"></i> Save Template
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="editor-content">
+                        <!-- Template Upload Panel -->
+                        <div class="upload-panel">
+                            <h4><i class="fa fa-upload"></i> Upload Template Images</h4>
+                            
+                            <div class="upload-grid">
+                                <div class="upload-card">
+                                    <div class="upload-header">
+                                        <h5>Front Side <span class="required">*</span></h5>
+                                        <small>Main ID card design</small>
+                                    </div>
+                                    <div class="upload-zone" id="frontUploadZone">
+                                        <i class="fa fa-cloud-upload"></i>
+                                        <p>Drop front template here</p>
+                                        <small>PDF, JPG, PNG (Max 10MB)</small>
+                                        <input type="file" id="frontImageInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
+                                    </div>
+                                    <div class="upload-preview" id="frontPreview" style="display: none;">
+                                        <img id="frontPreviewImg" alt="Front Template">
+                                        <button class="btn btn-sm btn-danger" onclick="removeFrontImage()">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="upload-card">
+                                    <div class="upload-header">
+                                        <h5>Back Side <span class="optional">Optional</span></h5>
+                                        <small>Reverse side design</small>
+                                    </div>
+                                    <div class="upload-zone" id="backUploadZone">
+                                        <i class="fa fa-cloud-upload"></i>
+                                        <p>Drop back template here</p>
+                                        <small>PDF, JPG, PNG (Max 10MB)</small>
+                                        <input type="file" id="backImageInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
+                                    </div>
+                                    <div class="upload-preview" id="backPreview" style="display: none;">
+                                        <img id="backPreviewImg" alt="Back Template">
+                                        <button class="btn btn-sm btn-danger" onclick="removeBackImage()">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Template Configuration -->
+                        <div class="config-panel">
+                            <h4><i class="fa fa-cogs"></i> Template Configuration</h4>
+                            
+                            <div class="config-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="templateName">Template Name</label>
+                                        <input type="text" id="templateName" class="form-control" placeholder="Enter template name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="assignedClasses">Assigned Classes</label>
+                                        <select id="assignedClasses" class="form-control" multiple>
+                                            <!-- Classes will be populated -->
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Visual Editor Panel -->
+                        <div class="editor-panel" id="editorPanel" style="display: none;">
+                            <div class="editor-workspace">
+                                <!-- Side Panel with Elements -->
+                                <div class="elements-panel">
+                                    <h4><i class="fa fa-puzzle-piece"></i> Elements</h4>
+                                    
+                                    <div class="element-categories">
+                                        <div class="category active" data-category="student">
+                                            <h5><i class="fa fa-user"></i> Student Data</h5>
+                                            <div class="elements-list">
+                                                <div class="element-item" data-type="studentName">
+                                                    <i class="fa fa-user"></i>
+                                                    <span>Student Name</span>
+                                                </div>
+                                                <div class="element-item" data-type="rollId">
+                                                    <i class="fa fa-id-badge"></i>
+                                                    <span>Roll ID</span>
+                                                </div>
+                                                <div class="element-item" data-type="className">
+                                                    <i class="fa fa-graduation-cap"></i>
+                                                    <span>Class Name</span>
+                                                </div>
+                                                <div class="element-item" data-type="studentId">
+                                                    <i class="fa fa-hashtag"></i>
+                                                    <span>Student ID</span>
+                                                </div>
+                                                <div class="element-item" data-type="photo">
+                                                    <i class="fa fa-camera"></i>
+                                                    <span>Student Photo</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="category" data-category="codes">
+                                            <h5><i class="fa fa-qrcode"></i> Codes</h5>
+                                            <div class="elements-list">
+                                                <div class="element-item" data-type="qrCode">
+                                                    <i class="fa fa-qrcode"></i>
+                                                    <span>QR Code</span>
+                                                </div>
+                                                <div class="element-item" data-type="barcode">
+                                                    <i class="fa fa-barcode"></i>
+                                                    <span>Barcode</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Canvas Area -->
+                                <div class="canvas-area">
+                                    <div class="canvas-header">
+                                        <div class="canvas-controls">
+                                            <button class="btn btn-sm btn-outline" onclick="zoomIn()">
+                                                <i class="fa fa-search-plus"></i>
+                                            </button>
+                                            <span class="zoom-level">100%</span>
+                                            <button class="btn btn-sm btn-outline" onclick="zoomOut()">
+                                                <i class="fa fa-search-minus"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline" onclick="resetZoom()">
+                                                <i class="fa fa-expand"></i>
+                                            </button>
+                                        </div>
+                                        <div class="side-toggle">
+                                            <label class="toggle-switch">
+                                                <input type="radio" name="cardSide" value="front" checked>
+                                                <span>Front</span>
+                                            </label>
+                                            <label class="toggle-switch">
+                                                <input type="radio" name="cardSide" value="back">
+                                                <span>Back</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="canvas-container">
+                                        <canvas id="templateCanvas" width="1050" height="650"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <!-- Properties Panel -->
+                                <div class="properties-panel">
+                                    <h4><i class="fa fa-sliders"></i> Properties</h4>
+                                    
+                                    <div class="properties-content" id="propertiesContent">
+                                        <div class="no-selection">
+                                            <i class="fa fa-mouse-pointer"></i>
+                                            <p>Select an element to edit properties</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal-container large">
+            <div class="modal-header">
+                <h3><i class="fa fa-eye"></i> Template Preview</h3>
+                <button class="modal-close" onclick="closePreviewModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-container">
+                    <div class="preview-tabs">
+                        <button class="tab-btn active" onclick="showPreviewSide('front')">Front Side</button>
+                        <button class="tab-btn" onclick="showPreviewSide('back')">Back Side</button>
+                    </div>
+                    <div class="preview-content" id="previewContent">
+                        <div class="preview-card" id="frontPreviewCard">
+                            <canvas id="frontPreviewCanvas"></canvas>
+                        </div>
+                        <div class="preview-card" id="backPreviewCard" style="display: none;">
+                            <canvas id="backPreviewCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePreviewModal()">Close</button>
+                <button class="btn btn-primary" onclick="saveTemplateFromPreview()">Save Template</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Area -->
+    <div id="messageArea" class="message-area"></div>
+
+    <!-- Scripts -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="card-templates.js"></script>
+    
+    <script>
+        // Load includes
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInclude('topbar', '../includes/topbar.html');
+            loadInclude('leftbar', '../includes/leftbar.html', () => {
+                const script = document.createElement('script');
+                script.src = '../includes/leftbar.js';
+                document.head.appendChild(script);
+            });
+        });
+
+        function loadInclude(id, url, callback) {
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById(id).innerHTML = html;
+                    if (callback) callback();
+                })
+                .catch(e => console.error(`Failed to load ${id}:`, e));
+        }
+    </script>
+</body>
+</html>
+</html>

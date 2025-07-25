@@ -7,10 +7,19 @@
     "start": "node app.js"
   },
   "dependencies": {
+    "canvas": "^3.1.2",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "fabric": "^6.7.1",
+    "jimp": "^1.6.0",
+    "jsbarcode": "^3.12.1",
     "md5": "^2.3.0",
+    "multer": "^2.0.2",
     "mysql": "^2.18.1",
-    "mysql2": "^3.14.2"
+    "mysql2": "^3.14.2",
+    "pdf2pic": "^3.2.0",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.34.3",
+    "uuid": "^11.1.0"
   }
 }

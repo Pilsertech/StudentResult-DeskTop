@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRMS - Manage Attendance</title>
+    
+    <!-- Essential CSS -->
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../../../shared/js/DataTables/datatables.min.css">
+    <link rel="stylesheet" href="../includes/leftbar.css">
+    <link rel="stylesheet" href="../includes/topbar.css">
+    <link rel="stylesheet" href="manage-attendance.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div id="topbar"></div>
+    
+    <!-- Left Sidebar -->
+    <div id="leftbar"></div>
+    
+    <!-- Main Manage Attendance Page -->
+    <main class="manage-attendance-page">
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <div class="title-area">
+                    <h1><i class="fa fa-calendar"></i> Manage Attendance</h1>
+                    <p>View, edit, and manage attendance records</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="refreshData()">
+                        <i class="fa fa-refresh"></i> Refresh
+                    </button>
+                    <a href="take-attendance.html" class="btn btn-primary">
+                        <i class="fa fa-plus"></i> Take Attendance
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <section class="content-section">
+            <div class="content-container">
+                
+                <!-- Filter Card -->
+                <div class="filter-card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-filter"></i> Attendance Filters</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="filter-grid">
+                            <div class="form-group">
+                                <label for="classFilter">Class</label>
+                                <select id="classFilter" class="form-control">
+                                    <option value="">All Classes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="dateFilter">Date</label>
+                                <input type="date" id="dateFilter" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="statusFilter">Status</label>
+                                <select id="statusFilter" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="Present">Present</option>
+                                    <option value="Absent">Absent</option>
+                                    <option value="Late">Late</option>
+                                    <option value="Excused">Excused</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sessionFilter">Session</label>
+                                <select id="sessionFilter" class="form-control">
+                                    <option value="">All Sessions</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary" onclick="applyFilters()">
+                                    <i class="fa fa-search"></i> Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Table Card -->
+                <div class="table-card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-table"></i> Attendance Records</h3>
+                        <div class="table-stats">
+                            <span class="stat-item present">
+                                <i class="fa fa-check-circle"></i>
+                                <span id="presentCount">0</span> Present
+                            </span>
+                            <span class="stat-item absent">
+                                <i class="fa fa-times-circle"></i>
+                                <span id="absentCount">0</span> Absent
+                            </span>
+                            <span class="stat-item late">
+                                <i class="fa fa-clock-o"></i>
+                                <span id="lateCount">0</span> Late
+                            </span>
+                            <span class="stat-item excused">
+                                <i class="fa fa-ban"></i>
+                                <span id="excusedCount">0</span> Excused
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Message Area -->
+                        <div id="messageArea" class="message-area"></div>
+                        
+                        <!-- Table Wrapper -->
+                        <div class="table-wrapper">
+                            <table id="attendanceTable" class="attendance-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">#</th>
+                                        <th>Student Name</th>
+                                        <th width="100">Roll ID</th>
+                                        <th>Class</th>
+                                        <th width="100">Date</th>
+                                        <th width="80">Session</th>
+                                        <th width="80">Status</th>
+                                        <th width="80">Check In</th>
+                                        <th width="80">Method</th>
+                                        <th width="120">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit Attendance Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3><i class="fa fa-edit"></i> Edit Attendance</h3>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editAttendanceForm">
+                    <input type="hidden" id="editAttendanceId">
+                    <input type="hidden" id="editStudentId">
+                    
+                    <div class="student-info" id="editStudentInfo">
+                        <!-- Student info will be populated here -->
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Attendance Status</label>
+                        <div class="status-options">
+                            <label class="status-option present">
+                                <input type="radio" name="editStatus" value="Present">
+                                <span class="status-custom"></span>
+                                <span>Present</span>
+                            </label>
+                            <label class="status-option absent">
+                                <input type="radio" name="editStatus" value="Absent">
+                                <span class="status-custom"></span>
+                                <span>Absent</span>
+                            </label>
+                            <label class="status-option late">
+                                <input type="radio" name="editStatus" value="Late">
+                                <span class="status-custom"></span>
+                                <span>Late</span>
+                            </label>
+                            <label class="status-option excused">
+                                <input type="radio" name="editStatus" value="Excused">
+                                <span class="status-custom"></span>
+                                <span>Excused</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editCheckIn">Check In Time</label>
+                        <input type="time" id="editCheckIn" class="form-control">
+                        <small class="form-hint">Leave blank for Absent/Excused status</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editRemarks">Remarks</label>
+                        <textarea id="editRemarks" class="form-control" rows="3" placeholder="Optional remarks..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAttendanceEdit()" id="saveEditBtn">
+                    <i class="fa fa-save"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-container small">
+            <div class="modal-header">
+                <h3><i class="fa fa-question-circle"></i> Confirm Action</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure you want to perform this action?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="confirmAction()" id="confirmBtn">
+                    <i class="fa fa-check"></i> Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="../../../../shared/js/DataTables/datatables.min.js"></script>
+    <script src="manage-attendance.js"></script>
+    
+    <script>
+        // Load includes
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInclude('topbar', '../includes/topbar.html');
+            loadInclude('leftbar', '../includes/leftbar.html', () => {
+                const script = document.createElement('script');
+                script.src = '../includes/leftbar.js';
+                document.head.appendChild(script);
+            });
+        });
+
+        function loadInclude(id, url, callback) {
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById(id).innerHTML = html;
+                    if (callback) callback();
+                })
+                .catch(e => console.error(`Failed to load ${id}:`, e));
+        }
+    </script>
+</body>
+</html>

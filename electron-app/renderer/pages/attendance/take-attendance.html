@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRMS - Take Attendance</title>
+    
+    <!-- Essential CSS -->
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../includes/leftbar.css">
+    <link rel="stylesheet" href="../includes/topbar.css">
+    <link rel="stylesheet" href="take-attendance.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div id="topbar"></div>
+    
+    <!-- Left Sidebar -->
+    <div id="leftbar"></div>
+    
+    <!-- Main Take Attendance Page -->
+    <main class="take-attendance-page">
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <div class="title-area">
+                    <h1><i class="fa fa-user-check"></i> Take Attendance</h1>
+                    <p>Mark student attendance for classes and sessions</p>
+                </div>
+                <div class="header-actions">
+                    <div class="date-display">
+                        <i class="fa fa-calendar"></i>
+                        <span id="currentDate"></span>
+                    </div>
+                    <button class="btn btn-secondary" onclick="refreshAttendance()">
+                        <i class="fa fa-refresh"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <section class="content-section">
+            <div class="content-container">
+                
+                <!-- Class Selection -->
+                <div class="selection-card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-graduation-cap"></i> Class & Session Selection</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="selection-grid">
+                            <div class="form-group">
+                                <label for="classSelect">Select Class</label>
+                                <select id="classSelect" class="form-control" required>
+                                    <option value="">Loading classes...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sessionSelect">Select Session</label>
+                                <select id="sessionSelect" class="form-control" required>
+                                    <option value="">Loading sessions...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="attendanceDate">Date</label>
+                                <input type="date" id="attendanceDate" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary" onclick="loadStudents()" id="loadStudentsBtn">
+                                    <i class="fa fa-users"></i> Load Students
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Methods -->
+                <div class="methods-card" id="methodsCard" style="display: none;">
+                    <div class="card-header">
+                        <h3><i class="fa fa-list-ol"></i> Attendance Methods</h3>
+                        <div class="methods-tabs">
+                            <button class="method-tab active" data-method="manual">
+                                <i class="fa fa-hand-paper-o"></i>
+                                Manual
+                            </button>
+                            <button class="method-tab" data-method="qr">
+                                <i class="fa fa-qrcode"></i>
+                                QR Code
+                            </button>
+                            <button class="method-tab" data-method="fingerprint">
+                                <i class="fa fa-fingerprint"></i>
+                                Fingerprint
+                            </button>
+                            <button class="method-tab" data-method="bulk">
+                                <i class="fa fa-list"></i>
+                                Bulk Entry
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        
+                        <!-- Manual Attendance -->
+                        <div class="method-content active" id="manual-content">
+                            <div class="attendance-stats">
+                                <div class="stat-item present">
+                                    <span class="stat-number" id="presentCount">0</span>
+                                    <span class="stat-label">Present</span>
+                                </div>
+                                <div class="stat-item absent">
+                                    <span class="stat-number" id="absentCount">0</span>
+                                    <span class="stat-label">Absent</span>
+                                </div>
+                                <div class="stat-item late">
+                                    <span class="stat-number" id="lateCount">0</span>
+                                    <span class="stat-label">Late</span>
+                                </div>
+                                <div class="stat-item excused">
+                                    <span class="stat-number" id="excusedCount">0</span>
+                                    <span class="stat-label">Excused</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bulk-actions">
+                                <button class="btn btn-success" onclick="markAllPresent()">
+                                    <i class="fa fa-check-circle"></i> Mark All Present
+                                </button>
+                                <button class="btn btn-danger" onclick="markAllAbsent()">
+                                    <i class="fa fa-times-circle"></i> Mark All Absent
+                                </button>
+                            </div>
+                            
+                            <div class="students-list" id="studentsList">
+                                <!-- Students will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- QR Code Attendance -->
+                        <div class="method-content" id="qr-content">
+                            <div class="qr-section">
+                                <div class="qr-generator">
+                                    <h4><i class="fa fa-qrcode"></i> Generate QR Code for Class</h4>
+                                    <button class="btn btn-primary" onclick="generateQRCode()" id="generateQRBtn">
+                                        <i class="fa fa-qrcode"></i> Generate QR Code
+                                    </button>
+                                    <div class="qr-display" id="qrDisplay" style="display: none;">
+                                        <div class="qr-code" id="qrCodeImage"></div>
+                                        <p>Students can scan this QR code to mark their attendance</p>
+                                        <div class="qr-actions">
+                                            <button class="btn btn-secondary" onclick="downloadQR()">
+                                                <i class="fa fa-download"></i> Download QR
+                                            </button>
+                                            <button class="btn btn-outline" onclick="printQR()">
+                                                <i class="fa fa-print"></i> Print QR
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="qr-scanner">
+                                    <h4><i class="fa fa-camera"></i> Scan Student QR Code</h4>
+                                    <div class="scanner-container">
+                                        <video id="qrVideo" autoplay playsinline></video>
+                                        <div class="scanner-overlay">
+                                            <div class="scanner-frame"></div>
+                                        </div>
+                                    </div>
+                                    <div class="scanner-actions">
+                                        <button class="btn btn-primary" onclick="startQRScanner()" id="startScanBtn">
+                                            <i class="fa fa-camera"></i> Start Scanner
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="stopQRScanner()" id="stopScanBtn" style="display: none;">
+                                            <i class="fa fa-stop"></i> Stop Scanner
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="qr-log" id="qrLog">
+                                <h4><i class="fa fa-list"></i> QR Attendance Log</h4>
+                                <div class="log-list" id="qrLogList">
+                                    <!-- QR attendance entries will appear here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fingerprint Attendance -->
+                        <div class="method-content" id="fingerprint-content">
+                            <div class="fingerprint-section">
+                                <div class="fingerprint-scanner">
+                                    <h4><i class="fa fa-fingerprint"></i> Fingerprint Scanner</h4>
+                                    <div class="fp-status" id="fpStatus">
+                                        <div class="fp-icon">
+                                            <i class="fa fa-fingerprint"></i>
+                                        </div>
+                                        <p>Place your finger on the scanner</p>
+                                        <div class="fp-progress">
+                                            <div class="fp-progress-bar" id="fpProgressBar"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="fp-actions">
+                                        <button class="btn btn-primary" onclick="startFingerprintScanner()" id="startFpBtn">
+                                            <i class="fa fa-fingerprint"></i> Start Fingerprint Scanner
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="stopFingerprintScanner()" id="stopFpBtn" style="display: none;">
+                                            <i class="fa fa-stop"></i> Stop Scanner
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="fp-student-select" id="fpStudentSelect" style="display: none;">
+                                        <label for="fingerprintStudent">Select Student for Fingerprint:</label>
+                                        <select id="fingerprintStudent" class="form-control">
+                                            <option value="">Select Student</option>
+                                        </select>
+                                        <button class="btn btn-success" onclick="confirmFingerprintAttendance()">
+                                            <i class="fa fa-check"></i> Confirm Attendance
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="fp-log" id="fpLog">
+                                    <h4><i class="fa fa-list"></i> Fingerprint Attendance Log</h4>
+                                    <div class="log-list" id="fpLogList">
+                                        <!-- Fingerprint attendance entries will appear here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bulk Entry -->
+                        <div class="method-content" id="bulk-content">
+                            <div class="bulk-entry-section">
+                                <h4><i class="fa fa-list"></i> Bulk Attendance Entry</h4>
+                                <p>Mark attendance for multiple students at once</p>
+                                
+                                <div class="bulk-controls">
+                                    <div class="bulk-status-select">
+                                        <label for="bulkStatus">Default Status:</label>
+                                        <select id="bulkStatus" class="form-control">
+                                            <option value="Present">Present</option>
+                                            <option value="Absent">Absent</option>
+                                            <option value="Late">Late</option>
+                                            <option value="Excused">Excused</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="applyBulkStatus()">
+                                        <i class="fa fa-check-circle"></i> Apply to All
+                                    </button>
+                                </div>
+                                
+                                <div class="bulk-students-grid" id="bulkStudentsGrid">
+                                    <!-- Bulk entry grid will be populated here -->
+                                </div>
+                                
+                                <div class="bulk-actions">
+                                    <button class="btn btn-success" onclick="saveBulkAttendance()">
+                                        <i class="fa fa-save"></i> Save All Attendance
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="resetBulkEntry()">
+                                        <i class="fa fa-undo"></i> Reset All
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Message Modal -->
+    <div class="modal-overlay" id="messageModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="messageTitle">Information</h3>
+                <button class="modal-close" onclick="closeMessageModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="messageBody">
+                <!-- Message content -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeMessageModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <!-- QR Code Libraries -->
+    <script src="../../../../shared/js/qr-libs/qrcode.min.js"></script>
+    <script src="../../../../shared/js/qr-libs/instascan.min.js"></script>
+    <!-- Fingerprint Libraries -->
+    <script src="../../../../shared/js/fingerprint-libs/fingerprintjs2.min.js"></script>
+    <!-- Main Script -->
+    <script src="take-attendance.js"></script>
+    
+    <script>
+        // Load includes
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInclude('topbar', '../includes/topbar.html');
+            loadInclude('leftbar', '../includes/leftbar.html', () => {
+                const script = document.createElement('script');
+                script.src = '../includes/leftbar.js';
+                document.head.appendChild(script);
+            });
+        });
+
+        function loadInclude(id, url, callback) {
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById(id).innerHTML = html;
+                    if (callback) callback();
+                })
+                .catch(e => console.error(`Failed to load ${id}:`, e));
+        }
+    </script>
+</body>
+</html>

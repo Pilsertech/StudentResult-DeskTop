@@ -78,10 +78,25 @@ class Dashboard {
         try {
             const response = await fetch('http://localhost:9000/dashboard/stats');
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.json();
+            
+            const result = await response.json();
+            
+            // Handle the backend response structure
+            if (result.success && result.data) {
+                return {
+                    totalStudents: result.data.totalStudents || 0,
+                    totalSubjects: result.data.totalSubjects || 0,
+                    totalClasses: result.data.totalClasses || 0,
+                    totalResults: result.data.totalResults || 0,
+                    activeStudents: result.data.activeStudents || 0,
+                    completionRate: result.data.resultCompletionRate || 0
+                };
+            } else {
+                throw new Error(result.message || 'Invalid response format');
+            }
         } catch (error) {
             // Fallback to demo data if API fails
-            console.warn('API unavailable, using demo data');
+            console.warn('API unavailable, using demo data:', error.message);
             return this.getDemoData();
         }
     }

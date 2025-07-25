@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRMS - System Settings</title>
+    
+    <!-- Essential CSS -->
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../includes/leftbar.css">
+    <link rel="stylesheet" href="../includes/topbar.css">
+    <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div id="topbar"></div>
+    
+    <!-- Left Sidebar -->
+    <div id="leftbar"></div>
+    
+    <!-- Main Settings -->
+    <main class="settings-page">
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <div class="title-area">
+                    <h1><i class="fa fa-cogs"></i> System Settings</h1>
+                    <p>Configure and manage SRMS system preferences</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="loadSystemInfo()">
+                        <i class="fa fa-refresh"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Settings Content -->
+        <section class="settings-content">
+            <!-- System Information Card -->
+            <div class="settings-card">
+                <div class="card-header">
+                    <h3><i class="fa fa-info-circle"></i> System Information</h3>
+                    <span class="status-badge" id="systemStatus">Loading...</span>
+                </div>
+                <div class="card-body">
+                    <div class="info-grid">
+                        <div class="info-group">
+                            <h4>Application</h4>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <span>Version:</span>
+                                    <span id="appVersion">1.0.0</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Environment:</span>
+                                    <span id="appEnvironment">Production</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Uptime:</span>
+                                    <span id="appUptime">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Node Version:</span>
+                                    <span id="nodeVersion">--</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <h4>Database</h4>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <span>Host:</span>
+                                    <span id="dbHost">localhost</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Database:</span>
+                                    <span id="dbName">srms</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Size:</span>
+                                    <span id="dbSize">-- MB</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Tables:</span>
+                                    <span id="dbTables">--</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <h4>Records</h4>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <span>Students:</span>
+                                    <span id="recordStudents">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Classes:</span>
+                                    <span id="recordClasses">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Subjects:</span>
+                                    <span id="recordSubjects">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Results:</span>
+                                    <span id="recordResults">--</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <h4>Last Backup</h4>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <span>Date:</span>
+                                    <span id="lastBackupDate">Never</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Size:</span>
+                                    <span id="lastBackupSize">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span>Status:</span>
+                                    <span id="lastBackupStatus" class="status-unknown">Unknown</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Management Card -->
+            <div class="settings-card">
+                <div class="card-header">
+                    <h3><i class="fa fa-database"></i> Database Management</h3>
+                    <span class="warning-badge">
+                        <i class="fa fa-warning"></i> Critical Operations
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="action-grid">
+                        <div class="action-item backup">
+                            <div class="action-icon">
+                                <i class="fa fa-download"></i>
+                            </div>
+                            <div class="action-content">
+                                <h4>Database Backup</h4>
+                                <p>Create a complete backup of your database</p>
+                                <button class="btn btn-success" onclick="createBackup()" id="backupBtn">
+                                    <i class="fa fa-download"></i> Create Backup
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="action-item restore">
+                            <div class="action-icon">
+                                <i class="fa fa-upload"></i>
+                            </div>
+                            <div class="action-content">
+                                <h4>Database Restore</h4>
+                                <p>Restore database from a backup file</p>
+                                <button class="btn btn-warning" onclick="showRestoreDialog()" id="restoreBtn">
+                                    <i class="fa fa-upload"></i> Restore Database
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="action-item backups">
+                            <div class="action-icon">
+                                <i class="fa fa-history"></i>
+                            </div>
+                            <div class="action-content">
+                                <h4>Backup History</h4>
+                                <p>View and manage existing backups</p>
+                                <button class="btn btn-info" onclick="showBackupHistory()" id="historyBtn">
+                                    <i class="fa fa-list"></i> View History
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="action-item maintenance">
+                            <div class="action-icon">
+                                <i class="fa fa-wrench"></i>
+                            </div>
+                            <div class="action-content">
+                                <h4>System Maintenance</h4>
+                                <p>Optimize and maintain database performance</p>
+                                <button class="btn btn-secondary" onclick="runMaintenance()" id="maintenanceBtn">
+                                    <i class="fa fa-cogs"></i> Run Maintenance
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Backup History Modal -->
+    <div class="modal-overlay" id="backupModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3><i class="fa fa-history"></i> Backup History</h3>
+                <button class="modal-close" onclick="closeModal('backupModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="backup-list" id="backupList">
+                    <div class="loading-spinner">
+                        <i class="fa fa-spinner fa-spin"></i> Loading backups...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('backupModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPDATED: Restore Confirmation Modal -->
+    <div class="modal-overlay" id="restoreModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3><i class="fa fa-upload"></i> Restore Database</h3>
+                <button class="modal-close" onclick="closeModal('restoreModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-message">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This will replace all current data with the backup data. This action cannot be undone.
+                </div>
+                
+                <!-- File Upload Method -->
+                <div class="restore-method">
+                    <h4>Method 1: Upload Backup File</h4>
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <input type="file" id="backupFileInput" accept=".sql" style="display: none;">
+                        <div class="upload-box" onclick="document.getElementById('backupFileInput').click()">
+                            <i class="fa fa-cloud-upload"></i>
+                            <p>Click to select backup file (.sql)</p>
+                            <small>Maximum file size: 50MB</small>
+                        </div>
+                        <div class="file-info" id="fileInfo" style="display: none;">
+                            <i class="fa fa-file"></i>
+                            <span id="fileName"></span>
+                            <button class="btn btn-sm btn-danger" onclick="clearSelectedFile()">
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- OR Separator -->
+                <div class="method-separator">
+                    <span>OR</span>
+                </div>
+                
+                <!-- Existing Backup Method -->
+                <div class="restore-method">
+                    <h4>Method 2: Use Existing Backup</h4>
+                    <div class="backup-selector">
+                        <label for="backupSelect">Select from existing backups:</label>
+                        <select id="backupSelect" class="form-select">
+                            <option value="">Loading backups...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('restoreModal')">Cancel</button>
+                <button class="btn btn-warning" onclick="uploadAndRestore()" id="uploadRestoreBtn" disabled>
+                    <i class="fa fa-upload"></i> Upload & Restore
+                </button>
+                <button class="btn btn-danger" onclick="confirmRestore()" id="confirmRestoreBtn" disabled>
+                    <i class="fa fa-database"></i> Restore from Existing
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div class="modal-overlay" id="progressModal">
+        <div class="modal-container small">
+            <div class="modal-body text-center">
+                <div class="progress-content">
+                    <i class="fa fa-spinner fa-spin" style="font-size: 2rem; color: #3498db; margin-bottom: 15px;"></i>
+                    <h4 id="progressTitle">Processing...</h4>
+                    <p id="progressMessage">Please wait while we process your request.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="settings.js"></script>
+    
+    <script>
+        // Load includes
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInclude('topbar', '../includes/topbar.html');
+            loadInclude('leftbar', '../includes/leftbar.html', () => {
+                const script = document.createElement('script');
+                script.src = '../includes/leftbar.js';
+                document.head.appendChild(script);
+            });
+        });
+
+        function loadInclude(id, url, callback) {
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById(id).innerHTML = html;
+                    if (callback) callback();
+                })
+                .catch(e => console.error(`Failed to load ${id}:`, e));
+        }
+    </script>
+</body>
+</html>

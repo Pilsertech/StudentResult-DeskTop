@@ -2,146 +2,163 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SRMS Admin Student Admission</title>
-    <link rel="stylesheet" href="../../../../shared/css/bootstrap.css" media="screen">
-    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css" media="screen">
-    <link rel="stylesheet" href="../../../../shared/css/animate-css/animate.min.css" media="screen">
-    <link rel="stylesheet" href="../../../../shared/css/lobipanel/lobipanel.min.css" media="screen">
-    <link rel="stylesheet" href="../../../../shared/css/prism/prism.css" media="screen">
-    <link rel="stylesheet" href="../../../../shared/css/main.css" media="screen">
+    <title>SRMS - Add Student</title>
+    
+    <!-- Essential CSS -->
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../includes/leftbar.css">
+    <link rel="stylesheet" href="../includes/topbar.css">
     <link rel="stylesheet" href="add-students.css">
-    <script src="../../../../shared/js/modernizr/modernizr.min.js"></script>
 </head>
-<body class="top-navbar-fixed">
-    <div class="main-wrapper">
-        <!-- ========== TOP NAVBAR ========== -->
-        <div id="topbar-include"></div>
-        <!-- ========== WRAPPER FOR BOTH SIDEBARS & MAIN CONTENT ========== -->
-        <div class="content-wrapper">
-            <div class="content-container">
-                <!-- ========== LEFT SIDEBAR ========== -->
-                <div id="leftbar-include"></div>
-                <!-- ========== MAIN PAGE ========== -->
-                <div class="main-page">
-                    <div class="container-fluid">
-                        <div class="row page-title-div">
-                            <div class="col-md-6">
-                                <h2 class="title">Student Admission</h2>
-                            </div>
-                        </div>
-                        <div class="row breadcrumb-div">
-                            <div class="col-md-6">
-                                <ul class="breadcrumb">
-                                    <li><a href="../dashboard/dashboard.html"><i class="fa fa-home"></i> Home</a></li>
-                                    <li class="active">Student Admission</li>
-                                </ul>
-                            </div>
+<body>
+    <!-- Top Navigation -->
+    <div id="topbar"></div>
+    
+    <!-- Left Sidebar -->
+    <div id="leftbar"></div>
+    
+    <!-- Main Add Student Page -->
+    <main class="add-student-page">
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <div class="title-area">
+                    <h1><i class="fa fa-user-plus"></i> Add New Student</h1>
+                    <p>Register a new student in the SRMS system</p>
+                </div>
+                <div class="header-actions">
+                    <a href="manage-students.html" class="btn btn-secondary">
+                        <i class="fa fa-users"></i> Manage Students
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Form Content -->
+        <section class="form-content">
+            <div class="form-container">
+                <!-- Student Form Card -->
+                <div class="form-card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-edit"></i> Student Information</h3>
+                        <div class="form-progress">
+                            <div class="progress-bar" id="formProgress"></div>
                         </div>
                     </div>
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="panel">
-                                    <div class="panel-heading">
-                                        <div class="panel-title">
-                                            <h5>Fill the Student info</h5>
+                    
+                    <div class="card-body">
+                        <!-- Message Area -->
+                        <div id="messageArea" class="message-area"></div>
+                        
+                        <!-- Student Form -->
+                        <form id="addStudentForm" class="student-form" enctype="multipart/form-data">
+                            <div class="form-row">
+                                <!-- Photo Upload Section -->
+                                <div class="photo-section">
+                                    <h4><i class="fa fa-camera"></i> Student Photo</h4>
+                                    <div class="photo-upload-area" id="photoUploadArea">
+                                        <div class="photo-preview" id="photoPreview">
+                                            <div class="photo-placeholder">
+                                                <i class="fa fa-user-circle"></i>
+                                                <p>Click to upload photo</p>
+                                                <small>Drag & drop or click to select</small>
+                                            </div>
+                                        </div>
+                                        <input type="file" id="photoInput" accept="image/*" hidden>
+                                        <div class="photo-actions">
+                                            <button type="button" class="btn btn-outline" onclick="selectPhoto()">
+                                                <i class="fa fa-upload"></i> Upload Photo
+                                            </button>
+                                            <button type="button" class="btn btn-outline btn-danger" onclick="removePhoto()" id="removePhotoBtn" style="display: none;">
+                                                <i class="fa fa-trash"></i> Remove
+                                            </button>
                                         </div>
                                     </div>
-                                    <div class="panel-body">
-                                        <div id="message"></div>
-                                        <form id="addStudentForm" class="form-horizontal" autocomplete="off">
-                                            <div class="form-group">
-                                                <label for="fullanme" class="col-sm-2 control-label">Full Name</label>
-                                                <div class="col-sm-10">
-                                                    <input type="text" name="fullanme" class="form-control" id="fullanme" required>
-                                                </div>
+                                </div>
+                                
+                                <!-- Basic Information -->
+                                <div class="info-section">
+                                    <h4><i class="fa fa-info-circle"></i> Basic Information</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="fullname" class="form-label required">Full Name</label>
+                                        <input type="text" id="fullname" name="fullanme" class="form-control" required>
+                                        <div class="field-hint">Enter student's complete full name</div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group half">
+                                            <label for="rollid" class="form-label required">Roll ID</label>
+                                            <input type="text" id="rollid" name="rollid" class="form-control" maxlength="10" required>
+                                            <div class="field-hint">Unique identifier (max 10 chars)</div>
+                                        </div>
+                                        
+                                        <div class="form-group half">
+                                            <label for="emailid" class="form-label required">Email Address</label>
+                                            <input type="email" id="emailid" name="emailid" class="form-control" required>
+                                            <div class="field-hint">Valid email address</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group half">
+                                            <label class="form-label required">Gender</label>
+                                            <div class="radio-group">
+                                                <label class="radio-option">
+                                                    <input type="radio" name="gender" value="Male" checked>
+                                                    <span class="radio-custom"></span>
+                                                    <span class="radio-label">Male</span>
+                                                </label>
+                                                <label class="radio-option">
+                                                    <input type="radio" name="gender" value="Female">
+                                                    <span class="radio-custom"></span>
+                                                    <span class="radio-label">Female</span>
+                                                </label>
+                                                <label class="radio-option">
+                                                    <input type="radio" name="gender" value="Other">
+                                                    <span class="radio-custom"></span>
+                                                    <span class="radio-label">Other</span>
+                                                </label>
                                             </div>
-                                            
-                                            <div class="form-group">
-                                                <label for="rollid" class="col-sm-2 control-label">Roll Id</label>
-                                                <div class="col-sm-10">
-                                                    <input type="text" name="rollid" class="form-control" id="rollid" maxlength="5" required>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="form-group">
-                                                <label for="emailid" class="col-sm-2 control-label">Email id</label>
-                                                <div class="col-sm-10">
-                                                    <input type="email" name="emailid" class="form-control" id="emailid" required>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="form-group">
-                                                <label for="gender" class="col-sm-2 control-label">Gender</label>
-                                                <div class="col-sm-10">
-                                                    <label class="radio-inline">
-                                                        <input type="radio" name="gender" value="Male" required checked> Male
-                                                    </label>
-                                                    <label class="radio-inline">
-                                                        <input type="radio" name="gender" value="Female" required> Female
-                                                    </label>
-                                                    <label class="radio-inline">
-                                                        <input type="radio" name="gender" value="Other" required> Other
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="form-group">
-                                                <label for="classSelect" class="col-sm-2 control-label">Class</label>
-                                                <div class="col-sm-10">
-                                                    <select name="class" class="form-control" id="classSelect" required>
-                                                        <option value="">Select Class</option>
-                                                        <!-- Populated by JS -->
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="form-group">
-                                                <label for="dob" class="col-sm-2 control-label">DOB</label>
-                                                <div class="col-sm-10">
-                                                    <input type="date" name="dob" class="form-control" id="dob" required>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="form-group">
-                                                <div class="col-sm-offset-2 col-sm-10">
-                                                    <button type="submit" class="btn btn-primary">Add</button>
-                                                </div>
-                                            </div>
-                                        </form>
+                                        </div>
+                                        
+                                        <div class="form-group half">
+                                            <label for="dob" class="form-label required">Date of Birth</label>
+                                            <input type="date" id="dob" name="dob" class="form-control" required>
+                                            <div class="field-hint">Student's birth date</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="classSelect" class="form-label required">Class</label>
+                                        <select id="classSelect" name="classid" class="form-control" required>
+                                            <option value="">Loading classes...</option>
+                                        </select>
+                                        <div class="field-hint">Select student's class</div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- /.col-md-12 -->
-                        </div>
+                            
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                    <i class="fa fa-refresh"></i> Reset Form
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="submitBtn">
+                                    <i class="fa fa-save"></i> Add Student
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-                <!-- /.main-page -->
             </div>
-            <!-- /.content-container -->
-        </div>
-        <!-- /.content-wrapper -->
-    </div>
-    <!-- /.main-wrapper -->
+        </section>
+    </main>
 
-    <!-- ========== COMMON JS FILES ========== -->
+    <!-- Scripts -->
     <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
-    <script src="../../../../shared/js/jquery-ui/jquery-ui.min.js"></script>
-    <script src="../../../../shared/js/bootstrap/bootstrap.min.js"></script>
-    <script src="../../../../shared/js/pace/pace.min.js"></script>
-    <script src="../../../../shared/js/lobipanel/lobipanel.min.js"></script>
-    <script src="../../../../shared/js/iscroll/iscroll.js"></script>
-    <script src="../../../../shared/js/prism/prism.js"></script>
-    <script src="../../../../shared/js/main.js"></script>
     <script src="add-students.js"></script>
-    <script>
-        // Load topbar and leftbar includes
-        $(function() {
-            $("#topbar-include").load("../includes/topbar.html");
-            $("#leftbar-include").load("../includes/leftbar.html");
-        });
-    </script>
 </body>
 </html>

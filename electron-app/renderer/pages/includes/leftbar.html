@@ -1,227 +1,316 @@
+<!DOCTYPE html>
 <div class="left-sidebar" id="leftSidebar">
     <div class="sidebar-content">
         <!-- User Profile Section -->
         <div class="user-info">
             <div class="user-avatar">
-                <img src="../../../../shared/images/avatar-admin.svg" 
-                     alt="Administrator Avatar" 
-                     class="profile-img" 
-                     onerror="this.src='../../../../shared/images/avatar-admin.png'; if(this.src.includes('png') && this.complete && this.naturalHeight === 0) this.style.display='none';">
                 <div class="avatar-fallback">
                     <i class="fa fa-user-shield"></i>
                 </div>
             </div>
             <div class="user-details">
                 <h6 class="user-name">Administrator</h6>
-                <small class="user-role">System Administrator</small>
+                <small class="user-role">System Admin</small>
                 <div class="session-info">
                     <i class="fa fa-clock-o"></i>
-                    <span>Session: <span id="sessionDuration">00:00:00</span></span>
+                    <span id="sessionDuration">00:00:00</span>
                 </div>
             </div>
         </div>
 
         <!-- Navigation Menu -->
-        <div class="sidebar-nav" id="sidebarNav">
+        <div class="sidebar-nav">
             <ul class="side-nav">
-                <!-- Dashboard Section -->
+                <!-- Dashboard -->
                 <li class="nav-header">
                     <span>OVERVIEW</span>
                 </li>
-                <li class="nav-item active" data-tooltip="Main Dashboard">
+                <li class="nav-item" data-page="dashboard">
                     <a href="../dashboard/dashboard.html">
-                        <i class="fa fa-tachometer"></i> 
+                        <i class="fa fa-tachometer"></i>
                         <span class="nav-text">Dashboard</span>
                     </a>
                 </li>
 
-                <!-- Academic Management Section -->
+                <!-- Academic Management -->
                 <li class="nav-header">
-                    <span>ACADEMIC MANAGEMENT</span>
+                    <span>ACADEMIC</span>
                 </li>
                 
-                <!-- Classes Management -->
-                <li class="nav-item has-children" data-tooltip="Class Management">
-                    <a href="#" onclick="toggleMenu(this, 'Classes')">
-                        <i class="fa fa-university"></i> 
+                <li class="nav-item has-submenu" data-menu="classes">
+                    <a href="javascript:void(0)" onclick="toggleSubmenu('classes')">
+                        <i class="fa fa-university"></i>
                         <span class="nav-text">Classes</span>
                         <i class="fa fa-chevron-right arrow"></i>
                     </a>
-                    <ul class="child-nav">
-                        <div class="submenu-title">Class Management</div>
-                        <div class="submenu-close-btn" onclick="closeSubmenu(this)">×</div>
-                        <li>
-                            <a href="../classes/create-class.html">
-                                <i class="fa fa-plus-circle"></i> 
-                                <span class="nav-text">Add New Class</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="../classes/manage-classes.html">
-                                <i class="fa fa-list-alt"></i> 
-                                <span class="nav-text">Manage Classes</span>
-                            </a>
-                        </li>
-                    </ul>
                 </li>
-
-                <!-- Subjects Management -->
-                <li class="nav-item has-children" data-tooltip="Subject Management">
-                    <a href="#" onclick="toggleMenu(this, 'Subjects')">
-                        <i class="fa fa-book"></i> 
+                
+                <li class="nav-item has-submenu" data-menu="subjects">
+                    <a href="javascript:void(0)" onclick="toggleSubmenu('subjects')">
+                        <i class="fa fa-book"></i>
                         <span class="nav-text">Subjects</span>
                         <i class="fa fa-chevron-right arrow"></i>
                     </a>
-                    <ul class="child-nav">
-                        <div class="submenu-title">Subject Management</div>
-                        <div class="submenu-close-btn" onclick="closeSubmenu(this)">×</div>
-                        <li>
-                            <a href="../subjects/create-subject.html">
-                                <i class="fa fa-plus"></i> 
-                                <span class="nav-text">Add New Subject</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="../subjects/manage-subjects.html">
-                                <i class="fa fa-edit"></i> 
-                                <span class="nav-text">Manage Subjects</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="../subjects/add-subjectcombination.html">
-                                <i class="fa fa-link"></i> 
-                                <span class="nav-text">Add Combinations</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="../subjects/manage-subjectcombination.html">
-                                <i class="fa fa-cogs"></i> 
-                                <span class="nav-text">Manage Combinations</span>
-                            </a>
-                        </li>
-                    </ul>
                 </li>
 
-                <!-- Student Management Section -->
+                <!-- Student Management -->
                 <li class="nav-header">
-                    <span>STUDENT MANAGEMENT</span>
+                    <span>STUDENTS</span>
                 </li>
                 
-                <!-- Students -->
-                <li class="nav-item has-children" data-tooltip="Student Records">
-                    <a href="#" onclick="toggleMenu(this, 'Students')">
-                        <i class="fa fa-graduation-cap"></i> 
+                <li class="nav-item has-submenu" data-menu="students">
+                    <a href="javascript:void(0)" onclick="toggleSubmenu('students')">
+                        <i class="fa fa-graduation-cap"></i>
                         <span class="nav-text">Students</span>
                         <i class="fa fa-chevron-right arrow"></i>
                     </a>
-                    <ul class="child-nav">
-                        <div class="submenu-title">Student Records</div>
-                        <div class="submenu-close-btn" onclick="closeSubmenu(this)">×</div>
-                        <li>
-                            <a href="../students/add-students.html">
-                                <i class="fa fa-user-plus"></i> 
-                                <span class="nav-text">Add New Student</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="../students/manage-students.html">
-                                <i class="fa fa-users"></i> 
-                                <span class="nav-text">Manage Students</span>
-                            </a>
-                        </li>
-                    </ul>
                 </li>
 
-                <!-- Results & Assessment Section -->
+                <!-- NEW: Attendance Management -->
+                <li class="nav-item has-submenu" data-menu="attendance">
+                    <a href="javascript:void(0)" onclick="toggleSubmenu('attendance')">
+                        <i class="fa fa-calendar-check-o"></i>
+                        <span class="nav-text">Attendance</span>
+                        <i class="fa fa-chevron-right arrow"></i>
+                    </a>
+                </li>
+
+                <!-- NEW: ID Cards -->
+                <li class="nav-item has-submenu" data-menu="idcards">
+                    <a href="javascript:void(0)" onclick="toggleSubmenu('idcards')">
+                        <i class="fa fa-id-card"></i>
+                        <span class="nav-text">ID Cards</span>
+                        <i class="fa fa-chevron-right arrow"></i>
+                    </a>
+                </li>
+
+                <!-- Results -->
                 <li class="nav-header">
-                    <span>RESULTS & ASSESSMENT</span>
+                    <span>RESULTS</span>
                 </li>
                 
-                <!-- Results Management -->
-                <li class="nav-item has-children" data-tooltip="Result Management">
-                    <a href="#" onclick="toggleMenu(this, 'Results')">
-                        <i class="fa fa-bar-chart"></i> 
+                <li class="nav-item has-submenu" data-menu="results">
+                    <a href="javascript:void(0)" onclick="toggleSubmenu('results')">
+                        <i class="fa fa-bar-chart"></i>
                         <span class="nav-text">Results</span>
                         <i class="fa fa-chevron-right arrow"></i>
                     </a>
-                    <ul class="child-nav">
-                        <div class="submenu-title">Result Management</div>
-                        <div class="submenu-close-btn" onclick="closeSubmenu(this)">×</div>
-                        <li>
-                            <a href="../results/add-result.html">
-                                <i class="fa fa-plus-circle"></i> 
-                                <span class="nav-text">Add Result</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="../results/manage-results.html">
-                                <i class="fa fa-table"></i> 
-                                <span class="nav-text">Manage Results</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="../results/result.html">
-                                <i class="fa fa-search"></i> 
-                                <span class="nav-text">View Results</span>
-                            </a>
-                        </li>
-                    </ul>
                 </li>
 
-                <!-- Find Result (Public Search) -->
-                <li class="nav-item" data-tooltip="Public Result Search">
+                <li class="nav-item" data-page="find-result">
                     <a href="../login/find-result.html">
-                        <i class="fa fa-search-plus"></i> 
+                        <i class="fa fa-search"></i>
                         <span class="nav-text">Find Result</span>
                     </a>
                 </li>
 
-                <!-- System Administration Section -->
+                <!-- System -->
                 <li class="nav-header">
-                    <span>SYSTEM ADMINISTRATION</span>
+                    <span>SYSTEM</span>
                 </li>
                 
-                <!-- Account Settings -->
-                <li class="nav-item" data-tooltip="Change Password">
+                <li class="nav-item has-submenu" data-menu="settings">
+                    <a href="javascript:void(0)" onclick="toggleSubmenu('settings')">
+                        <i class="fa fa-cogs"></i>
+                        <span class="nav-text">Settings</span>
+                        <i class="fa fa-chevron-right arrow"></i>
+                    </a>
+                </li>
+
+                <li class="nav-item" data-page="change-password">
                     <a href="../account/change-password.html">
-                        <i class="fa fa-key"></i> 
+                        <i class="fa fa-key"></i>
                         <span class="nav-text">Change Password</span>
                     </a>
                 </li>
 
-                <!-- Logout -->
-                <li class="nav-item logout-item" data-tooltip="Logout from SRMS">
+                <li class="nav-item logout-item">
                     <a href="../login/index.html" onclick="return confirmLogout()">
-                        <i class="fa fa-sign-out"></i> 
+                        <i class="fa fa-sign-out"></i>
                         <span class="nav-text">Logout</span>
                     </a>
                 </li>
             </ul>
         </div>
 
-        <!-- Sidebar Footer -->
+        <!-- Footer -->
         <div class="sidebar-footer">
             <div class="footer-content">
-                <small class="system-info">
-                    <i class="fa fa-graduation-cap"></i>
-                    SRMS v1.0.0
-                </small>
-                <small class="date-info">
-                    <i class="fa fa-calendar"></i>
-                    <span id="footerDate">2025-07-23</span>
-                </small>
+                <small><i class="fa fa-graduation-cap"></i> SRMS v1.0.0</small>
+                <small><i class="fa fa-calendar"></i> <span id="footerDate"></span></small>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Toggle Button Outside Sidebar -->
-<div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Navigation Menu">
+<!-- Floating Submenus -->
+<div class="submenu-container" id="submenuContainer">
+    <!-- Classes Submenu -->
+    <div class="submenu" id="submenu-classes">
+        <div class="submenu-header">
+            <h4>Class Management</h4>
+            <button class="close-btn" onclick="closeSubmenu()">&times;</button>
+        </div>
+        <div class="submenu-content">
+            <a href="../classes/create-class.html" data-page="create-class">
+                <i class="fa fa-plus-circle"></i>
+                <span>Add New Class</span>
+            </a>
+            <a href="../classes/manage-classes.html" data-page="manage-classes">
+                <i class="fa fa-list-alt"></i>
+                <span>Manage Classes</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Subjects Submenu -->
+    <div class="submenu" id="submenu-subjects">
+        <div class="submenu-header">
+            <h4>Subject Management</h4>
+            <button class="close-btn" onclick="closeSubmenu()">&times;</button>
+        </div>
+        <div class="submenu-content">
+            <a href="../subjects/create-subject.html" data-page="create-subject">
+                <i class="fa fa-plus"></i>
+                <span>Add Subject</span>
+            </a>
+            <a href="../subjects/manage-subjects.html" data-page="manage-subjects">
+                <i class="fa fa-edit"></i>
+                <span>Manage Subjects</span>
+            </a>
+            <a href="../subjects/add-subjectcombination.html" data-page="add-subjectcombination">
+                <i class="fa fa-link"></i>
+                <span>Add Combinations</span>
+            </a>
+            <a href="../subjects/manage-subjectcombination.html" data-page="manage-subjectcombination">
+                <i class="fa fa-cogs"></i>
+                <span>Manage Combinations</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Students Submenu -->
+    <div class="submenu" id="submenu-students">
+        <div class="submenu-header">
+            <h4>Student Records</h4>
+            <button class="close-btn" onclick="closeSubmenu()">&times;</button>
+        </div>
+        <div class="submenu-content">
+            <a href="../students/add-students.html" data-page="add-students">
+                <i class="fa fa-user-plus"></i>
+                <span>Add Student</span>
+            </a>
+            <a href="../students/manage-students.html" data-page="manage-students">
+                <i class="fa fa-users"></i>
+                <span>Manage Students</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- NEW: Attendance Submenu -->
+    <div class="submenu" id="submenu-attendance">
+        <div class="submenu-header">
+            <h4>Attendance Management</h4>
+            <button class="close-btn" onclick="closeSubmenu()">&times;</button>
+        </div>
+        <div class="submenu-content">
+            <a href="../attendance/take-attendance.html" data-page="take-attendance">
+                <i class="fa fa-user-check"></i>
+                <span>Take Attendance</span>
+            </a>
+            <a href="../attendance/qr-attendance.html" data-page="qr-attendance">
+                <i class="fa fa-qrcode"></i>
+                <span>QR Code Attendance</span>
+            </a>
+            <a href="../attendance/manage-attendance.html" data-page="manage-attendance">
+                <i class="fa fa-calendar"></i>
+                <span>Manage Attendance</span>
+            </a>
+            <a href="../attendance/attendance-reports.html" data-page="attendance-reports">
+                <i class="fa fa-chart-bar"></i>
+                <span>Attendance Reports</span>
+            </a>
+            <a href="../attendance/attendance-settings.html" data-page="attendance-settings">
+                <i class="fa fa-cogs"></i>
+                <span>Attendance Settings</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- NEW: ID Cards Submenu -->
+    <div class="submenu" id="submenu-idcards">
+        <div class="submenu-header">
+            <h4>ID Card Management</h4>
+            <button class="close-btn" onclick="closeSubmenu()">&times;</button>
+        </div>
+        <div class="submenu-content">
+            <a href="../idcards/generate-cards.html" data-page="generate-cards">
+                <i class="fa fa-id-card-o"></i>
+                <span>Generate ID Cards</span>
+            </a>
+            <a href="../idcards/card-templates.html" data-page="card-templates">
+                <i class="fa fa-paint-brush"></i>
+                <span>Card Templates</span>
+            </a>
+            <a href="../idcards/print-cards.html" data-page="print-cards">
+                <i class="fa fa-print"></i>
+                <span>Print ID Cards</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Results Submenu -->
+    <div class="submenu" id="submenu-results">
+        <div class="submenu-header">
+            <h4>Result Management</h4>
+            <button class="close-btn" onclick="closeSubmenu()">&times;</button>
+        </div>
+        <div class="submenu-content">
+            <a href="../results/add-result.html" data-page="add-result">
+                <i class="fa fa-plus-circle"></i>
+                <span>Add Result</span>
+            </a>
+            <a href="../results/manage-results.html" data-page="manage-results">
+                <i class="fa fa-table"></i>
+                <span>Manage Results</span>
+            </a>
+            <a href="../results/result.html" data-page="result">
+                <i class="fa fa-search"></i>
+                <span>View Results</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Settings Submenu -->
+    <div class="submenu" id="submenu-settings">
+        <div class="submenu-header">
+            <h4>System Settings</h4>
+            <button class="close-btn" onclick="closeSubmenu()">&times;</button>
+        </div>
+        <div class="submenu-content">
+            <a href="javascript:void(0)" onclick="openDatabaseBackup()">
+                <i class="fa fa-database"></i>
+                <span>Database Backup</span>
+            </a>
+            <a href="javascript:void(0)" onclick="openDatabaseRestore()">
+                <i class="fa fa-upload"></i>
+                <span>Database Restore</span>
+            </a>
+            <a href="javascript:void(0)" onclick="openSystemSettings()">
+                <i class="fa fa-wrench"></i>
+                <span>System Settings</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Toggle Button -->
+<div class="sidebar-toggle" onclick="toggleSidebar()">
     <i class="fa fa-bars" id="toggleIcon"></i>
 </div>
 
 <script>
-// FIXED: Enhanced Leftbar with Working Functions
+// JavaScript code for sidebar functionality
 (function() {
     'use strict';
     

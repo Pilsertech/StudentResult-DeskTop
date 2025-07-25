@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Library Paths</title>
+</head>
+<body>
+    <h1>Testing Library Paths</h1>
+    <div id="results"></div>
+
+    <!-- Test the actual paths from your project structure -->
+    <script>
+        const libraries = [
+            'shared/js/fabric/fabric.min.js',
+            'shared/js/qrcode/qrcode.min.js', 
+            'shared/js/barcode/JsBarcode.all.min.js',
+            'shared/js/dropzone/dropzone.min.js',
+            'shared/js/fingerprint/fingerprint2.min.js',
+            'shared/js/html2canvas/html2canvas.min.js',
+            'shared/js/jspdf/jspdf.umd.min.js'
+        ];
+
+        const results = document.getElementById('results');
+        
+        libraries.forEach(lib => {
+            fetch(lib)
+                .then(response => {
+                    if (response.ok) {
+                        results.innerHTML += `<p style="color: green;">✅ ${lib} - Found</p>`;
+                    } else {
+                        results.innerHTML += `<p style="color: red;">❌ ${lib} - Not Found (${response.status})</p>`;
+                    }
+                })
+                .catch(error => {
+                    results.innerHTML += `<p style="color: red;">❌ ${lib} - Error: ${error.message}</p>`;
+                });
+        });
+    </script>
+</body>
+</html>

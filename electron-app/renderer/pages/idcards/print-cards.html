@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRMS - Print Cards</title>
+    
+    <!-- Essential CSS -->
+    <link rel="stylesheet" href="../../../../shared/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../../shared/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../includes/leftbar.css">
+    <link rel="stylesheet" href="../includes/topbar.css">
+    <link rel="stylesheet" href="print-cards.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div id="topbar"></div>
+    
+    <!-- Left Sidebar -->
+    <div id="leftbar"></div>
+    
+    <!-- Main Print Cards Page -->
+    <main class="print-cards-page">
+        <!-- Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <div class="title-area">
+                    <h1><i class="fa fa-print"></i> Print Cards</h1>
+                    <p>Manage print queue and batch printing operations</p>
+                </div>
+                <div class="header-actions">
+                    <a href="generate-cards.html" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Back to Generator
+                    </a>
+                    <button class="btn btn-primary" onclick="printAll()">
+                        <i class="fa fa-print"></i> Print All
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <section class="content-section">
+            <div class="content-container">
+                
+                <!-- Print Options -->
+                <div class="print-options-card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-cogs"></i> Print Settings</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="options-grid">
+                            <div class="option-group">
+                                <label for="pageSize">Page Size</label>
+                                <select id="pageSize" class="form-control">
+                                    <option value="a4">A4 (210 × 297 mm)</option>
+                                    <option value="letter">Letter (216 × 279 mm)</option>
+                                    <option value="legal">Legal (216 × 356 mm)</option>
+                                    <option value="a3">A3 (297 × 420 mm)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="option-group">
+                                <label for="orientation">Orientation</label>
+                                <select id="orientation" class="form-control">
+                                    <option value="portrait">Portrait</option>
+                                    <option value="landscape">Landscape</option>
+                                </select>
+                            </div>
+                            
+                            <div class="option-group">
+                                <label for="cardsPerPage">Cards per Page</label>
+                                <select id="cardsPerPage" class="form-control">
+                                    <option value="4">4 Cards (2×2)</option>
+                                    <option value="6" selected>6 Cards (2×3)</option>
+                                    <option value="8">8 Cards (2×4)</option>
+                                    <option value="9">9 Cards (3×3)</option>
+                                    <option value="12">12 Cards (3×4)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="option-group">
+                                <label for="quality">Print Quality</label>
+                                <select id="quality" class="form-control">
+                                    <option value="draft">Draft (Fast)</option>
+                                    <option value="normal" selected>Normal</option>
+                                    <option value="high">High Quality</option>
+                                    <option value="photo">Photo Quality</option>
+                                </select>
+                            </div>
+                            
+                            <div class="option-group">
+                                <label for="copies">Number of Copies</label>
+                                <input type="number" id="copies" class="form-control" value="1" min="1" max="10">
+                            </div>
+                            
+                            <div class="option-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="includeMargins" checked>
+                                    <span class="checkbox-custom"></span>
+                                    Include Page Margins
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="cropMarks">
+                                    <span class="checkbox-custom"></span>
+                                    Show Crop Marks
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="colorMode" checked>
+                                    <span class="checkbox-custom"></span>
+                                    Color Printing
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Print Queue -->
+                <div class="queue-card">
+                    <div class="card-header">
+                        <h3><i class="fa fa-list"></i> Print Queue</h3>
+                        <div class="queue-stats">
+                            <span class="stat-item">
+                                <i class="fa fa-file"></i>
+                                <span id="queueCount">0</span> Jobs
+                            </span>
+                            <span class="stat-item">
+                                <i class="fa fa-id-card"></i>
+                                <span id="cardCount">0</span> Cards
+                            </span>
+                            <span class="stat-item">
+                                <i class="fa fa-print"></i>
+                                <span id="pageCount">0</span> Pages
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Message Area -->
+                        <div id="messageArea" class="message-area"></div>
+                        
+                        <!-- Queue Filter -->
+                        <div class="queue-filter">
+                            <div class="filter-group">
+                                <label for="statusFilter">Filter by Status:</label>
+                                <select id="statusFilter" class="form-control">
+                                    <option value="">All Jobs</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="processing">Processing</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                            </div>
+                            <div class="filter-actions">
+                                <button class="btn btn-outline" onclick="clearCompleted()">
+                                    <i class="fa fa-trash"></i> Clear Completed
+                                </button>
+                                <button class="btn btn-outline" onclick="clearAll()">
+                                    <i class="fa fa-times"></i> Clear All
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Queue List -->
+                        <div class="queue-list" id="queueList">
+                            <!-- Queue items will be populated here -->
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div class="empty-queue" id="emptyQueue" style="display: none;">
+                            <div class="empty-icon">
+                                <i class="fa fa-inbox"></i>
+                            </div>
+                            <h4>No Print Jobs</h4>
+                            <p>Your print queue is empty. Generate some ID cards to start printing!</p>
+                            <a href="generate-cards.html" class="btn btn-primary">
+                                <i class="fa fa-plus"></i> Generate Cards
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Print Preview -->
+                <div class="preview-card" id="previewCard" style="display: none;">
+                    <div class="card-header">
+                        <h3><i class="fa fa-eye"></i> Print Preview</h3>
+                        <button class="btn btn-outline" onclick="closePreview()">
+                            <i class="fa fa-times"></i> Close
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="preview-container" id="previewContainer">
+                            <!-- Print preview will be generated here -->
+                        </div>
+                        <div class="preview-actions">
+                            <button class="btn btn-secondary" onclick="adjustLayout()">
+                                <i class="fa fa-cogs"></i> Adjust Layout
+                            </button>
+                            <button class="btn btn-success" onclick="downloadPDF()">
+                                <i class="fa fa-download"></i> Download PDF
+                            </button>
+                            <button class="btn btn-primary" onclick="sendToPrinter()">
+                                <i class="fa fa-print"></i> Send to Printer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Print Job Modal -->
+    <div class="modal-overlay" id="printJobModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3><i class="fa fa-print"></i> Print Job Details</h3>
+                <button class="modal-close" onclick="closePrintJobModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="printJobBody">
+                <!-- Print job details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePrintJobModal()">Close</button>
+                <button class="btn btn-primary" onclick="reprintJob()" id="reprintBtn">
+                    <i class="fa fa-print"></i> Reprint
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Printer Settings Modal -->
+    <div class="modal-overlay" id="printerModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3><i class="fa fa-cogs"></i> Printer Settings</h3>
+                <button class="modal-close" onclick="closePrinterModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="printer-settings">
+                    <div class="setting-group">
+                        <label for="printerSelect">Select Printer</label>
+                        <select id="printerSelect" class="form-control">
+                            <option value="default">Default Printer</option>
+                            <option value="hp-laser">HP LaserJet Pro</option>
+                            <option value="canon-photo">Canon Photo Printer</option>
+                            <option value="pdf">Save as PDF</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="paperType">Paper Type</label>
+                        <select id="paperType" class="form-control">
+                            <option value="plain">Plain Paper</option>
+                            <option value="photo">Photo Paper</option>
+                            <option value="cardstock">Card Stock</option>
+                            <option value="glossy">Glossy Paper</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="printSpeed">Print Speed</label>
+                        <select id="printSpeed" class="form-control">
+                            <option value="fast">Fast (Draft)</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="slow">Slow (High Quality)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePrinterModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="savePrinterSettings()">
+                    <i class="fa fa-save"></i> Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="../../../../shared/js/pdf-libs/jspdf.umd.min.js"></script>
+    <script src="../../../../shared/js/pdf-libs/html2canvas.min.js"></script>
+    <script src="print-cards.js"></script>
+    
+    <script>
+        // Load includes
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInclude('topbar', '../includes/topbar.html');
+            loadInclude('leftbar', '../includes/leftbar.html', () => {
+                const script = document.createElement('script');
+                script.src = '../includes/leftbar.js';
+                document.head.appendChild(script);
+            });
+        });
+
+        function loadInclude(id, url, callback) {
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById(id).innerHTML = html;
+                    if (callback) callback();
+                })
+                .catch(e => console.error(`Failed to load ${id}:`, e));
+        }
+    </script>
+</body>
+</html>

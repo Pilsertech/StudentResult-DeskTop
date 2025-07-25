@@ -1,131 +1,66 @@
-// Enhanced Leftbar JavaScript - Improved Functionality & Organization
+// Modern Leftbar with Floating Submenus
+
 (function() {
     'use strict';
     
-    console.log('🚀 Loading optimized leftbar system...');
+    console.log('🚀 Loading Modern Leftbar System...');
     
+    // State management
     let sessionStartTime = new Date();
-    let activeMenu = null;
+    let currentSubmenu = null;
+    let isExpanded = false;
     
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(initializeLeftbar, 50);
-        setupScrollIsolation();
-        setupKeyboardNavigation();
+        setTimeout(initializeLeftbar, 100);
     });
     
     function initializeLeftbar() {
-        console.log('🎯 Initializing enhanced leftbar...');
+        console.log('🎯 Initializing Modern Leftbar...');
         
-        // Core initialization
+        setupEventListeners();
         setActiveMenuItem();
         updateFooterDate();
         updateSessionDuration();
         addTooltips();
-        handleAvatarLoad();
-        setupMenuClickHandlers();
         
-        // Start intervals
+        // Start timers
         setInterval(updateSessionDuration, 1000);
         setInterval(updateFooterDate, 60000);
         
-        console.log('✅ Enhanced leftbar initialized successfully');
+        console.log('✅ Modern Leftbar initialized successfully');
     }
     
-    // Setup click handlers for better performance
-    function setupMenuClickHandlers() {
-        document.querySelectorAll('.nav-item.has-children > a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const menuTitle = this.querySelector('.nav-text').textContent;
-                toggleMenu(this, menuTitle);
-            });
-        });
-        
-        console.log('🎯 Menu click handlers setup complete');
-    }
-    
-    // Setup keyboard navigation and click-outside detection
-    function setupKeyboardNavigation() {
-        document.addEventListener('keydown', function(e) {
-            // ESC key closes all submenus
-            if (e.key === 'Escape') {
-                closeAllSubmenus();
-            }
-            
-            // Ctrl + Shift + M toggles sidebar
-            if (e.ctrlKey && e.shiftKey && e.key === 'M') {
-                e.preventDefault();
-                toggleSidebar();
-            }
-        });
-        
+    function setupEventListeners() {
         // Click outside to close submenus
         document.addEventListener('click', function(e) {
             const clickedInsideSidebar = e.target.closest('.left-sidebar');
-            const clickedOnSubmenu = e.target.closest('.child-nav');
+            const clickedOnSubmenu = e.target.closest('.submenu');
             const clickedOnToggle = e.target.closest('.sidebar-toggle');
-            const clickedOnCloseBtn = e.target.classList.contains('submenu-close-btn');
             
-            if (!clickedInsideSidebar && !clickedOnSubmenu && !clickedOnToggle && !clickedOnCloseBtn) {
+            if (!clickedInsideSidebar && !clickedOnSubmenu && !clickedOnToggle) {
                 closeAllSubmenus();
             }
         });
         
-        console.log('⌨️ Enhanced keyboard navigation and click-outside detection setup complete');
-    }
-    
-    // FIXED: Prevent scroll propagation to dashboard
-    function setupScrollIsolation() {
-        const sidebarNav = document.querySelector('.sidebar-nav');
-        const childNavs = document.querySelectorAll('.child-nav');
-        
-        // Isolate main sidebar scroll
-        if (sidebarNav) {
-            sidebarNav.addEventListener('wheel', function(e) {
-                const isScrollable = sidebarNav.scrollHeight > sidebarNav.clientHeight;
-                if (isScrollable) {
-                    e.stopPropagation();
-                }
-            });
-        }
-        
-        // Isolate submenu scroll
-        childNavs.forEach(nav => {
-            nav.addEventListener('wheel', function(e) {
-                const isScrollable = nav.scrollHeight > nav.clientHeight;
-                if (isScrollable) {
-                    e.stopPropagation();
-                }
-            });
+        // ESC key to close submenus
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAllSubmenus();
+            }
         });
         
-        console.log('🔒 Scroll isolation setup complete');
-    }
-    
-    // Handle avatar loading with fallback
-    function handleAvatarLoad() {
-        const img = document.querySelector('.profile-img');
-        const fallback = document.querySelector('.avatar-fallback');
-        
-        if (img && fallback) {
-            img.addEventListener('error', function() {
-                console.log('🖼️ Avatar image failed, showing fallback');
-                img.style.display = 'none';
-                fallback.style.display = 'flex';
-            });
-            
-            img.addEventListener('load', function() {
-                console.log('✅ Avatar image loaded successfully');
-                fallback.style.display = 'none';
-                img.style.display = 'block';
+        // Prevent scroll propagation
+        const sidebarNav = document.querySelector('.sidebar-nav');
+        if (sidebarNav) {
+            sidebarNav.addEventListener('wheel', function(e) {
+                e.stopPropagation();
             });
         }
+        
+        console.log('🎯 Event listeners setup complete');
     }
     
-    // Update session duration display
     function updateSessionDuration() {
         const now = new Date();
         const duration = now - sessionStartTime;
@@ -145,7 +80,6 @@
         }
     }
     
-    // Update footer date
     function updateFooterDate() {
         const now = new Date();
         const dateString = now.getFullYear() + '-' + 
@@ -158,7 +92,6 @@
         }
     }
     
-    // Set active menu item based on current page
     function setActiveMenuItem() {
         const currentPath = window.location.pathname;
         const currentPage = currentPath.split('/').pop().replace('.html', '');
@@ -167,46 +100,36 @@
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.querySelectorAll('.child-nav a').forEach(link => {
+        document.querySelectorAll('.submenu-content a').forEach(link => {
             link.classList.remove('active');
         });
         
-        // Find and set active menu
-        const allLinks = document.querySelectorAll('.nav-item a, .child-nav a');
+        // Set active based on current page
+        const navItems = document.querySelectorAll('[data-page]');
+        const submenuLinks = document.querySelectorAll('.submenu-content a[data-page]');
         
-        allLinks.forEach(link => {
-            const href = link.getAttribute('href');
-            
-            if (href && href !== '#') {
-                const linkPage = href.split('/').pop().replace('.html', '');
+        navItems.forEach(item => {
+            if (item.dataset.page === currentPage) {
+                item.classList.add('active');
+            }
+        });
+        
+        submenuLinks.forEach(link => {
+            if (link.dataset.page === currentPage) {
+                link.classList.add('active');
                 
-                if (linkPage === currentPage || 
-                    (currentPage === 'dashboard' && href.includes('dashboard'))) {
+                // Auto-expand sidebar and show submenu
+                const submenuId = link.closest('.submenu').id.replace('submenu-', '');
+                const parentNavItem = document.querySelector(`[data-menu="${submenuId}"]`);
+                
+                if (parentNavItem) {
+                    parentNavItem.classList.add('active');
                     
-                    // Add active class to link
-                    link.classList.add('active');
-                    
-                    // Add active to parent nav-item
-                    const parentNavItem = link.closest('.nav-item');
-                    if (parentNavItem) {
-                        parentNavItem.classList.add('active');
-                    }
-                    
-                    // If it's a child menu, open parent and expand sidebar
-                    const parentHasChildren = link.closest('.has-children');
-                    if (parentHasChildren && parentHasChildren !== parentNavItem) {
-                        const sidebar = document.getElementById('leftSidebar');
-                        sidebar.classList.add('expanded');
-                        
-                        // Update toggle icon
-                        const icon = document.getElementById('toggleIcon');
-                        if (icon) icon.className = 'fa fa-indent';
-                        
-                        setTimeout(() => {
-                            parentHasChildren.classList.add('open');
-                            console.log('📂 Auto-opened submenu for active page:', currentPage);
-                        }, 150);
-                    }
+                    // Auto-expand if needed
+                    setTimeout(() => {
+                        expandSidebar();
+                        showSubmenu(submenuId);
+                    }, 100);
                 }
             }
         });
@@ -214,7 +137,6 @@
         console.log('📍 Active menu set for page:', currentPage);
     }
     
-    // Add tooltips for collapsed state
     function addTooltips() {
         const navItems = document.querySelectorAll('.nav-item');
         
@@ -230,63 +152,96 @@
         console.log('📌 Tooltips initialized');
     }
     
-    // Handle mobile responsive behavior
-    function initializeMobileNavigation() {
+    function expandSidebar() {
         const sidebar = document.getElementById('leftSidebar');
+        const icon = document.getElementById('toggleIcon');
         
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                sidebar?.classList.remove('mobile-open');
-            }
-        });
-        
-        console.log('📱 Mobile navigation initialized');
+        if (sidebar && !sidebar.classList.contains('expanded')) {
+            sidebar.classList.add('expanded');
+            document.body.classList.add('sidebar-expanded');
+            if (icon) icon.className = 'fa fa-indent';
+            isExpanded = true;
+            console.log('📖 Sidebar expanded');
+        }
     }
     
-    // Initialize mobile navigation
-    setTimeout(initializeMobileNavigation, 100);
+    function collapseSidebar() {
+        const sidebar = document.getElementById('leftSidebar');
+        const icon = document.getElementById('toggleIcon');
+        
+        if (sidebar && sidebar.classList.contains('expanded')) {
+            sidebar.classList.remove('expanded');
+            document.body.classList.remove('sidebar-expanded');
+            if (icon) icon.className = 'fa fa-bars';
+            isExpanded = false;
+            closeAllSubmenus();
+            console.log('📕 Sidebar collapsed');
+        }
+    }
     
-    console.log('✅ Leftbar script loaded');
+    function showSubmenu(menuId) {
+        // Close other submenus first
+        closeAllSubmenus();
+        
+        const submenu = document.getElementById(`submenu-${menuId}`);
+        const navItem = document.querySelector(`[data-menu="${menuId}"]`);
+        
+        if (submenu && navItem) {
+            submenu.classList.add('active');
+            navItem.classList.add('active');
+            currentSubmenu = menuId;
+            console.log('🔓 Submenu opened:', menuId);
+        }
+    }
+    
+    function closeAllSubmenus() {
+        document.querySelectorAll('.submenu').forEach(submenu => {
+            submenu.classList.remove('active');
+        });
+        
+        document.querySelectorAll('.nav-item.has-submenu').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        currentSubmenu = null;
+        console.log('🔒 All submenus closed');
+    }
+    
+    // Export initialization function
+    window.initializeLeftbar = initializeLeftbar;
+    
+    console.log('✅ Modern Leftbar script loaded');
 })();
 
-// GLOBAL FUNCTIONS - Available to onclick handlers
+// Global Functions for onclick handlers
 
-// IMPROVED: Toggle main sidebar with proper body class management
 function toggleSidebar() {
     const sidebar = document.getElementById('leftSidebar');
-    const icon = document.getElementById('toggleIcon');
     
     if (!sidebar) {
         console.error('❌ Sidebar element not found');
         return;
     }
     
-    const isExpanded = sidebar.classList.contains('expanded');
-    
-    if (isExpanded) {
-        // Collapse sidebar
+    if (sidebar.classList.contains('expanded')) {
+        // Collapse
         sidebar.classList.remove('expanded');
         document.body.classList.remove('sidebar-expanded');
+        const icon = document.getElementById('toggleIcon');
         if (icon) icon.className = 'fa fa-bars';
         closeAllSubmenus();
-        console.log('📕 Sidebar collapsed - Dashboard expanded');
+        console.log('📕 Sidebar collapsed');
     } else {
-        // Expand sidebar
+        // Expand
         sidebar.classList.add('expanded');
         document.body.classList.add('sidebar-expanded');
+        const icon = document.getElementById('toggleIcon');
         if (icon) icon.className = 'fa fa-indent';
-        console.log('📖 Sidebar expanded - Dashboard pushed');
-    }
-    
-    // Update activeMenu tracking
-    if (!isExpanded) {
-        activeMenu = null;
+        console.log('📖 Sidebar expanded');
     }
 }
 
-// IMPROVED: Smart menu toggle with state tracking
-function toggleMenu(element, menuTitle) {
+function toggleSubmenu(menuId) {
     const sidebar = document.getElementById('leftSidebar');
     
     if (!sidebar) {
@@ -297,133 +252,89 @@ function toggleMenu(element, menuTitle) {
     // Always expand sidebar first if collapsed
     if (!sidebar.classList.contains('expanded')) {
         sidebar.classList.add('expanded');
+        document.body.classList.add('sidebar-expanded');
         const icon = document.getElementById('toggleIcon');
         if (icon) icon.className = 'fa fa-indent';
         
-        console.log('📖 Auto-expanding sidebar for menu access...');
-        
-        // Wait for sidebar expansion animation, then open menu
         setTimeout(() => {
-            toggleMenuHelper(element, menuTitle);
+            showSubmenu(menuId);
         }, 300);
         return;
     }
     
-    // Sidebar is already expanded, toggle menu immediately
-    toggleMenuHelper(element, menuTitle);
-}
-
-// IMPROVED: Close all submenus function
-function closeAllSubmenus() {
-    document.querySelectorAll('.has-children.open').forEach(menu => {
-        menu.classList.remove('open');
-    });
-    if (typeof activeMenu !== 'undefined') {
-        activeMenu = null;
-    }
-    console.log('🔒 All submenus closed');
-}
-
-// IMPROVED: Helper function with better state management
-function toggleMenuHelper(element, menuTitle) {
-    const parentLi = element.closest('.has-children');
+    // If sidebar is expanded, toggle submenu
+    const submenu = document.getElementById(`submenu-${menuId}`);
+    const navItem = document.querySelector(`[data-menu="${menuId}"]`);
     
-    if (!parentLi) {
-        console.warn('❌ No parent menu found for:', menuTitle);
+    if (!submenu || !navItem) {
+        console.error('❌ Submenu not found:', menuId);
         return;
     }
     
-    const isCurrentlyOpen = parentLi.classList.contains('open');
-    const isSameAsActive = activeMenu === parentLi;
-    
-    // Close other open menus first
-    if (!isSameAsActive) {
-        closeAllSubmenus();
-    }
-    
-    // Toggle current menu
-    if (isCurrentlyOpen && isSameAsActive) {
-        // Close current menu
-        parentLi.classList.remove('open');
-        activeMenu = null;
-        console.log('🔒 Menu closed:', menuTitle);
+    if (submenu.classList.contains('active')) {
+        // Close current submenu
+        submenu.classList.remove('active');
+        navItem.classList.remove('active');
+        console.log('🔒 Submenu closed:', menuId);
     } else {
-        // Open current menu
-        setTimeout(() => {
-            parentLi.classList.add('open');
-            activeMenu = parentLi;
-            console.log('🔓 Menu opened:', menuTitle);
-        }, 50);
+        // Close all other submenus and open this one
+        closeAllSubmenus();
+        submenu.classList.add('active');
+        navItem.classList.add('active');
+        console.log('🔓 Submenu opened:', menuId);
     }
 }
 
-// PRODUCTION FIX: Robust close button functionality
-function closeSubmenu(closeBtn) {
-    console.log('🎯 Close button clicked');
+function closeSubmenu() {
+    document.querySelectorAll('.submenu').forEach(submenu => {
+        submenu.classList.remove('active');
+    });
     
-    if (!closeBtn) {
-        console.error('❌ Close button element not provided');
-        return false;
-    }
+    document.querySelectorAll('.nav-item.has-submenu').forEach(item => {
+        item.classList.remove('active');
+    });
     
-    // Find the parent menu container
-    const parentMenu = closeBtn.closest('.has-children');
-    const childNav = closeBtn.closest('.child-nav');
+    console.log('✅ Submenu closed via close button');
+}
+
+function showSubmenu(menuId) {
+    closeAllSubmenus();
     
-    if (parentMenu) {
-        // Immediately remove the open class
-        parentMenu.classList.remove('open');
-        activeMenu = null;
-        
-        console.log('✅ Submenu closed via close button');
-        
-        // Verify closure after animation
-        setTimeout(() => {
-            const isStillOpen = parentMenu.classList.contains('open');
-            if (isStillOpen) {
-                // Force close if still open
-                parentMenu.classList.remove('open');
-                console.warn('⚠️ Force-closed stubborn submenu');
-            } else {
-                console.log('✅ Submenu closure confirmed');
-            }
-        }, 50);
-        
-        return true;
-    } else {
-        console.warn('❌ Could not find parent menu container');
-        
-        // Fallback: try to close any open menus
-        closeAllSubmenus();
-        return false;
+    const submenu = document.getElementById(`submenu-${menuId}`);
+    const navItem = document.querySelector(`[data-menu="${menuId}"]`);
+    
+    if (submenu && navItem) {
+        submenu.classList.add('active');
+        navItem.classList.add('active');
+        console.log('🔓 Submenu shown:', menuId);
     }
 }
 
-// Add event delegation for close buttons
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('submenu-close-btn')) {
-        e.preventDefault();
-        e.stopPropagation();
-        closeSubmenu(e.target);
-    }
-});
+function closeAllSubmenus() {
+    document.querySelectorAll('.submenu').forEach(submenu => {
+        submenu.classList.remove('active');
+    });
+    
+    document.querySelectorAll('.nav-item.has-submenu').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    console.log('🔒 All submenus closed');
+}
 
-// Enhanced logout confirmation
 function confirmLogout() {
     const sessionDuration = document.getElementById('sessionDuration');
     const duration = sessionDuration ? sessionDuration.textContent : '00:00:00';
     
-    const currentTime = new Date().toLocaleString();
     const confirmMessage = `Are you sure you want to logout?\n\n` +
-                          `User: Pilsertech\n` +
+                          `User: Administrator\n` +
                           `System: SRMS Dashboard\n` +
                           `Session Duration: ${duration}\n` +
-                          `Current Time: ${currentTime}`;
+                          `Current Time: ${new Date().toLocaleString()}`;
     
     if (confirm(confirmMessage)) {
         console.log('🚪 Logout confirmed - Session:', duration);
         
-        // Clear all stored data
         try {
             localStorage.clear();
             sessionStorage.clear();
@@ -439,54 +350,43 @@ function confirmLogout() {
     }
 }
 
-// Mobile toggle function (if needed)
-function toggleMobileMenu() {
-    const sidebar = document.getElementById('leftSidebar');
-    if (sidebar) {
-        sidebar.classList.toggle('mobile-open');
-        console.log('📱 Mobile menu toggled');
-    }
-}
-
-// Utility function to manually refresh menu states
-function refreshMenuStates() {
-    const currentPath = window.location.pathname;
-    const currentPage = currentPath.split('/').pop().replace('.html', '');
-    
-    console.log('🔄 Refreshing menu states for:', currentPage);
-    
-    // Re-run active menu detection
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    document.querySelectorAll('.nav-item a, .child-nav a').forEach(link => {
-        const href = link.getAttribute('href');
-        
-        if (href && href !== '#') {
-            const linkPage = href.split('/').pop().replace('.html', '');
-            
-            if (linkPage === currentPage) {
-                link.classList.add('active');
-                const parentItem = link.closest('.nav-item');
-                if (parentItem) {
-                    parentItem.classList.add('active');
-                }
-            }
+// Settings functions - Updated to open actual pages with anchors
+function openDatabaseBackup() {
+    window.location.href = '../settings/settings.html';
+    // Auto-trigger backup after page loads
+    setTimeout(() => {
+        if (window.settingsManager && window.settingsManager.createBackup) {
+            window.settingsManager.createBackup();
         }
-    });
-    
-    console.log('✅ Menu states refreshed');
+    }, 1000);
+    console.log('💾 Opening database backup page');
 }
 
-// Export functions to global scope for debugging
+function openDatabaseRestore() {
+    window.location.href = '../settings/settings.html';
+    // Auto-trigger restore dialog after page loads
+    setTimeout(() => {
+        if (window.settingsManager && window.settingsManager.showRestoreDialog) {
+            window.settingsManager.showRestoreDialog();
+        }
+    }, 1000);
+    console.log('📥 Opening database restore page');
+}
+
+function openSystemSettings() {
+    window.location.href = '../settings/settings.html';
+    console.log('⚙️ Opening system settings page');
+}
+
+// Export functions to global scope
 window.toggleSidebar = toggleSidebar;
-window.toggleMenu = toggleMenu;
+window.toggleSubmenu = toggleSubmenu;
 window.closeSubmenu = closeSubmenu;
+window.showSubmenu = showSubmenu;
+window.closeAllSubmenus = closeAllSubmenus;
 window.confirmLogout = confirmLogout;
-window.toggleMobileMenu = toggleMobileMenu;
-window.refreshMenuStates = refreshMenuStates;
+window.openDatabaseBackup = openDatabaseBackup;
+window.openDatabaseRestore = openDatabaseRestore;
+window.openSystemSettings = openSystemSettings;
 
 console.log('🌐 All leftbar functions available globally');
-console.log('🎯 Click-based submenu system ready');
-console.log('📅 Current session started:', new Date().toLocaleString());

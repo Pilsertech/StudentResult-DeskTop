@@ -1,17 +1,17 @@
 const mysql = require('mysql2/promise');
 
-// Database configuration for SRMS
+// Database configuration for SRMS - FIXED
 const dbConfig = {
     host: 'localhost',
     user: 'root',
     password: '',
-    database: 'srms',  // Your database name from SQL file
+    database: 'srms',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-    acquireTimeout: 60000,
-    timeout: 60000,
-    reconnect: true
+    // REMOVED invalid options that caused warnings
+    multipleStatements: true,
+    dateStrings: true
 };
 
 // Create connection pool
@@ -54,8 +54,22 @@ async function testConnection() {
 // Auto-test connection on startup
 testConnection();
 
+// Wrapper function with better error handling
+async function executeQuery(sql, params = []) {
+    try {
+        const [results] = await pool.execute(sql, params);
+        return [results];
+    } catch (error) {
+        console.error('❌ SQL Query Error:', error.message);
+        console.error('📋 SQL:', sql);
+        console.error('📋 Params:', params);
+        throw error;
+    }
+}
+
 module.exports = {
-    execute: (...args) => pool.execute(...args),
+    execute: executeQuery,
     getConnection: () => pool.getConnection(),
-    testConnection
+    testConnection,
+    pool
 };
