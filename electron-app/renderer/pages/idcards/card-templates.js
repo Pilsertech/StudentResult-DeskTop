@@ -62,6 +62,11 @@ class TemplateEditorManager {
         this.setupCanvas();
         this.setupEventListeners();
         
+        // Always ensure side toggle buttons are visible
+        setTimeout(() => {
+            this.ensureSideToggleAlwaysVisible();
+        }, 1000);
+        
         // Render element palette after canvas is ready
         setTimeout(() => {
             this.renderElementPalette();
@@ -447,6 +452,7 @@ class TemplateEditorManager {
         
         console.log('🎨 Initializing Fabric.js canvas...');
         
+        // Start with default dimensions - will be adjusted when image is loaded
         this.canvas = new fabric.Canvas('templateCanvas', {
             width: 1050,
             height: 650,
@@ -454,11 +460,30 @@ class TemplateEditorManager {
             preserveObjectStacking: true
         });
         
-        // Canvas events
+        // Canvas events - including position tracking for accurate coordinates
         this.canvas.on('selection:created', (e) => this.onObjectSelected(e.selected[0]));
         this.canvas.on('selection:updated', (e) => this.onObjectSelected(e.selected[0]));
         this.canvas.on('selection:cleared', () => this.clearProperties());
-        this.canvas.on('object:modified', () => this.updatePositionData());
+        this.canvas.on('object:modified', () => {
+            this.updatePositionData();
+            console.log('📊 Position data updated after modification');
+        });
+        this.canvas.on('object:moving', () => {
+            this.updatePositionData();
+            console.log('📍 Position data updated during movement');
+        });
+        this.canvas.on('object:scaling', () => {
+            this.updatePositionData();
+            console.log('📏 Position data updated during scaling');
+        });
+        this.canvas.on('object:rotating', () => {
+            this.updatePositionData();
+            console.log('🔄 Position data updated during rotation');
+        });
+        
+        // Store original canvas dimensions for reference
+        this.originalCanvasWidth = 1050;
+        this.originalCanvasHeight = 650;
         
         // Ensure canvas is rendered
         this.canvas.renderAll();
@@ -606,30 +631,68 @@ class TemplateEditorManager {
         if (!this.canvas) return;
         
         fabric.Image.fromURL(imageSrc, (img) => {
-            // Calculate proper scaling to fit canvas while maintaining aspect ratio
-            const canvasWidth = this.canvas.width;
-            const canvasHeight = this.canvas.height;
+            console.log(`📸 Original image dimensions: ${img.width}x${img.height}`);
             
-            const scaleX = canvasWidth / img.width;
-            const scaleY = canvasHeight / img.height;
-            const scale = Math.min(scaleX, scaleY, 1); // Don't scale up
+            // Store original image dimensions for accurate coordinate mapping
+            this.originalImageWidth = img.width;
+            this.originalImageHeight = img.height;
             
-            // Center the image
-            const scaledWidth = img.width * scale;
-            const scaledHeight = img.height * scale;
-            const left = (canvasWidth - scaledWidth) / 2;
-            const top = (canvasHeight - scaledHeight) / 2;
+            // Calculate canvas size to match image while fitting in available space
+            const maxCanvasWidth = 1050;  // Maximum canvas width for UI
+            const maxCanvasHeight = 650;  // Maximum canvas height for UI
+            
+            let canvasWidth = img.width;
+            let canvasHeight = img.height;
+            
+            // Scale down if image is larger than max canvas size, but keep aspect ratio
+            if (canvasWidth > maxCanvasWidth || canvasHeight > maxCanvasHeight) {
+                const scaleX = maxCanvasWidth / canvasWidth;
+                const scaleY = maxCanvasHeight / canvasHeight;
+                const scale = Math.min(scaleX, scaleY);
+                
+                canvasWidth = Math.round(img.width * scale);
+                canvasHeight = Math.round(img.height * scale);
+                
+                console.log(`📏 Canvas scaled to fit UI: ${canvasWidth}x${canvasHeight} (scale: ${scale})`);
+            }
+            
+            // Resize canvas to match image proportions
+            this.canvas.setDimensions({
+                width: canvasWidth,
+                height: canvasHeight
+            });
+            
+            // Calculate image scaling for the new canvas size
+            const imageScaleX = canvasWidth / img.width;
+            const imageScaleY = canvasHeight / img.height;
+            const imageScale = Math.min(imageScaleX, imageScaleY);
+            
+            // Position image to fill the canvas exactly
+            const scaledImageWidth = img.width * imageScale;
+            const scaledImageHeight = img.height * imageScale;
+            const left = (canvasWidth - scaledImageWidth) / 2;
+            const top = (canvasHeight - scaledImageHeight) / 2;
             
             img.set({
                 left: left,
                 top: top,
-                scaleX: scale,
-                scaleY: scale,
+                scaleX: imageScale,
+                scaleY: imageScale,
                 selectable: false,
                 evented: false,
                 originX: 'left',
                 originY: 'top'
             });
+            
+            // Store scaling information for coordinate conversion
+            this.canvasToImageScale = {
+                scaleX: this.originalImageWidth / canvasWidth,
+                scaleY: this.originalImageHeight / canvasHeight,
+                canvasWidth: canvasWidth,
+                canvasHeight: canvasHeight,
+                imageWidth: this.originalImageWidth,
+                imageHeight: this.originalImageHeight
+            };
             
             // Clear canvas and add background image
             this.canvas.clear();
@@ -642,7 +705,9 @@ class TemplateEditorManager {
             // Restore positioned elements for this side
             this.loadPositionedElements();
             
-            console.log(`📸 Image loaded to canvas: ${scaledWidth}x${scaledHeight} at scale ${scale}`);
+            console.log(`📸 Canvas resized to: ${canvasWidth}x${canvasHeight}`);
+            console.log(`📊 Coordinate scale factors: ${this.canvasToImageScale.scaleX.toFixed(3)}x, ${this.canvasToImageScale.scaleY.toFixed(3)}y`);
+            console.log(`📸 Image loaded to canvas with scale ${imageScale}`);
         });
     }
     
@@ -818,6 +883,20 @@ class TemplateEditorManager {
     showObjectProperties(obj) {
         const propertiesContent = document.getElementById('propertiesContent');
         
+        // Calculate actual image coordinates for display
+        const canvasX = Math.round(obj.left);
+        const canvasY = Math.round(obj.top);
+        const canvasWidth = Math.round(obj.width * (obj.scaleX || 1));
+        const canvasHeight = Math.round(obj.height * (obj.scaleY || 1));
+        
+        let actualX = canvasX;
+        let actualY = canvasY;
+        
+        if (this.canvasToImageScale) {
+            actualX = Math.round(canvasX * this.canvasToImageScale.scaleX);
+            actualY = Math.round(canvasY * this.canvasToImageScale.scaleY);
+        }
+        
         let propertiesHTML = `
             <div class="property-group">
                 <h5>Element Actions</h5>
@@ -828,25 +907,48 @@ class TemplateEditorManager {
                 </div>
             </div>
             <div class="property-group">
-                <h5>Position & Size</h5>
+                <h5>Position & Size (Canvas)</h5>
                 <div class="form-group">
                     <label>X Position</label>
-                    <input type="number" id="propX" value="${Math.round(obj.left)}" onchange="templateEditorManager.updateObjectProperty('left', this.value)">
+                    <input type="number" id="propX" value="${canvasX}" onchange="templateEditorManager.updateObjectProperty('left', this.value)">
                 </div>
                 <div class="form-group">
                     <label>Y Position</label>
-                    <input type="number" id="propY" value="${Math.round(obj.top)}" onchange="templateEditorManager.updateObjectProperty('top', this.value)">
+                    <input type="number" id="propY" value="${canvasY}" onchange="templateEditorManager.updateObjectProperty('top', this.value)">
                 </div>
                 <div class="form-group">
                     <label>Width</label>
-                    <input type="number" id="propWidth" value="${Math.round(obj.width * (obj.scaleX || 1))}" onchange="templateEditorManager.updateObjectSize('width', this.value)">
+                    <input type="number" id="propWidth" value="${canvasWidth}" onchange="templateEditorManager.updateObjectSize('width', this.value)">
                 </div>
                 <div class="form-group">
                     <label>Height</label>
-                    <input type="number" id="propHeight" value="${Math.round(obj.height * (obj.scaleY || 1))}" onchange="templateEditorManager.updateObjectSize('height', this.value)">
+                    <input type="number" id="propHeight" value="${canvasHeight}" onchange="templateEditorManager.updateObjectSize('height', this.value)">
                 </div>
             </div>
         `;
+        
+        // Add actual coordinates section for debugging
+        if (this.canvasToImageScale) {
+            propertiesHTML += `
+                <div class="property-group">
+                    <h5>Actual Image Coordinates</h5>
+                    <div class="form-group">
+                        <small style="color: #7f8c8d;">These coordinates will be used for ID generation</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Actual X</label>
+                        <input type="number" value="${actualX}" readonly style="background: #f8f9fa;">
+                    </div>
+                    <div class="form-group">
+                        <label>Actual Y</label>
+                        <input type="number" value="${actualY}" readonly style="background: #f8f9fa;">
+                    </div>
+                    <div class="form-group">
+                        <small style="color: #7f8c8d;">Scale: ${this.canvasToImageScale.scaleX.toFixed(3)}x, ${this.canvasToImageScale.scaleY.toFixed(3)}y</small>
+                    </div>
+                </div>
+            `;
+        }
         
         if (obj.type === 'text') {
             propertiesHTML += `
@@ -922,18 +1024,51 @@ class TemplateEditorManager {
         
         objects.forEach(obj => {
             if (obj.elementType) {
+                // Get canvas coordinates
+                const canvasX = Math.round(obj.left);
+                const canvasY = Math.round(obj.top);
+                const canvasWidth = Math.round(obj.width * (obj.scaleX || 1));
+                const canvasHeight = Math.round(obj.height * (obj.scaleY || 1));
+                
+                // Convert to original image coordinates for accurate ID generation
+                let actualX = canvasX;
+                let actualY = canvasY;
+                let actualWidth = canvasWidth;
+                let actualHeight = canvasHeight;
+                
+                if (this.canvasToImageScale) {
+                    actualX = Math.round(canvasX * this.canvasToImageScale.scaleX);
+                    actualY = Math.round(canvasY * this.canvasToImageScale.scaleY);
+                    actualWidth = Math.round(canvasWidth * this.canvasToImageScale.scaleX);
+                    actualHeight = Math.round(canvasHeight * this.canvasToImageScale.scaleY);
+                }
+                
                 this.positionData[this.currentSide][obj.elementType] = {
-                    x: Math.round(obj.left),
-                    y: Math.round(obj.top),
-                    width: Math.round(obj.width * obj.scaleX),
-                    height: Math.round(obj.height * obj.scaleY),
+                    // Store both canvas and actual image coordinates
+                    x: actualX,                    // Actual image coordinates for ID generation
+                    y: actualY,
+                    width: actualWidth,
+                    height: actualHeight,
+                    canvasX: canvasX,             // Canvas coordinates for debugging
+                    canvasY: canvasY,
+                    canvasWidth: canvasWidth,
+                    canvasHeight: canvasHeight,
                     fontSize: obj.fontSize || 16,
                     fontFamily: obj.fontFamily || 'Arial',
                     color: obj.fill || '#000000',
                     align: obj.textAlign || 'left'
                 };
+                
+                // Log coordinate information for debugging
+                console.log(`📍 ${obj.elementType} coordinates:`, {
+                    canvas: `${canvasX}, ${canvasY} (${canvasWidth}x${canvasHeight})`,
+                    actual: `${actualX}, ${actualY} (${actualWidth}x${actualHeight})`,
+                    scale: this.canvasToImageScale ? `${this.canvasToImageScale.scaleX.toFixed(3)}x, ${this.canvasToImageScale.scaleY.toFixed(3)}y` : 'No scale'
+                });
             }
         });
+        
+        console.log(`📊 Updated position data for ${this.currentSide} side:`, this.positionData[this.currentSide]);
     }
     
     switchSide(side) {
@@ -946,7 +1081,7 @@ class TemplateEditorManager {
         
         this.currentSide = side;
         
-        // Update radio button state and visual styling
+        // Update all radio buttons (original and new ones)
         const radioButtons = document.querySelectorAll('input[name="cardSide"]');
         console.log(`Found ${radioButtons.length} radio buttons`);
         radioButtons.forEach(radio => {
@@ -958,11 +1093,21 @@ class TemplateEditorManager {
             if (label) {
                 if (radio.checked) {
                     label.classList.add('active');
+                    label.style.background = '#9b59b6';
+                    label.style.color = 'white';
                 } else {
                     label.classList.remove('active');
+                    label.style.background = 'white';
+                    label.style.color = '#7f8c8d';
                 }
             }
         });
+        
+        // Update the always visible side toggle buttons
+        const alwaysVisibleContainer = document.querySelector('.side-toggle-always-visible');
+        if (alwaysVisibleContainer) {
+            this.updateSideToggleButtons(alwaysVisibleContainer);
+        }
         
         // Clear canvas first
         if (this.canvas) {
@@ -1091,9 +1236,28 @@ class TemplateEditorManager {
         this.setLoading(true);
         
         try {
+            // Update position data one more time before saving
+            this.updatePositionData();
+            
+            // Prepare template data with image dimensions and scaling info
+            const templateData = {
+                positionData: this.positionData,
+                imageDimensions: {
+                    front: this.frontImage ? {
+                        width: this.originalImageWidth,
+                        height: this.originalImageHeight
+                    } : null,
+                    back: this.backImage ? {
+                        width: this.originalImageWidth, 
+                        height: this.originalImageHeight
+                    } : null
+                },
+                canvasInfo: this.canvasToImageScale || null
+            };
+            
             const formData = new FormData();
             formData.append('templateName', document.getElementById('templateName').value);
-            formData.append('positionData', JSON.stringify(this.positionData));
+            formData.append('positionData', JSON.stringify(templateData));
             
             if (this.frontImage) formData.append('frontImage', this.frontImage);
             if (this.backImage) formData.append('backImage', this.backImage);
@@ -1106,9 +1270,10 @@ class TemplateEditorManager {
             const result = await response.json();
             
             if (result.success) {
-                this.showMessage('Template saved successfully!', 'success');
+                this.showMessage('Template saved successfully with accurate coordinates!', 'success');
                 this.loadTemplates();
                 this.cancelEdit();
+                console.log('✅ Template saved with image dimensions and scaling data');
             } else {
                 this.showMessage(result.message || 'Failed to save template', 'error');
             }
@@ -1180,6 +1345,9 @@ class TemplateEditorManager {
             editorPanel.style.display = 'block';
             console.log('📊 Editor panel made visible');
         }
+        
+        // Ensure side toggle buttons are always visible
+        this.ensureSideToggleAlwaysVisible();
         
         // Reset form to clean state
         this.resetForm();
@@ -1255,10 +1423,306 @@ class TemplateEditorManager {
         this.showMessage(`${side.charAt(0).toUpperCase() + side.slice(1)} image removed`, 'info');
     }
     
-    clearCanvas() {
-        if (this.canvas) {
-            this.canvas.clear();
-            this.canvas.backgroundColor = '#ffffff';
+    ensureSideToggleAlwaysVisible() {
+        console.log('🎯 Ensuring side toggle buttons are always visible...');
+        
+        try {
+            // Find or create a container for the side toggle in the editor header
+            const editorHeader = document.querySelector('.editor-header');
+            if (!editorHeader) {
+                console.warn('⚠️ Editor header not found, trying alternative location');
+                this.createSideToggleInConfigPanel();
+                return;
+            }
+            
+            // Check if side toggle already exists in a good location
+            let existingSideToggle = document.querySelector('.side-toggle-always-visible');
+            if (existingSideToggle) {
+                console.log('✅ Side toggle already exists in visible location');
+                this.updateSideToggleButtons(existingSideToggle);
+                return;
+            }
+            
+            // Create new side toggle in the editor header
+            const sideToggleContainer = document.createElement('div');
+            sideToggleContainer.className = 'side-toggle-always-visible';
+            sideToggleContainer.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-left: auto;
+                background: white;
+                border-radius: 6px;
+                overflow: hidden;
+                border: 2px solid #e9ecef;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            `;
+            
+            // Create the toggle buttons
+            sideToggleContainer.innerHTML = `
+                <label class="toggle-switch" style="
+                    padding: 8px 16px;
+                    cursor: pointer;
+                    border: none;
+                    background: ${this.currentSide === 'front' ? '#9b59b6' : 'white'};
+                    color: ${this.currentSide === 'front' ? 'white' : '#7f8c8d'};
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin: 0;
+                    border-radius: 0;
+                ">
+                    <input type="radio" name="cardSide" value="front" ${this.currentSide === 'front' ? 'checked' : ''} style="display: none;">
+                    <span>Front</span>
+                </label>
+                <label class="toggle-switch" style="
+                    padding: 8px 16px;
+                    cursor: pointer;
+                    border: none;
+                    background: ${this.currentSide === 'back' ? '#9b59b6' : 'white'};
+                    color: ${this.currentSide === 'back' ? 'white' : '#7f8c8d'};
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin: 0;
+                    border-radius: 0;
+                ">
+                    <input type="radio" name="cardSide" value="back" ${this.currentSide === 'back' ? 'checked' : ''} style="display: none;">
+                    <span>Back</span>
+                </label>
+            `;
+            
+            // Add to editor header
+            editorHeader.appendChild(sideToggleContainer);
+            
+            // Setup event listeners for the new buttons
+            this.setupSideToggleEventListeners(sideToggleContainer);
+            
+            console.log('✅ Side toggle buttons created in editor header and always visible');
+            
+        } catch (error) {
+            console.error('❌ Error ensuring side toggle visibility:', error);
+            this.createSideToggleInConfigPanel();
+        }
+    }
+    
+    createSideToggleInConfigPanel() {
+        console.log('🎯 Creating side toggle in config panel as fallback...');
+        
+        try {
+            const configPanel = document.querySelector('.config-panel');
+            if (!configPanel) {
+                console.warn('⚠️ Config panel not found, creating floating side toggle');
+                this.createFloatingSideToggle();
+                return;
+            }
+            
+            // Create side toggle section in config panel
+            const sideToggleSection = document.createElement('div');
+            sideToggleSection.className = 'side-toggle-section';
+            sideToggleSection.innerHTML = `
+                <h4 style="margin-bottom: 15px; color: #2c3e50; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa fa-refresh"></i> Card Side Selection
+                </h4>
+                <div class="side-toggle-always-visible" style="
+                    display: flex;
+                    background: white;
+                    border-radius: 6px;
+                    overflow: hidden;
+                    border: 2px solid #e9ecef;
+                    margin-bottom: 20px;
+                ">
+                    <label class="toggle-switch" style="
+                        padding: 12px 20px;
+                        cursor: pointer;
+                        border: none;
+                        background: ${this.currentSide === 'front' ? '#9b59b6' : 'white'};
+                        color: ${this.currentSide === 'front' ? 'white' : '#7f8c8d'};
+                        font-weight: 500;
+                        transition: all 0.2s;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        margin: 0;
+                        border-radius: 0;
+                        flex: 1;
+                        justify-content: center;
+                    ">
+                        <input type="radio" name="cardSide" value="front" ${this.currentSide === 'front' ? 'checked' : ''} style="display: none;">
+                        <span>Front Side</span>
+                    </label>
+                    <label class="toggle-switch" style="
+                        padding: 12px 20px;
+                        cursor: pointer;
+                        border: none;
+                        background: ${this.currentSide === 'back' ? '#9b59b6' : 'white'};
+                        color: ${this.currentSide === 'back' ? 'white' : '#7f8c8d'};
+                        font-weight: 500;
+                        transition: all 0.2s;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        margin: 0;
+                        border-radius: 0;
+                        flex: 1;
+                        justify-content: center;
+                    ">
+                        <input type="radio" name="cardSide" value="back" ${this.currentSide === 'back' ? 'checked' : ''} style="display: none;">
+                        <span>Back Side</span>
+                    </label>
+                </div>
+            `;
+            
+            // Insert at the beginning of config panel
+            configPanel.insertBefore(sideToggleSection, configPanel.firstChild);
+            
+            // Setup event listeners
+            const sideToggleContainer = sideToggleSection.querySelector('.side-toggle-always-visible');
+            this.setupSideToggleEventListeners(sideToggleContainer);
+            
+            console.log('✅ Side toggle buttons created in config panel');
+            
+        } catch (error) {
+            console.error('❌ Error creating side toggle in config panel:', error);
+            this.createFloatingSideToggle();
+        }
+    }
+    
+    createFloatingSideToggle() {
+        console.log('🎯 Creating floating side toggle as final fallback...');
+        
+        try {
+            // Remove any existing floating toggle
+            const existingFloating = document.querySelector('.floating-side-toggle');
+            if (existingFloating) {
+                existingFloating.remove();
+            }
+            
+            // Create floating side toggle
+            const floatingToggle = document.createElement('div');
+            floatingToggle.className = 'floating-side-toggle';
+            floatingToggle.style.cssText = `
+                position: fixed;
+                top: 120px;
+                right: 20px;
+                z-index: 1000;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                border: 2px solid #e9ecef;
+                padding: 10px;
+            `;
+            
+            floatingToggle.innerHTML = `
+                <div style="margin-bottom: 8px; font-weight: 600; color: #2c3e50; text-align: center; font-size: 12px;">
+                    Card Side
+                </div>
+                <div class="side-toggle-always-visible" style="
+                    display: flex;
+                    background: white;
+                    border-radius: 6px;
+                    overflow: hidden;
+                    border: 1px solid #e9ecef;
+                ">
+                    <label class="toggle-switch" style="
+                        padding: 8px 12px;
+                        cursor: pointer;
+                        border: none;
+                        background: ${this.currentSide === 'front' ? '#9b59b6' : 'white'};
+                        color: ${this.currentSide === 'front' ? 'white' : '#7f8c8d'};
+                        font-weight: 500;
+                        transition: all 0.2s;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        margin: 0;
+                        border-radius: 0;
+                        font-size: 12px;
+                    ">
+                        <input type="radio" name="cardSide" value="front" ${this.currentSide === 'front' ? 'checked' : ''} style="display: none;">
+                        <span>Front</span>
+                    </label>
+                    <label class="toggle-switch" style="
+                        padding: 8px 12px;
+                        cursor: pointer;
+                        border: none;
+                        background: ${this.currentSide === 'back' ? '#9b59b6' : 'white'};
+                        color: ${this.currentSide === 'back' ? 'white' : '#7f8c8d'};
+                        font-weight: 500;
+                        transition: all 0.2s;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        margin: 0;
+                        border-radius: 0;
+                        font-size: 12px;
+                    ">
+                        <input type="radio" name="cardSide" value="back" ${this.currentSide === 'back' ? 'checked' : ''} style="display: none;">
+                        <span>Back</span>
+                    </label>
+                </div>
+            `;
+            
+            // Add to body
+            document.body.appendChild(floatingToggle);
+            
+            // Setup event listeners
+            const sideToggleContainer = floatingToggle.querySelector('.side-toggle-always-visible');
+            this.setupSideToggleEventListeners(sideToggleContainer);
+            
+            console.log('✅ Floating side toggle created and always visible');
+            
+        } catch (error) {
+            console.error('❌ Critical error creating floating side toggle:', error);
+        }
+    }
+    
+    setupSideToggleEventListeners(container) {
+        if (!container) return;
+        
+        const radioButtons = container.querySelectorAll('input[name="cardSide"]');
+        console.log(`🎯 Setting up ${radioButtons.length} side toggle event listeners`);
+        
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                console.log('🔄 Side toggle clicked:', e.target.value);
+                this.switchSide(e.target.value);
+                this.updateSideToggleButtons(container);
+            });
+        });
+    }
+    
+    updateSideToggleButtons(container) {
+        if (!container) return;
+        
+        try {
+            const toggles = container.querySelectorAll('.toggle-switch');
+            toggles.forEach(toggle => {
+                const radio = toggle.querySelector('input[type="radio"]');
+                if (radio) {
+                    const isActive = radio.value === this.currentSide;
+                    radio.checked = isActive;
+                    
+                    // Update styling
+                    toggle.style.background = isActive ? '#9b59b6' : 'white';
+                    toggle.style.color = isActive ? 'white' : '#7f8c8d';
+                    
+                    if (isActive) {
+                        toggle.classList.add('active');
+                    } else {
+                        toggle.classList.remove('active');
+                    }
+                }
+            });
+            
+            console.log(`✅ Updated side toggle buttons - current side: ${this.currentSide}`);
+            
+        } catch (error) {
+            console.error('❌ Error updating side toggle buttons:', error);
         }
     }
     
@@ -1368,6 +1832,43 @@ class TemplateEditorManager {
             this.updatePositionData();
             this.clearProperties();
             this.showMessage('Element deleted successfully', 'success');
+        }
+    }
+
+    // Debug method to test coordinates and positioning
+    debugCoordinates() {
+        console.log('🧪 Debug: Canvas and coordinate information');
+        console.log('Canvas dimensions:', this.canvas.width, 'x', this.canvas.height);
+        console.log('Original image dimensions:', this.originalImageWidth, 'x', this.originalImageHeight);
+        console.log('Canvas to image scale:', this.canvasToImageScale);
+        console.log('Current position data:', this.positionData[this.currentSide]);
+        
+        const objects = this.canvas.getObjects();
+        objects.forEach((obj, index) => {
+            if (obj.elementType) {
+                const canvasX = Math.round(obj.left);
+                const canvasY = Math.round(obj.top);
+                let actualX = canvasX;
+                let actualY = canvasY;
+                
+                if (this.canvasToImageScale) {
+                    actualX = Math.round(canvasX * this.canvasToImageScale.scaleX);
+                    actualY = Math.round(canvasY * this.canvasToImageScale.scaleY);
+                }
+                
+                console.log(`Element ${index + 1} (${obj.elementType}):`, {
+                    canvas: `${canvasX}, ${canvasY}`,
+                    actual: `${actualX}, ${actualY}`
+                });
+            }
+        });
+    }
+
+    clearCanvas() {
+        if (this.canvas) {
+            this.canvas.clear();
+            this.canvas.setBackgroundColor('#ffffff');
+            this.canvas.renderAll();
         }
     }
 }
@@ -1886,6 +2387,39 @@ function resetSideButtonStyling() {
     }
     
     console.log('🎯 All styling reset to normal - buttons should now be properly sized and visible');
+}
+
+function forceShowSideToggle() {
+    console.log('🔧 Force showing side toggle buttons...');
+    
+    const manager = window.templateEditorManager;
+    if (!manager) {
+        console.error('❌ templateEditorManager not available');
+        return;
+    }
+    
+    // Try all methods to ensure visibility
+    manager.ensureSideToggleAlwaysVisible();
+    
+    // Also create floating toggle as backup
+    setTimeout(() => {
+        manager.createFloatingSideToggle();
+    }, 500);
+    
+    console.log('✅ Side toggle buttons forced to show');
+}
+
+function debugTemplateCoordinates() {
+    console.log('🧪 Debugging template coordinates...');
+    
+    const manager = window.templateEditorManager;
+    if (!manager) {
+        console.error('❌ templateEditorManager not available');
+        return;
+    }
+    
+    manager.debugCoordinates();
+    console.log('✅ Coordinate debug information printed to console');
 }
 
 console.log('🚀 Template Editor page loaded');
