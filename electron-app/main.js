@@ -121,8 +121,8 @@ app.whenReady().then(() => {
                     // Fonts: Allow self, data URIs, file protocol, and Google Fonts
                     "font-src 'self' data: file: blob: https://fonts.gstatic.com",
                     
-                    // Images: Allow self, data URIs, file protocol, and blob
-                    "img-src 'self' data: file: blob:",
+                    // Images: Allow self, data URIs, file protocol, blob, and local server
+                    "img-src 'self' data: file: blob: http://localhost:9000",
                     
                     // Network connections: Allow local server and DevTools
                     "connect-src 'self' http://localhost:9000 ws://localhost:9000 file: data: devtools://*",

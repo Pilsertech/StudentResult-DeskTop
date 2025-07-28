@@ -1,0 +1,12 @@
+// In print-cards.js
+async function loadTemplates() {
+    const templates = await fetch('/api/templates'); // Adjust API endpoint as necessary
+    // Populate template selection UI
+}
+
+// Call loadTemplates in the setup function
+setup() {
+    this.loadPrintQueue();
+    this.loadPrintSettings();
+    this.loadTemplates(); // Load templates for printing
+}

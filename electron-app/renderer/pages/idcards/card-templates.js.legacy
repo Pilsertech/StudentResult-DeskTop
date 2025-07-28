@@ -1,0 +1,196 @@
+/**
+ * ID Card Template Editor - Legacy Import File
+ * 
+ * This file serves as a legacy compatibility layer for the refactored modular template editor.
+ * The original monolithic card-templates.js has been broken down into the following modules:
+ * 
+ * - modules/core.js      - Core manager and initialization
+ * - modules/canvas.js    - Canvas operations and Fabric.js integration (inspired by fabricjs-image-editor)
+ * - modules/templates.js - Template CRUD operations and grid management
+ * - modules/upload.js    - Image upload and preview handling
+ * - modules/elements.js  - Element positioning and properties management
+ * - modules/ui.js        - UI state management and side switching
+ * 
+ * All modules are automatically loaded by card-templates.html and register themselves
+ * with the global templateEditorCore instance.
+ * 
+ * BACKUP: The original monolithic file is saved as card-templates.js.backup
+ */
+
+console.log('📦 ID Card Template Editor - Modular Architecture');
+console.log('🔄 Original 2584-line monolithic file has been refactored into 6 focused modules');
+console.log('✅ Enhanced with fabricjs-image-editor patterns for better canvas handling');
+
+// Legacy functions for backward compatibility
+window.refreshTemplates = function() {
+    if (window.templateEditorCore && window.templateEditorCore.templatesManager) {
+        window.templateEditorCore.templatesManager.loadTemplates();
+    }
+};
+
+window.createNewTemplate = function() {
+    if (window.templateEditorCore && window.templateEditorCore.uiManager) {
+        window.templateEditorCore.uiManager.showEditorView();
+    }
+};
+
+window.cancelEdit = function() {
+    if (window.templateEditorCore && window.templateEditorCore.uiManager) {
+        window.templateEditorCore.uiManager.showTemplatesView();
+    }
+};
+
+window.previewTemplate = function() {
+    console.log('🔍 Preview template functionality to be implemented');
+    if (window.templateEditorCore) {
+        window.templateEditorCore.showMessage('Preview functionality coming soon!', 'info');
+    }
+};
+
+window.saveTemplate = function() {
+    if (window.templateEditorCore && window.templateEditorCore.templatesManager) {
+        window.templateEditorCore.templatesManager.saveCurrentTemplate();
+    }
+};
+
+window.removeFrontImage = function() {
+    if (window.templateEditorCore && window.templateEditorCore.uploadManager) {
+        window.templateEditorCore.setFrontImage(null);
+        // Clear front image preview
+        const preview = document.getElementById('frontPreviewCompact');
+        const thumbnail = document.getElementById('frontUploadThumbnail');
+        if (preview && thumbnail) {
+            preview.style.display = 'none';
+            thumbnail.style.display = 'block';
+        }
+        // Switch to minimal canvas if no images
+        if (window.templateEditorCore.uiManager && window.templateEditorCore.getCurrentSide() === 'front') {
+            window.templateEditorCore.uiManager.switchSide('front');
+        }
+    }
+};
+
+window.removeBackImage = function() {
+    if (window.templateEditorCore && window.templateEditorCore.uploadManager) {
+        window.templateEditorCore.setBackImage(null);
+        // Clear back image preview
+        const preview = document.getElementById('backPreviewCompact');
+        const thumbnail = document.getElementById('backUploadThumbnail');
+        if (preview && thumbnail) {
+            preview.style.display = 'none';
+            thumbnail.style.display = 'block';
+        }
+        // Switch to minimal canvas if no images
+        if (window.templateEditorCore.uiManager && window.templateEditorCore.getCurrentSide() === 'back') {
+            window.templateEditorCore.uiManager.switchSide('back');
+        }
+    }
+};
+
+window.zoomIn = function() {
+    if (window.templateEditorCore && window.templateEditorCore.canvasManager) {
+        window.templateEditorCore.canvasManager.zoomCanvas(1.2);
+    }
+};
+
+window.zoomOut = function() {
+    if (window.templateEditorCore && window.templateEditorCore.canvasManager) {
+        window.templateEditorCore.canvasManager.zoomCanvas(0.8);
+    }
+};
+
+window.resetZoom = function() {
+    if (window.templateEditorCore && window.templateEditorCore.canvasManager) {
+        window.templateEditorCore.canvasManager.resetZoom();
+    }
+};
+
+window.closePreviewModal = function() {
+    const modal = document.getElementById('previewModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+};
+
+window.showPreviewSide = function(side) {
+    console.log(`🔄 Switching preview to ${side} side`);
+    // Preview modal side switching to be implemented
+};
+
+window.saveTemplateFromPreview = function() {
+    window.closePreviewModal();
+    window.saveTemplate();
+};
+
+window.openPopupCanvas = function() {
+    if (window.templateEditorCore && window.templateEditorCore.canvasManager) {
+        window.templateEditorCore.canvasManager.openPopupEditor();
+    } else {
+        console.error('❌ Template editor core not available');
+    }
+};
+
+window.updatePopupObjectProperty = function(property, value) {
+    if (window.templateEditorCore && window.templateEditorCore.canvasManager && window.templateEditorCore.canvasManager.popupCanvas) {
+        const activeObject = window.templateEditorCore.canvasManager.popupCanvas.getActiveObject();
+        if (activeObject) {
+            if (property === 'left' || property === 'top') {
+                activeObject[property] = parseFloat(value);
+                activeObject.setCoords();
+            } else if (property === 'fontSize') {
+                activeObject.set(property, parseInt(value));
+            } else {
+                activeObject.set(property, value);
+            }
+            
+            window.templateEditorCore.canvasManager.popupCanvas.renderAll();
+            console.log(`📝 Updated ${property} to ${value}`);
+        }
+    }
+};
+
+window.updateObjectProperty = function(property, value) {
+    if (window.templateEditorCore && window.templateEditorCore.canvasManager) {
+        const canvas = window.templateEditorCore.canvasManager.canvas;
+        const activeObject = canvas ? canvas.getActiveObject() : null;
+        
+        if (activeObject) {
+            if (property === 'left' || property === 'top') {
+                activeObject[property] = parseFloat(value);
+                activeObject.setCoords();
+            } else if (property === 'fontSize') {
+                activeObject.set(property, parseInt(value));
+            } else {
+                activeObject.set(property, value);
+            }
+            
+            canvas.renderAll();
+            console.log(`📝 Updated ${property} to ${value}`);
+        }
+    }
+};
+
+window.deleteSelectedElement = function() {
+    if (window.templateEditorCore && window.templateEditorCore.canvasManager) {
+        const canvas = window.templateEditorCore.canvasManager.canvas;
+        const activeObject = canvas ? canvas.getActiveObject() : null;
+        
+        if (activeObject) {
+            canvas.remove(activeObject);
+            canvas.renderAll();
+            
+            // Clear properties panel
+            if (window.templateEditorCore.elementManager) {
+                window.templateEditorCore.elementManager.clearProperties();
+            }
+            
+            console.log('🗑️ Deleted selected element');
+        }
+    }
+};
+
+// Global access to the template editor for debugging and console access
+window.TemplateEditor = window.templateEditorCore;
+
+console.log('📋 Template Editor modules loaded successfully');
+console.log('🛠️ Use window.TemplateEditor or window.templateEditorCore for debugging');

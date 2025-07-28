@@ -1,0 +1,12 @@
+// Add a reference to the template editor core
+const templateEditorCore = window.templateEditorCore;
+
+// Modify the print job function to include template data
+async function printJob(jobId) {
+    const job = await getJobDetails(jobId);
+    const templateId = job.templateId; // Assuming job has a templateId
+    const templateData = await templateEditorCore.getTemplateData(templateId);
+    
+    // Proceed with printing using templateData
+    // ...
+}

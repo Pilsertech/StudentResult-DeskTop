@@ -1,0 +1,46 @@
+// filepath: d:\AAAAAA\StudentResult DeskTop\electron-app\renderer\pages\idcards\print-cards.js
+
+class PrintCardsManager {
+    constructor() {
+        this.printQueue = [];
+        this.currentPreview = null;
+        this.printSettings = {
+            pageSize: 'a4',
+            orientation: 'portrait',
+            cardsPerPage: 6,
+            quality: 'normal',
+            copies: 1,
+            includeMargins: true,
+            cropMarks: false,
+            colorMode: true
+        };
+        
+        this.init();
+        this.setupTemplateIntegration(); // New method to integrate with card templates
+    }
+    
+    init() {
+        document.addEventListener('DOMContentLoaded', () => this.setup());
+    }
+
+    setupTemplateIntegration() {
+        // Listen for template updates
+        window.templateEditorCore.on('templateDataChanged', (data) => {
+            // Update print queue or settings based on the new template
+            console.log('Template data changed:', data);
+            this.updatePrintQueueWithTemplate(data);
+        });
+    }
+
+    updatePrintQueueWithTemplate(templateData) {
+        // Logic to update the print queue with the selected template
+    }
+    
+    // ... rest of the existing methods
+}
+
+// Initialize
+const printCardsManager = new PrintCardsManager();
+window.printCardsManager = printCardsManager;
+
+console.log('🚀 Print Cards page loaded');

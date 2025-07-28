@@ -1,0 +1,12 @@
+// Add this function to print the selected template
+async function printTemplate(templateId) {
+    const template = await getTemplateById(templateId); // Assume this function fetches the template
+    if (template) {
+        // Logic to print the template
+        console.log(`Printing template: ${templateId}`);
+    } else {
+        console.error('Template not found');
+    }
+}
+
+// Update the existing print job functions to include template printing

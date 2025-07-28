@@ -1,0 +1,875 @@
+/**
+ * Canvas Manager for Template Editor
+ * Handles all canvas operations including setup, zoom, image loading
+ * Inspired by fabricjs-image-editor for better canvas handling
+ */
+
+class CanvasManager {
+    constructor(core) {
+        this.core = core;
+        this.canvas = null;
+        this.popupCanvas = null;
+        this.isPopupMode = false;
+        this.minZoom = 0.1;
+        this.maxZoom = 5;
+        this.originalCanvasWidth = 0;
+        this.originalCanvasHeight = 0;
+        this.originalImageWidth = 0;
+        this.originalImageHeight = 0;
+        this.canvasToImageScale = {};
+        
+        this.init();
+    }
+    
+    init() {
+        this.core.registerCanvasManager(this);
+        this.setupCanvas();
+        this.setupCanvasControls();
+        this.setupKeyboardShortcuts();
+    }
+    
+    setupCanvas() {
+        const canvasElement = document.getElementById('templateCanvas');
+        if (!canvasElement) {
+            console.error('❌ Canvas element not found!');
+            return;
+        }
+        
+        console.log('🎨 Initializing Fabric.js canvas...');
+        
+        this.canvas = new fabric.Canvas('templateCanvas', {
+            width: this.originalCanvasWidth,
+            height: this.originalCanvasHeight,
+            backgroundColor: 'transparent',
+            preserveObjectStacking: true,
+            centeredScaling: true,
+            centeredRotation: true,
+            enableRetinaScaling: true,
+            selection: true,
+            renderOnAddRemove: true,
+            imageSmoothingEnabled: true,
+            allowTouchScrolling: false
+        });
+        
+        this.canvas.setBackgroundColor('transparent', this.canvas.renderAll.bind(this.canvas));
+        
+        fabric.Object.prototype.set({
+            borderColor: '#9b59b6',
+            borderScaleFactor: 1,
+            borderOpacityWhenMoving: 0.8,
+            cornerColor: '#9b59b6',
+            cornerStyle: 'circle',
+            cornerSize: 8,
+            transparentCorners: false,
+            rotatingPointOffset: 40,
+            padding: 4
+        });
+        
+        this.core.setCanvas(this.canvas);
+        this.setupCanvasEvents();
+        this.updateCanvasSizeDisplay(this.originalCanvasWidth, this.originalCanvasHeight, this.originalCanvasWidth, this.originalCanvasHeight);
+        
+        console.log('🎨 Fabric.js canvas initialized successfully');
+    }
+    
+    setupCanvasEvents() {
+        this.canvas.on('mouse:wheel', (opt) => {
+            this.handleMouseWheelZoom(opt);
+        });
+        
+        this.canvas.on('selection:created', (e) => this.onObjectSelected(e.selected[0]));
+        this.canvas.on('selection:updated', (e) => this.onObjectSelected(e.selected[0]));
+        this.canvas.on('selection:cleared', () => this.clearProperties());
+        
+        this.canvas.on('object:modified', () => {
+            this.updatePositionData();
+        });
+        
+        this.canvas.on('object:moving', () => {
+            this.updatePositionData();
+        });
+        
+        this.canvas.on('object:scaling', () => {
+            this.updatePositionData();
+        });
+        
+        this.canvas.on('object:rotating', (e) => {
+            if (e.e && e.e.shiftKey) {
+                e.target.snapAngle = 15;
+            } else {
+                e.target.snapAngle = false;
+            }
+            this.updatePositionData();
+        });
+    }
+    
+    handleMouseWheelZoom(opt) {
+        const delta = opt.e.deltaY;
+        let zoom = this.canvas.getZoom();
+        zoom *= 0.999 ** delta;
+        
+        if (zoom > this.maxZoom) zoom = this.maxZoom;
+        if (zoom < this.minZoom) zoom = this.minZoom;
+        
+        const center = this.canvas.getCenter();
+        this.canvas.zoomToPoint(new fabric.Point(center.left, center.top), zoom);
+        
+        opt.e.preventDefault();
+        opt.e.stopPropagation();
+        
+        this.updateZoomDisplay();
+    }
+    
+    setupCanvasControls() {
+        document.getElementById('zoomIn')?.addEventListener('click', () => this.zoomCanvas(1.1));
+        document.getElementById('zoomOut')?.addEventListener('click', () => this.zoomCanvas(0.9));
+        document.getElementById('resetZoom')?.addEventListener('click', () => this.resetZoom());
+    }
+    
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            if (document.querySelectorAll('textarea:focus, input:focus').length > 0) return;
+            
+            this.handleKeyboardShortcuts(e);
+            this.handleArrowKeyMovement(e);
+        });
+    }
+    
+    handleKeyboardShortcuts(e) {
+        const key = e.which || e.keyCode;
+        
+        if ((key === 96 || key === 48 || key === 192) && e.ctrlKey) {
+            e.preventDefault();
+            this.resetZoom();
+        }
+        
+        if (key === 189 && e.ctrlKey) {
+            e.preventDefault();
+            this.zoomCanvas(0.8);
+        }
+        
+        if (key === 187 && e.ctrlKey) {
+            e.preventDefault();
+            this.zoomCanvas(1.25);
+        }
+        
+        if (key === 46) {
+            e.preventDefault();
+            this.deleteSelectedObject();
+        }
+    }
+    
+    handleArrowKeyMovement(e) {
+        const key = e.which || e.keyCode;
+        let activeObject;
+        
+        if (key === 37 || key === 38 || key === 39 || key === 40) {
+            e.preventDefault();
+            activeObject = this.canvas.getActiveObject();
+            if (!activeObject) return;
+            
+            const moveDistance = e.shiftKey ? 10 : 1;
+            
+            if (key === 37) activeObject.left -= moveDistance;
+            else if (key === 39) activeObject.left += moveDistance;
+            else if (key === 38) activeObject.top -= moveDistance;
+            else if (key === 40) activeObject.top += moveDistance;
+            
+            activeObject.setCoords();
+            this.canvas.renderAll();
+            this.updatePositionData();
+        }
+    }
+    
+    loadImageToCanvas(imageSrc) {
+        if (!this.canvas) return;
+        
+        return new Promise((resolve, reject) => {
+            fabric.Image.fromURL(imageSrc, (img) => {
+                if (!img || !img.getElement()) {
+                    console.error('❌ Failed to load image');
+                    reject(new Error('Failed to load image'));
+                    return;
+                }
+                
+                console.log('📸 Original image dimensions: ' + img.width + 'x' + img.height);
+                
+                this.originalImageWidth = img.width;
+                this.originalImageHeight = img.height;
+                
+                const canvasWidth = img.width;
+                const canvasHeight = img.height;
+                
+                this.canvas.setDimensions({
+                    width: canvasWidth,
+                    height: canvasHeight
+                });
+                
+                this.updateCanvasSizeDisplay(canvasWidth, canvasHeight, img.width, img.height);
+                
+                img.set({
+                    left: 0,
+                    top: 0,
+                    scaleX: 1,
+                    scaleY: 1,
+                    selectable: false,
+                    evented: false,
+                    originX: 'left',
+                    originY: 'top',
+                    crossOrigin: 'anonymous'
+                });
+                
+                this.canvas.setBackgroundImage(img, () => {
+                    this.canvasToImageScale = {
+                        scaleX: 1,
+                        scaleY: 1,
+                        canvasWidth: canvasWidth,
+                        canvasHeight: canvasHeight,
+                        imageWidth: this.originalImageWidth,
+                        imageHeight: this.originalImageHeight
+                    };
+                    
+                    this.resetZoom();
+                    this.loadPositionedElements();
+                    this.canvas.renderAll();
+                    console.log('✅ Background image set successfully');
+                    resolve(img);
+                });
+                
+            }, {
+                crossOrigin: 'anonymous'
+            });
+        });
+    }
+    
+    clearCanvas() {
+        if (!this.canvas) return;
+        
+        this.canvas.clear();
+        this.canvas.setBackgroundColor('#ffffff');
+        
+        this.canvas.setDimensions({
+            width: this.originalCanvasWidth,
+            height: this.originalCanvasHeight
+        });
+        
+        this.updateCanvasSizeDisplay(this.originalCanvasWidth, this.originalCanvasHeight, this.originalCanvasWidth, this.originalCanvasHeight);
+        this.canvas.renderAll();
+    }
+    
+    zoomCanvas(factor) {
+        if (!this.canvas) return;
+        
+        const zoom = this.canvas.getZoom();
+        const newZoom = zoom * factor;
+        
+        if (newZoom < this.minZoom || newZoom > this.maxZoom) return;
+        
+        const center = this.canvas.getCenter();
+        this.canvas.zoomToPoint(new fabric.Point(center.left, center.top), newZoom);
+        this.updateZoomDisplay();
+    }
+    
+    resetZoom() {
+        if (!this.canvas) return;
+        
+        this.canvas.setZoom(1);
+        this.canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+        this.updateZoomDisplay();
+    }
+    
+    updateZoomDisplay() {
+        const zoomDisplay = document.getElementById('zoomLevel');
+        if (zoomDisplay && this.canvas) {
+            const zoom = this.canvas.getZoom();
+            zoomDisplay.textContent = Math.round(zoom * 100) + '%';
+        }
+    }
+    
+    updateCanvasSizeDisplay(canvasWidth, canvasHeight, originalWidth, originalHeight) {
+        const canvasDimensions = document.getElementById('canvasDimensions');
+        const canvasScale = document.getElementById('canvasScale');
+        
+        if (canvasDimensions) {
+            canvasDimensions.textContent = canvasWidth + ' × ' + canvasHeight;
+        }
+        
+        if (canvasScale) {
+            const scaleX = canvasWidth / originalWidth;
+            const scaleY = canvasHeight / originalHeight;
+            const scale = Math.min(scaleX, scaleY);
+            canvasScale.textContent = 'Scale: ' + (scale * 100).toFixed(1) + '%';
+        }
+    }
+    
+    onObjectSelected(obj) {
+        if (this.core.elementManager) {
+            this.core.elementManager.onObjectSelected(obj);
+        }
+    }
+    
+    clearProperties() {
+        if (this.core.elementManager) {
+            this.core.elementManager.clearProperties();
+        }
+    }
+    
+    updatePositionData() {
+        if (this.core.elementManager) {
+            this.core.elementManager.updatePositionData();
+        }
+    }
+    
+    loadPositionedElements() {
+        if (this.core.elementManager) {
+            this.core.elementManager.loadPositionedElements();
+        }
+    }
+    
+    deleteSelectedObject() {
+        const activeObject = this.canvas.getActiveObject();
+        if (activeObject) {
+            this.canvas.remove(activeObject);
+            this.canvas.renderAll();
+            this.updatePositionData();
+        }
+    }
+    
+    openPopupEditor() {
+        this.createPopupWindow();
+        this.isPopupMode = true;
+        
+        if (this.canvas) {
+            const canvasData = this.canvas.toJSON();
+            setTimeout(() => {
+                if (this.popupCanvas) {
+                    this.popupCanvas.loadFromJSON(canvasData, () => {
+                        this.popupCanvas.renderAll();
+                        console.log('✅ Canvas state transferred to popup');
+                    });
+                }
+            }, 500);
+        }
+    }
+    
+    createPopupWindow() {
+        const popupOverlay = document.createElement('div');
+        popupOverlay.id = 'canvasPopupOverlay';
+        popupOverlay.className = 'canvas-popup-overlay';
+        
+        popupOverlay.innerHTML = '<div class="canvas-popup-container">' +
+            '<div class="popup-header">' +
+            '<div class="popup-title">' +
+            '<i class="fa fa-expand"></i>' +
+            '<span>Full Screen Canvas Editor</span>' +
+            '<small id="popupSideIndicator">Front Side</small>' +
+            '</div>' +
+            '<div class="popup-controls">' +
+            '<div class="side-toggle-popup">' +
+            '<label class="toggle-switch">' +
+            '<input type="radio" name="popupCardSide" value="front" checked>' +
+            '<span><i class="fa fa-id-card-o"></i> Front</span>' +
+            '</label>' +
+            '<label class="toggle-switch">' +
+            '<input type="radio" name="popupCardSide" value="back">' +
+            '<span><i class="fa fa-id-card"></i> Back</span>' +
+            '</label>' +
+            '</div>' +
+            '<div class="zoom-controls-popup">' +
+            '<button class="btn btn-sm" onclick="templateEditorCore.canvasManager.zoomPopupCanvas(0.8)">' +
+            '<i class="fa fa-search-minus"></i>' +
+            '</button>' +
+            '<span class="zoom-level-popup" id="popupZoomLevel">100%</span>' +
+            '<button class="btn btn-sm" onclick="templateEditorCore.canvasManager.zoomPopupCanvas(1.2)">' +
+            '<i class="fa fa-search-plus"></i>' +
+            '</button>' +
+            '<button class="btn btn-sm" onclick="templateEditorCore.canvasManager.resetPopupZoom()">' +
+            '<i class="fa fa-expand"></i>' +
+            '</button>' +
+            '</div>' +
+            '<div class="popup-actions">' +
+            '<button class="btn btn-success" onclick="templateEditorCore.canvasManager.saveAndClosePopup()">' +
+            '<i class="fa fa-check"></i> Save & Close' +
+            '</button>' +
+            '<button class="btn btn-secondary" onclick="templateEditorCore.canvasManager.closePopup()">' +
+            '<i class="fa fa-times"></i> Cancel' +
+            '</button>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="popup-workspace">' +
+            '<div class="popup-sidebar-left">' +
+            '<h4><i class="fa fa-puzzle-piece"></i> Elements</h4>' +
+            '<div class="element-categories-popup">' +
+            '<div class="category-popup active" data-category="student">' +
+            '<h5><i class="fa fa-user"></i> Student Data</h5>' +
+            '<div class="elements-list-popup">' +
+            '<div class="element-item-popup" data-type="studentName">' +
+            '<i class="fa fa-user"></i> Student Name' +
+            '</div>' +
+            '<div class="element-item-popup" data-type="rollId">' +
+            '<i class="fa fa-id-badge"></i> Roll ID' +
+            '</div>' +
+            '<div class="element-item-popup" data-type="className">' +
+            '<i class="fa fa-graduation-cap"></i> Class Name' +
+            '</div>' +
+            '<div class="element-item-popup" data-type="studentId">' +
+            '<i class="fa fa-hashtag"></i> Student ID' +
+            '</div>' +
+            '<div class="element-item-popup" data-type="photo">' +
+            '<i class="fa fa-camera"></i> Student Photo' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="category-popup" data-category="codes">' +
+            '<h5><i class="fa fa-qrcode"></i> Codes</h5>' +
+            '<div class="elements-list-popup">' +
+            '<div class="element-item-popup" data-type="qrCode">' +
+            '<i class="fa fa-qrcode"></i> QR Code' +
+            '</div>' +
+            '<div class="element-item-popup" data-type="barcode">' +
+            '<i class="fa fa-barcode"></i> Barcode' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="popup-canvas-area">' +
+            '<canvas id="popupTemplateCanvas" width="1050" height="650"></canvas>' +
+            '</div>' +
+            '<div class="popup-sidebar-right">' +
+            '<h4><i class="fa fa-sliders"></i> Properties</h4>' +
+            '<div class="popup-properties-content" id="popupPropertiesContent">' +
+            '<div class="no-selection">' +
+            '<i class="fa fa-mouse-pointer"></i>' +
+            '<p>Select an element to edit properties</p>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+        
+        document.body.appendChild(popupOverlay);
+        
+        setTimeout(() => {
+            this.initializePopupCanvas();
+            this.setupPopupEvents();
+        }, 100);
+    }
+    
+    initializePopupCanvas() {
+        const popupCanvasElement = document.getElementById('popupTemplateCanvas');
+        if (!popupCanvasElement) {
+            console.error('❌ Popup canvas element not found!');
+            return;
+        }
+        
+        this.popupCanvas = new fabric.Canvas('popupTemplateCanvas', {
+            width: 1050,
+            height: 650,
+            backgroundColor: 'transparent',
+            preserveObjectStacking: true,
+            centeredScaling: true,
+            centeredRotation: true,
+            enableRetinaScaling: true,
+            selection: true,
+            renderOnAddRemove: true,
+            imageSmoothingEnabled: true,
+            allowTouchScrolling: false
+        });
+        
+        this.setupPopupCanvasEvents();
+        
+        const currentSide = this.core.getCurrentSide();
+        const currentImage = currentSide === 'front' ? this.core.getFrontImage() : this.core.getBackImage();
+        
+        if (currentImage) {
+            this.loadImageToPopupCanvas(currentImage);
+        }
+        
+        console.log('✅ Popup canvas initialized successfully');
+    }
+    
+    setupPopupCanvasEvents() {
+        this.popupCanvas.on('mouse:wheel', (opt) => {
+            this.handlePopupMouseWheelZoom(opt);
+        });
+        
+        this.popupCanvas.on('selection:created', (e) => this.onPopupObjectSelected(e.selected[0]));
+        this.popupCanvas.on('selection:updated', (e) => this.onPopupObjectSelected(e.selected[0]));
+        this.popupCanvas.on('selection:cleared', () => this.clearPopupProperties());
+        
+        this.popupCanvas.on('object:modified', () => {
+            this.updatePopupPositionData();
+        });
+        
+        this.popupCanvas.on('object:moving', () => {
+            this.updatePopupPositionData();
+        });
+        
+        this.popupCanvas.on('object:scaling', () => {
+            this.updatePopupPositionData();
+        });
+        
+        this.popupCanvas.on('object:rotating', (e) => {
+            if (e.e && e.e.shiftKey) {
+                e.target.snapAngle = 15;
+            } else {
+                e.target.snapAngle = false;
+            }
+            this.updatePopupPositionData();
+        });
+    }
+    
+    setupPopupEvents() {
+        const sideRadios = document.querySelectorAll('input[name="popupCardSide"]');
+        sideRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.switchPopupSide(e.target.value);
+                }
+            });
+        });
+        
+        const elementItems = document.querySelectorAll('.element-item-popup');
+        elementItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const elementType = item.dataset.type;
+                this.addElementToPopupCanvas(elementType);
+            });
+        });
+        
+        this.setupPopupKeyboardHandler();
+    }
+    
+    setupPopupKeyboardHandler() {
+        if (this.popupKeyboardHandler) {
+            document.removeEventListener('keydown', this.popupKeyboardHandler);
+        }
+        
+        this.popupKeyboardHandler = (e) => {
+            if (!this.isPopupMode) return;
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            
+            switch(e.key) {
+                case 'Escape':
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.closePopup();
+                    break;
+                case 'Delete':
+                    e.preventDefault();
+                    this.deletePopupSelectedObject();
+                    break;
+                case 'ArrowLeft':
+                case 'ArrowRight':
+                case 'ArrowUp':
+                case 'ArrowDown':
+                    e.preventDefault();
+                    this.movePopupSelectedObject(e.key, e.shiftKey ? 10 : 1);
+                    break;
+            }
+        };
+        
+        document.addEventListener('keydown', this.popupKeyboardHandler);
+    }
+    
+    loadImageToPopupCanvas(imageSrc) {
+        if (!this.popupCanvas) return;
+        
+        if (imageSrc instanceof File) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.loadImageToPopupCanvas(e.target.result);
+            };
+            reader.readAsDataURL(imageSrc);
+            return;
+        }
+        
+        fabric.Image.fromURL(imageSrc, (img) => {
+            if (!img || !img.getElement()) {
+                console.error('❌ Failed to load image to popup canvas');
+                return;
+            }
+            
+            const canvasWidth = this.popupCanvas.width;
+            const canvasHeight = this.popupCanvas.height;
+            const imageWidth = img.width;
+            const imageHeight = img.height;
+            
+            const scaleToFitX = canvasWidth / imageWidth;
+            const scaleToFitY = canvasHeight / imageHeight;
+            const optimalScale = Math.min(scaleToFitX, scaleToFitY, 1);
+            
+            const scaledWidth = imageWidth * optimalScale;
+            const scaledHeight = imageHeight * optimalScale;
+            const centerX = (canvasWidth - scaledWidth) / 2;
+            const centerY = (canvasHeight - scaledHeight) / 2;
+            
+            img.set({
+                left: centerX,
+                top: centerY,
+                scaleX: optimalScale,
+                scaleY: optimalScale,
+                selectable: false,
+                evented: false,
+                originX: 'left',
+                originY: 'top',
+                crossOrigin: 'anonymous'
+            });
+            
+            this.popupCanvas.setBackgroundImage(null);
+            this.popupCanvas.setBackgroundImage(img, () => {
+                this.popupBackgroundImage = img;
+                this.popupImageScale = optimalScale;
+                this.popupImageCenter = { x: centerX, y: centerY };
+                
+                this.resetPopupZoom();
+                this.popupCanvas.renderAll();
+                console.log('✅ Background image loaded and centered in popup canvas');
+            });
+        }, {
+            crossOrigin: 'anonymous'
+        });
+    }
+    
+    handlePopupMouseWheelZoom(opt) {
+        const delta = opt.e.deltaY;
+        let zoom = this.popupCanvas.getZoom();
+        
+        zoom *= 0.999 ** delta;
+        
+        if (zoom > this.maxZoom) zoom = this.maxZoom;
+        if (zoom < this.minZoom) zoom = this.minZoom;
+        
+        const canvasCenter = this.popupCanvas.getCenter();
+        const zoomPoint = new fabric.Point(canvasCenter.left, canvasCenter.top);
+        
+        this.popupCanvas.zoomToPoint(zoomPoint, zoom);
+        
+        opt.e.preventDefault();
+        opt.e.stopPropagation();
+        
+        this.updatePopupZoomDisplay();
+    }
+    
+    zoomPopupCanvas(factor) {
+        if (!this.popupCanvas) return;
+        
+        const oldZoom = this.popupCanvas.getZoom();
+        const newZoom = oldZoom * factor;
+        
+        if (newZoom < this.minZoom || newZoom > this.maxZoom) return;
+        
+        const center = this.popupCanvas.getCenter();
+        const zoomPoint = new fabric.Point(center.left, center.top);
+        
+        this.popupCanvas.zoomToPoint(zoomPoint, newZoom);
+        this.updatePopupZoomDisplay();
+    }
+    
+    resetPopupZoom() {
+        if (!this.popupCanvas) return;
+        
+        this.popupCanvas.setZoom(1);
+        this.popupCanvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+        
+        if (this.popupBackgroundImage && this.popupImageCenter) {
+            this.popupBackgroundImage.set({
+                left: this.popupImageCenter.x,
+                top: this.popupImageCenter.y
+            });
+            this.popupCanvas.renderAll();
+        }
+        
+        this.updatePopupZoomDisplay();
+    }
+    
+    addElementToPopupCanvas(elementType) {
+        if (this.core.elementManager) {
+            this.core.elementManager.addElementToPopupCanvas(elementType);
+        } else {
+            console.error('❌ Element manager not available');
+        }
+    }
+    
+    onPopupObjectSelected(obj) {
+        const propertiesContent = document.getElementById('popupPropertiesContent');
+        if (propertiesContent && obj) {
+            let propertiesHTML = '<div class="property-group">';
+            propertiesHTML += '<h5>Element: ' + (obj.elementType || obj.type) + '</h5>';
+            propertiesHTML += '<div class="form-group">';
+            propertiesHTML += '<label>Position X:</label>';
+            propertiesHTML += '<input type="number" value="' + Math.round(obj.left) + '" onchange="updatePopupObjectProperty(\'left\', this.value)">';
+            propertiesHTML += '</div>';
+            propertiesHTML += '<div class="form-group">';
+            propertiesHTML += '<label>Position Y:</label>';
+            propertiesHTML += '<input type="number" value="' + Math.round(obj.top) + '" onchange="updatePopupObjectProperty(\'top\', this.value)">';
+            propertiesHTML += '</div>';
+            
+            if (obj.type === 'text' || (obj.type === 'group' && obj.elementType && obj.elementType !== 'photo')) {
+                propertiesHTML += '<div class="form-group">';
+                propertiesHTML += '<label>Font Size:</label>';
+                propertiesHTML += '<input type="number" value="' + (obj.fontSize || 16) + '" onchange="updatePopupObjectProperty(\'fontSize\', this.value)">';
+                propertiesHTML += '</div>';
+                propertiesHTML += '<div class="form-group">';
+                propertiesHTML += '<label>Color:</label>';
+                propertiesHTML += '<input type="color" value="' + (obj.fill || '#000000') + '" onchange="updatePopupObjectProperty(\'fill\', this.value)">';
+                propertiesHTML += '</div>';
+            }
+            
+            propertiesHTML += '</div>';
+            propertiesContent.innerHTML = propertiesHTML;
+        }
+    }
+    
+    clearPopupProperties() {
+        const propertiesContent = document.getElementById('popupPropertiesContent');
+        if (propertiesContent) {
+            propertiesContent.innerHTML = '<div class="no-selection"><i class="fa fa-mouse-pointer"></i><p>Select an element to edit properties</p></div>';
+        }
+    }
+    
+    updatePopupPositionData() {
+        console.log('📊 Popup position data updated');
+    }
+    
+    updatePopupZoomDisplay() {
+        const zoomDisplay = document.getElementById('popupZoomLevel');
+        if (zoomDisplay && this.popupCanvas) {
+            const zoom = this.popupCanvas.getZoom();
+            zoomDisplay.textContent = Math.round(zoom * 100) + '%';
+        }
+    }
+    
+    deletePopupSelectedObject() {
+        const activeObject = this.popupCanvas.getActiveObject();
+        if (activeObject) {
+            this.popupCanvas.remove(activeObject);
+            this.popupCanvas.renderAll();
+            this.clearPopupProperties();
+            console.log('🗑️ Deleted selected object from popup canvas');
+        }
+    }
+    
+    movePopupSelectedObject(direction, distance) {
+        const activeObject = this.popupCanvas.getActiveObject();
+        if (!activeObject) return;
+        
+        switch(direction) {
+            case 'ArrowLeft':
+                activeObject.left -= distance;
+                break;
+            case 'ArrowRight':
+                activeObject.left += distance;
+                break;
+            case 'ArrowUp':
+                activeObject.top -= distance;
+                break;
+            case 'ArrowDown':
+                activeObject.top += distance;
+                break;
+        }
+        
+        activeObject.setCoords();
+        this.popupCanvas.renderAll();
+        this.updatePopupPositionData();
+    }
+    
+    switchPopupSide(side) {
+        const indicator = document.getElementById('popupSideIndicator');
+        if (indicator) {
+            indicator.textContent = side === 'front' ? 'Front Side' : 'Back Side';
+        }
+        
+        this.popupCanvas.clear();
+        this.popupCanvas.setBackgroundImage(null);
+        
+        const image = side === 'front' ? this.core.getFrontImage() : this.core.getBackImage();
+        if (image) {
+            this.loadImageToPopupCanvas(image);
+        }
+        
+        this.core.setCurrentSide(side);
+    }
+    
+    saveAndClosePopup() {
+        if (this.popupCanvas) {
+            const canvasData = this.popupCanvas.toJSON();
+            
+            if (this.canvas) {
+                this.canvas.loadFromJSON(canvasData, () => {
+                    this.canvas.renderAll();
+                    console.log('✅ Canvas state transferred back from popup');
+                    this.closePopup();
+                });
+            } else {
+                this.closePopup();
+            }
+        }
+    }
+    
+    closePopup() {
+        if (this.popupKeyboardHandler) {
+            document.removeEventListener('keydown', this.popupKeyboardHandler);
+            this.popupKeyboardHandler = null;
+        }
+        
+        const popupOverlay = document.getElementById('canvasPopupOverlay');
+        if (popupOverlay) {
+            popupOverlay.remove();
+        }
+        
+        this.popupCanvas = null;
+        this.popupBackgroundImage = null;
+        this.popupImageScale = null;
+        this.popupImageCenter = null;
+        this.isPopupMode = false;
+        
+        console.log('❌ Popup canvas closed and cleaned up');
+    }
+    
+    getCanvas() {
+        return this.canvas;
+    }
+    
+    isCanvasReady() {
+        return this.canvas !== null;
+    }
+}
+
+// Auto-initialize when core is ready
+if (window.templateEditorCore) {
+    new CanvasManager(window.templateEditorCore);
+} else {
+    // Add error handling and debugging
+    console.log('🔄 Waiting for templateEditorCore to initialize...');
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('📄 DOM loaded, checking for templateEditorCore...');
+        
+        if (window.templateEditorCore) {
+            console.log('✅ templateEditorCore found, initializing CanvasManager');
+            new CanvasManager(window.templateEditorCore);
+        } else {
+            console.error('❌ templateEditorCore not found after DOM load');
+            
+            // Retry mechanism
+            let retryCount = 0;
+            const maxRetries = 10;
+            const retryInterval = setInterval(() => {
+                retryCount++;
+                console.log(`🔄 Retry ${retryCount}/${maxRetries} for templateEditorCore...`);
+                
+                if (window.templateEditorCore) {
+                    console.log('✅ templateEditorCore found on retry, initializing CanvasManager');
+                    new CanvasManager(window.templateEditorCore);
+                    clearInterval(retryInterval);
+                } else if (retryCount >= maxRetries) {
+                    console.error('❌ Failed to find templateEditorCore after maximum retries');
+                    clearInterval(retryInterval);
+                }
+            }, 500);
+        }
+    });
+}

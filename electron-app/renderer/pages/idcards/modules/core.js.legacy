@@ -1,0 +1,196 @@
+/**
+ * Core Template Editor Manager
+ * Main class that coordinates all template editor functionality
+ */
+
+class TemplateEditorCore {
+    constructor() {
+        this.canvas = null;
+        this.templates = [];
+        this.classes = [];
+        this.currentTemplate = null;
+        this.currentSide = 'front';
+        this.frontImage = null;
+        this.backImage = null;
+        this.positionData = { front: {}, back: {} };
+        this.isLoading = false;
+        
+        // Element types that can be placed on templates
+        this.elementTypes = {
+            'student-name': { label: 'Student Name', icon: 'fa-user', category: 'student-info' },
+            'roll-id': { label: 'Roll ID', icon: 'fa-id-badge', category: 'student-info' },
+            'class-name': { label: 'Class & Section', icon: 'fa-graduation-cap', category: 'student-info' },
+            'student-email': { label: 'Email Address', icon: 'fa-envelope', category: 'student-info' },
+            'gender': { label: 'Gender', icon: 'fa-venus-mars', category: 'student-info' },
+            'dob': { label: 'Date of Birth', icon: 'fa-calendar', category: 'student-info' },
+            'photo': { label: 'Student Photo', icon: 'fa-camera', category: 'photo' },
+            'qr-code': { label: 'QR Code', icon: 'fa-qrcode', category: 'codes' },
+            'barcode': { label: 'Barcode', icon: 'fa-barcode', category: 'codes' },
+            'school-logo': { label: 'School Logo', icon: 'fa-shield', category: 'branding' },
+            'issue-date': { label: 'Issue Date', icon: 'fa-calendar-check-o', category: 'admin' },
+            'valid-until': { label: 'Valid Until', icon: 'fa-calendar-times-o', category: 'admin' }
+        };
+        
+        // Module references (will be initialized by modules)
+        this.templatesManager = null;
+        this.canvasManager = null;
+        this.uploadManager = null;
+        this.elementManager = null;
+        this.uiManager = null;
+        
+        this.init();
+    }
+    
+    async init() {
+        console.log('🚀 Enhanced Template Editor Core initializing...');
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.setup());
+        } else {
+            this.setup();
+        }
+    }
+    
+    async setup() {
+        console.log('🔧 Setting up Template Editor Core...');
+        
+        // Get DOM references
+        this.messageArea = document.getElementById('messageArea');
+        this.templatesGrid = document.getElementById('templatesGrid');
+        this.editorSection = document.getElementById('editorSection');
+        
+        try {
+            // Initialize modules (they'll register themselves)
+            await this.initializeModules();
+            
+            // Load initial data
+            await this.loadInitialData();
+            
+            console.log('✅ Template Editor Core initialized successfully');
+        } catch (error) {
+            console.error('❌ Template Editor Core initialization failed:', error);
+            this.showMessage('Failed to initialize template editor: ' + error.message, 'error');
+        }
+    }
+    
+    async initializeModules() {
+        // Modules will register themselves when loaded
+        console.log('📦 Initializing modules...');
+    }
+    
+    async loadInitialData() {
+        if (this.templatesManager) {
+            await this.templatesManager.loadTemplates();
+        }
+    }
+    
+    // Module registration methods
+    registerTemplatesManager(manager) {
+        this.templatesManager = manager;
+        console.log('📝 Templates Manager registered');
+    }
+    
+    registerCanvasManager(manager) {
+        this.canvasManager = manager;
+        console.log('🎨 Canvas Manager registered');
+    }
+    
+    registerUploadManager(manager) {
+        this.uploadManager = manager;
+        console.log('📤 Upload Manager registered');
+    }
+    
+    registerElementManager(manager) {
+        this.elementManager = manager;
+        console.log('🧩 Element Manager registered');
+    }
+    
+    registerUIManager(manager) {
+        this.uiManager = manager;
+        console.log('🖼️ UI Manager registered');
+    }
+    
+    // Utility methods
+    showMessage(message, type = 'info', duration = 5000) {
+        if (!this.messageArea) return;
+        
+        const alertClass = type === 'error' ? 'alert-danger' : 
+                          type === 'success' ? 'alert-success' : 
+                          type === 'warning' ? 'alert-warning' : 'alert-info';
+        
+        this.messageArea.innerHTML = `
+            <div class="alert ${alertClass} alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                ${message}
+            </div>
+        `;
+        
+        this.messageArea.style.display = 'block';
+        
+        if (duration > 0) {
+            setTimeout(() => {
+                if (this.messageArea) {
+                    this.messageArea.style.display = 'none';
+                }
+            }, duration);
+        }
+    }
+    
+    hideMessage() {
+        if (this.messageArea) {
+            this.messageArea.style.display = 'none';
+        }
+    }
+    
+    // Get methods for modules to access data
+    getCurrentSide() {
+        return this.currentSide;
+    }
+    
+    setCurrentSide(side) {
+        this.currentSide = side;
+    }
+    
+    getCurrentTemplate() {
+        return this.currentTemplate;
+    }
+    
+    setCurrentTemplate(template) {
+        this.currentTemplate = template;
+    }
+    
+    getPositionData() {
+        return this.positionData;
+    }
+    
+    setPositionData(data) {
+        this.positionData = data;
+    }
+    
+    getCanvas() {
+        return this.canvas;
+    }
+    
+    setCanvas(canvas) {
+        this.canvas = canvas;
+    }
+    
+    getFrontImage() {
+        return this.frontImage;
+    }
+    
+    setFrontImage(image) {
+        this.frontImage = image;
+    }
+    
+    getBackImage() {
+        return this.backImage;
+    }
+    
+    setBackImage(image) {
+        this.backImage = image;
+    }
+}
+
+// Global instance
+window.templateEditorCore = new TemplateEditorCore();

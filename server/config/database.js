@@ -28,14 +28,20 @@ async function testConnection() {
         const [rows] = await connection.execute('SELECT 1 as test');
         console.log('✅ Database query test successful');
         
-        // Test if required tables exist
-        const tables = ['tblclasses', 'tblstudents', 'tblsubjects', 'tblsubjectcombination', 'tblresult'];
+        // Test if required tables exist (including enhanced ID card tables)
+        const tables = [
+            'tblclasses', 'tblstudents', 'tblsubjects', 'tblsubjectcombination', 'tblresult',
+            'tblidcard_templates', 'tblidcard_generated', 'tblidcard_custom_assets'
+        ];
         for (const table of tables) {
             try {
                 const [tableRows] = await connection.execute(`SELECT COUNT(*) as count FROM ${table}`);
                 console.log(`✅ Table "${table}" exists with ${tableRows[0].count} records`);
             } catch (tableError) {
                 console.error(`❌ Table "${table}" not found:`, tableError.message);
+                if (table.includes('tblidcard_')) {
+                    console.warn('💡 Run database migration to add enhanced ID card tables');
+                }
             }
         }
         
@@ -47,6 +53,7 @@ async function testConnection() {
         console.error('   - MySQL server is running');
         console.error('   - Database "srms" exists');
         console.error('   - Username and password are correct');
+        console.error('   - Enhanced ID card tables are created');
         return false;
     }
 }

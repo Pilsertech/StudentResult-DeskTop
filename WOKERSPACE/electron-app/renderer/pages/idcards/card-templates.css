@@ -1,0 +1,8 @@
+// In generate-cards.js
+async function loadTemplates() {
+    const templates = await window.templateEditorCore.getTemplates();
+    // Populate template selection UI
+}
+
+// Call this function during initialization
+loadTemplates();

@@ -1,0 +1,433 @@
+/**
+ * UI Manager for Template Editor
+ * Handles side switching, configuration panel, and UI state management
+ */
+
+class UIManager {
+    constructor(core) {
+        this.core = core;
+        
+        this.init();
+    }
+    
+    init() {
+        this.core.registerUIManager(this);
+        this.setupUIControls();
+        this.setupSideControls();
+        this.renderConfigurationPanel();
+    }
+    
+    setupUIControls() {
+        // Back to templates button
+        document.getElementById('backToTemplates')?.addEventListener('click', () => {
+            this.showTemplatesView();
+        });
+        
+        // Editor navigation
+        const createNewBtn = document.getElementById('createNewTemplate');
+        if (createNewBtn) {
+            createNewBtn.addEventListener('click', () => {
+                this.showEditorView();
+            });
+        }
+    }
+    
+    setupSideControls() {
+        // Set up radio button listeners for side switching
+        document.addEventListener('change', (e) => {
+            if (e.target.name === 'cardSide') {
+                this.switchSide(e.target.value);
+            }
+        });
+        
+        // Set up any existing side toggle buttons
+        document.querySelectorAll('[data-side]').forEach(button => {
+            button.addEventListener('click', () => {
+                const side = button.dataset.side;
+                this.switchSide(side);
+            });
+        });
+    }
+    
+    renderConfigurationPanel() {
+        const configPanel = document.getElementById('compact-config-panel') || document.querySelector('.compact-config-panel');
+        if (!configPanel) {
+            console.warn('Configuration panel not found, skipping render');
+            this.setupExistingConfigControls();
+            return;
+        }
+        
+        configPanel.innerHTML = `
+            <div class=\"config-sections\">
+                <!-- Template Information -->
+                <div class=\"config-section\">
+                    <h5>Template Information</h5>
+                    <div class=\"form-group\">
+                        <label for=\"templateName\">Template Name:</label>
+                        <input type=\"text\" id=\"templateName\" class=\"form-control\" placeholder=\"Enter template name\">
+                    </div>
+                    <div class=\"form-group\">
+                        <label for=\"templateClass\">Target Class:</label>
+                        <select id=\"templateClass\" class=\"form-control\">
+                            <option value=\"\">All Classes</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Side Selection -->
+                <div class=\"config-section\">
+                    <h5>Card Side</h5>
+                    <div class=\"side-toggle-group\">
+                        <label class=\"side-toggle front-toggle active\">
+                            <input type=\"radio\" name=\"cardSide\" value=\"front\" checked>
+                            <i class=\"fa fa-id-card-o\"></i>
+                            <span>Front</span>
+                        </label>
+                        <label class=\"side-toggle back-toggle\">
+                            <input type=\"radio\" name=\"cardSide\" value=\"back\">
+                            <i class=\"fa fa-id-card\"></i>
+                            <span>Back</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Template Images Upload -->
+                <div class=\"config-section\">
+                    <h5>Template Images</h5>
+                    <div class=\"upload-controls\">
+                        <div class=\"upload-group\">
+                            <label>Front Image:</label>
+                            <div class=\"upload-thumbnail\" id=\"frontUploadThumbnail\">
+                                <div id=\"frontUploadThumbnail\" class=\"upload-placeholder\">
+                                    <i class=\"fa fa-upload\"></i>
+                                    <span>Upload Front</span>
+                                </div>
+                                <div id=\"frontPreviewCompact\" class=\"upload-preview\" style=\"display: none;\">
+                                    <img id=\"frontPreviewCompactImg\" alt=\"Front Preview\">
+                                </div>
+                            </div>
+                            <input type=\"file\" id=\"frontImageInput\" accept=\"image/*\" style=\"display: none;\">
+                        </div>
+                        
+                        <div class=\"upload-group\">
+                            <label>Back Image:</label>
+                            <div class=\"upload-thumbnail\" id=\"backUploadThumbnail\">
+                                <div id=\"backUploadThumbnail\" class=\"upload-placeholder\">
+                                    <i class=\"fa fa-upload\"></i>
+                                    <span>Upload Back</span>
+                                </div>
+                                <div id=\"backPreviewCompact\" class=\"upload-preview\" style=\"display: none;\">
+                                    <img id=\"backPreviewCompactImg\" alt=\"Back Preview\">
+                                </div>
+                            </div>
+                            <input type=\"file\" id=\"backImageInput\" accept=\"image/*\" style=\"display: none;\">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Canvas Controls -->
+                <div class=\"config-section\">
+                    <h5>Canvas Controls</h5>
+                    <div class=\"canvas-info\">
+                        <div class=\"info-row\">
+                            <span>Size:</span>
+                            <span id=\"canvasDimensions\">400 × 300</span>
+                        </div>
+                        <div class=\"info-row\">
+                            <span>Zoom:</span>
+                            <span id=\"zoomLevel\">100%</span>
+                        </div>
+                        <div class=\"info-row\">
+                            <span id=\"canvasScale\">Scale: 100%</span>
+                        </div>
+                    </div>
+                    <div class=\"zoom-controls\">
+                        <button id=\"zoomOut\" class=\"btn btn-sm btn-outline-secondary\" title=\"Zoom Out\">
+                            <i class=\"fa fa-search-minus\"></i>
+                        </button>
+                        <button id=\"resetZoom\" class=\"btn btn-sm btn-outline-secondary\" title=\"Reset Zoom\">
+                            <i class=\"fa fa-expand\"></i>
+                        </button>
+                        <button id=\"zoomIn\" class=\"btn btn-sm btn-outline-secondary\" title=\"Zoom In\">
+                            <i class=\"fa fa-search-plus\"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Template Actions -->
+                <div class=\"config-section\">
+                    <h5>Actions</h5>
+                    <div class=\"action-buttons\">
+                        <button id=\"saveTemplate\" class=\"btn btn-success\">
+                            <i class=\"fa fa-save\"></i> Save Template
+                        </button>
+                        <button id=\"previewTemplate\" class=\"btn btn-info\">
+                            <i class=\"fa fa-eye\"></i> Preview
+                        </button>
+                        <button id=\"deleteTemplate\" class=\"btn btn-danger\">
+                            <i class=\"fa fa-trash\"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Initialize upload controls after rendering
+        if (this.core.uploadManager) {
+            this.core.uploadManager.setupUploadControls();
+        }
+    }
+    
+    switchSide(side) {
+        console.log(`🔄 Switching to ${side} side from ${this.core.getCurrentSide()}`);
+        
+        // Save current side position data before switching
+        const canvas = this.core.getCanvas();
+        if (canvas && this.core.elementManager) {
+            this.core.elementManager.updatePositionData();
+        }
+        
+        this.core.setCurrentSide(side);
+        
+        // Update all radio buttons
+        const radioButtons = document.querySelectorAll('input[name=\"cardSide\"]');
+        radioButtons.forEach(radio => {
+            radio.checked = radio.value === side;
+        });
+        
+        // Update side toggle visual state
+        this.updateSideToggleButtons();
+        
+        // Clear canvas first
+        if (canvas) {
+            canvas.clear();
+        }
+        
+        // Load appropriate image
+        if (side === 'front' && this.core.getFrontImage()) {
+            console.log('Loading front image...');
+            this.loadImageToCanvas(this.core.getFrontImage());
+        } else if (side === 'back' && this.core.getBackImage()) {
+            console.log('Loading back image...');
+            this.loadImageToCanvas(this.core.getBackImage());
+        } else {
+            console.log(`No image for ${side} side - using minimal canvas size`);
+            // No image for this side - clear canvas and set minimal size
+            if (canvas) {
+                canvas.clear();
+                canvas.setBackgroundColor('#ffffff');
+                
+                // Reset canvas to minimal size when no image
+                canvas.setDimensions({
+                    width: 400,
+                    height: 300
+                });
+                
+                // Update canvas size display
+                if (this.core.canvasManager) {
+                    this.core.canvasManager.updateCanvasSizeDisplay(400, 300, 400, 300);
+                }
+                
+                canvas.renderAll();
+                
+                // Still load positioned elements even without background image
+                if (this.core.elementManager) {
+                    this.core.elementManager.loadPositionedElements();
+                }
+            }
+        }
+        
+        console.log(`✅ Switched to ${side} side`);
+    }
+    
+    loadImageToCanvas(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (this.core.canvasManager) {
+                this.core.canvasManager.loadImageToCanvas(e.target.result);
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    updateSideToggleButtons() {
+        const currentSide = this.core.getCurrentSide();
+        
+        // Update side toggle buttons
+        document.querySelectorAll('.side-toggle').forEach(toggle => {
+            const radio = toggle.querySelector('input[type=\"radio\"]');
+            if (radio) {
+                if (radio.value === currentSide) {
+                    toggle.classList.add('active');
+                } else {
+                    toggle.classList.remove('active');
+                }
+            }
+        });
+    }
+    
+    showTemplatesView() {
+        // Hide editor and show templates
+        if (this.core.editorSection) {
+            this.core.editorSection.style.display = 'none';
+        }
+        if (this.core.templatesGrid) {
+            this.core.templatesGrid.style.display = 'grid';
+        }
+        
+        // Clear editor state
+        this.core.setCurrentTemplate(null);
+        if (this.core.canvasManager) {
+            this.core.canvasManager.clearCanvas();
+        }
+        if (this.core.uploadManager) {
+            this.core.uploadManager.clearUploadPreviews();
+        }
+        
+        console.log('📋 Switched to templates view');
+    }
+    
+    showEditorView() {
+        // Hide templates and show editor
+        if (this.core.templatesGrid) {
+            this.core.templatesGrid.style.display = 'none';
+        }
+        if (this.core.editorSection) {
+            this.core.editorSection.style.display = 'block';
+        }
+        
+        // Reset to front side
+        this.switchSide('front');
+        
+        console.log('✏️ Switched to editor view');
+    }
+    
+    // Update UI elements
+    updateTemplateName(name) {
+        const templateNameInput = document.getElementById('templateName');
+        if (templateNameInput) {
+            templateNameInput.value = name;
+        }
+    }
+    
+    updateTemplateClass(classId) {
+        const classSelect = document.getElementById('templateClass');
+        if (classSelect) {
+            classSelect.value = classId;
+        }
+    }
+    
+    // Show/hide loading states
+    showLoading(message = 'Loading...') {
+        // Implementation for loading overlay
+        console.log('🔄', message);
+    }
+    
+    hideLoading() {
+        // Implementation for hiding loading overlay
+        console.log('✅ Loading complete');
+    }
+    
+    // Handle window resize
+    handleResize() {
+        // Adjust canvas size if needed
+        console.log('📐 Window resized - adjusting layout');
+    }
+    
+    // Keyboard shortcuts
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+S: Save template
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                if (this.core.templatesManager) {
+                    this.core.templatesManager.saveCurrentTemplate();
+                }
+            }
+            
+            // Escape: Back to templates
+            if (e.key === 'Escape') {
+                this.showTemplatesView();
+            }
+            
+            // Tab: Switch sides
+            if (e.key === 'Tab' && !e.ctrlKey && !e.shiftKey) {
+                e.preventDefault();
+                const currentSide = this.core.getCurrentSide();
+                const newSide = currentSide === 'front' ? 'back' : 'front';
+                this.switchSide(newSide);
+            }
+        });
+    }
+    
+    // Public methods
+    getCurrentView() {
+        if (this.core.editorSection && this.core.editorSection.style.display !== 'none') {
+            return 'editor';
+        }
+        return 'templates';
+    }
+    
+    isEditorView() {
+        return this.getCurrentView() === 'editor';
+    }
+    
+    setupExistingConfigControls() {
+        // Set up template name input if it exists
+        const templateNameInput = document.getElementById('templateName') || document.querySelector('[name="templateName"]');
+        if (templateNameInput) {
+            templateNameInput.addEventListener('change', () => {
+                if (this.core.currentTemplate) {
+                    this.core.currentTemplate.name = templateNameInput.value;
+                }
+            });
+        }
+        
+        // Set up class selector if it exists
+        const classSelector = document.getElementById('templateClass') || document.querySelector('[name="templateClass"]');
+        if (classSelector) {
+            this.loadClassesIntoSelector(classSelector);
+        }
+        
+        // Set up existing side toggle buttons
+        document.querySelectorAll('input[name="cardSide"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.checked) {
+                    this.switchSide(radio.value);
+                }
+            });
+        });
+        
+        // Set up existing upload controls
+        this.setupExistingUploadControls();
+    }
+    
+    setupExistingUploadControls() {
+        // Look for existing upload inputs
+        const frontUpload = document.getElementById('frontImageUpload') || document.querySelector('input[type="file"][data-side="front"]');
+        const backUpload = document.getElementById('backImageUpload') || document.querySelector('input[type="file"][data-side="back"]');
+        
+        if (frontUpload && this.core.uploadManager) {
+            frontUpload.addEventListener('change', (e) => {
+                this.core.uploadManager.handleImageUpload(e, 'front');
+            });
+        }
+        
+        if (backUpload && this.core.uploadManager) {
+            backUpload.addEventListener('change', (e) => {
+                this.core.uploadManager.handleImageUpload(e, 'back');
+            });
+        }
+    }
+}
+
+// Auto-initialize when core is ready
+if (window.templateEditorCore) {
+    new UIManager(window.templateEditorCore);
+} else {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.templateEditorCore) {
+            new UIManager(window.templateEditorCore);
+        }
+    });
+}

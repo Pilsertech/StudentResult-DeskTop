@@ -1,0 +1,385 @@
+/**
+ * Templates Manager for Template Editor
+ * Handles template loading, saving, grid rendering, and CRUD operations
+ */
+
+class TemplatesManager {
+    constructor(core) {
+        this.core = core;
+        this.templates = [];
+        this.classes = [];
+        
+        this.init();
+    }
+    
+    init() {
+        this.core.registerTemplatesManager(this);
+        this.setupEventListeners();
+        this.loadTemplates();
+        this.loadClasses();
+    }
+    
+    setupEventListeners() {
+        // Create new template button
+        document.getElementById('createNewTemplate')?.addEventListener('click', () => {
+            this.showCreateTemplateModal();
+        });
+        
+        // Save template button
+        document.getElementById('saveTemplate')?.addEventListener('click', () => {
+            this.saveCurrentTemplate();
+        });
+        
+        // Delete template button
+        document.getElementById('deleteTemplate')?.addEventListener('click', () => {
+            this.deleteCurrentTemplate();
+        });
+    }
+    
+    async loadTemplates() {
+        try {
+            console.log('📚 Loading templates...');
+            
+            const response = await fetch('http://localhost:9000/idcards/templates');
+            const result = await response.json();
+            
+            if (result.success) {
+                this.templates = result.templates || [];
+                this.renderTemplatesGrid();
+                console.log(`✅ Loaded ${this.templates.length} templates`);
+            } else {
+                throw new Error(result.message || 'Failed to load templates');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error loading templates:', error);
+            this.core.showMessage('Failed to load templates: ' + error.message, 'error');
+            this.showTemplatesError();
+        }
+    }
+    
+    async loadClasses() {
+        try {
+            console.log('📚 Loading classes...');
+            
+            const response = await fetch('http://localhost:9000/classes');
+            const result = await response.json();
+            
+            if (result.success) {
+                this.classes = result.classes || [];
+                this.populateClassDropdown();
+                console.log(`✅ Loaded ${this.classes.length} classes`);
+            } else {
+                console.warn('No classes found or failed to load classes');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error loading classes:', error);
+            console.warn('Continuing without class data');
+        }
+    }
+    
+    renderTemplatesGrid() {
+        const templatesGrid = this.core.templatesGrid;
+        if (!templatesGrid) return;
+        
+        templatesGrid.innerHTML = '';
+        
+        if (this.templates.length === 0) {
+            templatesGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #7f8c8d;">
+                    <i class="fa fa-paint-brush" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    <p>No templates found. Create your first template!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        this.templates.forEach(template => {
+            const templateCard = this.createTemplateCard(template);
+            templatesGrid.appendChild(templateCard);
+        });
+    }
+    
+    createTemplateCard(template) {
+        const card = document.createElement('div');
+        card.className = 'template-card fade-in';
+        card.dataset.templateId = template.id;
+        
+        const preview = template.FrontImagePath ? 
+            `<img src=\"http://localhost:9000/idcards/templates/${template.FrontImagePath.split('/').pop()}\" alt=\"${template.TemplateName}\">` :
+            `<i class=\"fa fa-image\" style=\"font-size: 2rem; color: #bdc3c7;\"></i>`;
+        
+        card.innerHTML = `
+            <div class=\"template-header\">
+                <h4>${template.TemplateName}</h4>
+                <div class=\"template-actions\">
+                    <button class=\"btn btn-sm btn-primary edit-template\" title=\"Edit Template\">
+                        <i class=\"fa fa-edit\"></i>
+                    </button>
+                    <button class=\"btn btn-sm btn-danger delete-template\" title=\"Delete Template\">
+                        <i class=\"fa fa-trash\"></i>
+                    </button>
+                </div>
+            </div>
+            <div class=\"template-preview\">
+                ${preview}
+            </div>
+            <div class=\"template-info\">
+                <p><strong>Class:</strong> ${template.ClassName || 'All Classes'}</p>
+                <p><strong>Created:</strong> ${new Date(template.CreatedAt).toLocaleDateString()}</p>
+                <p><strong>Status:</strong> 
+                    <span class=\"badge ${template.Status === 1 ? 'badge-success' : 'badge-secondary'}\">
+                        ${template.Status === 1 ? 'Active' : 'Inactive'}
+                    </span>
+                </p>
+            </div>
+        `;
+        
+        // Add event listeners
+        const editBtn = card.querySelector('.edit-template');
+        const deleteBtn = card.querySelector('.delete-template');
+        
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.editTemplate(template);
+        });
+        
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.deleteTemplate(template);
+        });
+        
+        // Card click to edit
+        card.addEventListener('click', () => {
+            this.editTemplate(template);
+        });
+        
+        return card;
+    }
+    
+    editTemplate(template) {
+        console.log('✏️ Editing template:', template.TemplateName);
+        
+        this.core.setCurrentTemplate(template);
+        
+        // Hide templates grid and show editor
+        if (this.core.templatesGrid) {
+            this.core.templatesGrid.style.display = 'none';
+        }
+        if (this.core.editorSection) {
+            this.core.editorSection.style.display = 'block';
+        }
+        
+        // Load template data
+        this.loadTemplateForEditing(template);
+        
+        this.core.showMessage(`Template \"${template.TemplateName}\" loaded for editing`, 'success');
+    }
+    
+    async loadTemplateForEditing(template) {
+        try {
+            // Reset editor state
+            this.core.setPositionData({ front: {}, back: {} });
+            this.core.setFrontImage(null);
+            this.core.setBackImage(null);
+            
+            // Update template name field
+            const templateNameInput = document.getElementById('templateName');
+            if (templateNameInput) {
+                templateNameInput.value = template.TemplateName;
+            }
+            
+            // Update class selection
+            const classSelect = document.getElementById('templateClass');
+            if (classSelect && template.ClassID) {
+                classSelect.value = template.ClassID;
+            }
+            
+            // Load position data if available
+            if (template.PositionData) {
+                try {
+                    const positionData = JSON.parse(template.PositionData);
+                    this.core.setPositionData(positionData);
+                } catch (e) {
+                    console.warn('Failed to parse position data:', e);
+                }
+            }
+            
+            // Load front image if available
+            if (template.FrontImagePath) {
+                const frontImageUrl = `http://localhost:9000/idcards/templates/${template.FrontImagePath.split('/').pop()}`;
+                await this.loadTemplateImage(frontImageUrl, 'front');
+            }
+            
+            // Load back image if available
+            if (template.BackImagePath) {
+                const backImageUrl = `http://localhost:9000/idcards/templates/${template.BackImagePath.split('/').pop()}`;
+                await this.loadTemplateImage(backImageUrl, 'back');
+            }
+            
+            // Switch to front side by default
+            if (this.core.uiManager) {
+                this.core.uiManager.switchSide('front');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error loading template for editing:', error);
+            this.core.showMessage('Error loading template: ' + error.message, 'error');
+        }
+    }
+    
+    async loadTemplateImage(imageUrl, side) {
+        try {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const file = new File([blob], `${side}-image.jpg`, { type: blob.type });
+            
+            if (side === 'front') {
+                this.core.setFrontImage(file);
+            } else {
+                this.core.setBackImage(file);
+            }
+            
+            // Update upload UI if available
+            if (this.core.uploadManager) {
+                this.core.uploadManager.updateUploadPreview(imageUrl, side);
+            }
+            
+        } catch (error) {
+            console.error(`❌ Error loading ${side} image:`, error);
+        }
+    }
+    
+    async saveCurrentTemplate() {
+        const currentTemplate = this.core.getCurrentTemplate();
+        if (!currentTemplate) {
+            this.core.showMessage('No template selected for saving', 'error');
+            return;
+        }
+        
+        try {
+            const templateData = this.prepareTemplateData();
+            
+            const formData = new FormData();
+            formData.append('templateId', currentTemplate.id);
+            formData.append('templateName', templateData.templateName);
+            formData.append('classId', templateData.classId);
+            formData.append('positionData', JSON.stringify(this.core.getPositionData()));
+            
+            if (this.core.getFrontImage()) {
+                formData.append('frontImage', this.core.getFrontImage());
+            }
+            if (this.core.getBackImage()) {
+                formData.append('backImage', this.core.getBackImage());
+            }
+            
+            const response = await fetch('http://localhost:9000/idcards/templates/update', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.core.showMessage('Template saved successfully!', 'success');
+                await this.loadTemplates(); // Refresh templates list
+            } else {
+                throw new Error(result.message || 'Failed to save template');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error saving template:', error);
+            this.core.showMessage('Error saving template: ' + error.message, 'error');
+        }
+    }
+    
+    prepareTemplateData() {
+        const templateNameInput = document.getElementById('templateName');
+        const classSelect = document.getElementById('templateClass');
+        
+        return {
+            templateName: templateNameInput?.value || 'Unnamed Template',
+            classId: classSelect?.value || null
+        };
+    }
+    
+    async deleteTemplate(template) {
+        if (!confirm(`Are you sure you want to delete the template \"${template.TemplateName}\"?`)) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`http://localhost:9000/idcards/templates/${template.id}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.core.showMessage('Template deleted successfully!', 'success');
+                await this.loadTemplates(); // Refresh templates list
+            } else {
+                throw new Error(result.message || 'Failed to delete template');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error deleting template:', error);
+            this.core.showMessage('Error deleting template: ' + error.message, 'error');
+        }
+    }
+    
+    showCreateTemplateModal() {
+        // Implementation for create template modal
+        console.log('🆕 Show create template modal');
+        this.core.showMessage('Create template functionality to be implemented', 'info');
+    }
+    
+    populateClassDropdown() {
+        const classSelect = document.getElementById('templateClass');
+        if (!classSelect) return;
+        
+        classSelect.innerHTML = '<option value=\"\">All Classes</option>';
+        
+        this.classes.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls.id;
+            option.textContent = `${cls.ClassName} ${cls.Section}`;
+            classSelect.appendChild(option);
+        });
+    }
+    
+    showTemplatesError() {
+        if (this.core.templatesGrid) {
+            this.core.templatesGrid.innerHTML = `
+                <div style=\"grid-column: 1 / -1; text-align: center; padding: 40px; color: #e74c3c;\">
+                    <i class=\"fa fa-exclamation-triangle\" style=\"font-size: 2rem; margin-bottom: 10px; display: block;\"></i>
+                    <p>Failed to load templates. Please check your connection and try again.</p>
+                    <button class=\"btn btn-primary\" onclick=\"location.reload()\">
+                        <i class=\"fa fa-refresh\"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
+    }
+    
+    // Public methods
+    getTemplates() {
+        return this.templates;
+    }
+    
+    getClasses() {
+        return this.classes;
+    }
+}
+
+// Auto-initialize when core is ready
+if (window.templateEditorCore) {
+    new TemplatesManager(window.templateEditorCore);
+} else {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.templateEditorCore) {
+            new TemplatesManager(window.templateEditorCore);
+        }
+    });
+}

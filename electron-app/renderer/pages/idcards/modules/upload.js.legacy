@@ -1,0 +1,307 @@
+/**
+ * Upload Manager for Template Editor
+ * Handles image uploads, drag & drop, and preview management
+ */
+
+class UploadManager {
+    constructor(core) {
+        this.core = core;
+        
+        this.init();
+    }
+    
+    init() {
+        this.core.registerUploadManager(this);
+        this.setupUploadControls();
+    }
+    
+    setupUploadControls() {
+        // Get upload elements
+        const frontThumbnail = document.getElementById('frontUploadThumbnail');
+        const backThumbnail = document.getElementById('backUploadThumbnail');
+        const frontInput = document.getElementById('frontImageInput');
+        const backInput = document.getElementById('backImageInput');
+        const frontZone = document.getElementById('frontUploadZone');
+        const backZone = document.getElementById('backUploadZone');
+        
+        // Setup front image upload (compact thumbnails)
+        if (frontThumbnail && frontInput) {
+            frontThumbnail.addEventListener('click', () => frontInput.click());
+            frontInput.addEventListener('change', (e) => this.handleImageUpload(e, 'front'));
+            this.setupDragAndDrop(frontThumbnail, 'front');
+        }
+        
+        // Setup back image upload (compact thumbnails)
+        if (backThumbnail && backInput) {
+            backThumbnail.addEventListener('click', () => backInput.click());
+            backInput.addEventListener('change', (e) => this.handleImageUpload(e, 'back'));
+            this.setupDragAndDrop(backThumbnail, 'back');
+        }
+        
+        // Backward compatibility with old upload zones
+        if (frontZone && frontInput) {
+            frontZone.addEventListener('click', () => frontInput.click());
+            this.setupDragAndDrop(frontZone, 'front');
+        }
+        
+        if (backZone && backInput) {
+            backZone.addEventListener('click', () => backInput.click());
+            this.setupDragAndDrop(backZone, 'back');
+        }
+    }
+    
+    setupDragAndDrop(zone, side) {
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zone.classList.add('dragover');
+        });
+        
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('dragover');
+        });
+        
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                this.processImageFile(files[0], side);
+            }
+        });
+    }
+    
+    handleImageUpload(e, side) {
+        const file = e.target.files[0];
+        if (file) {
+            this.processImageFile(file, side);
+        }
+    }
+    
+    processImageFile(file, side) {
+        // Validate file
+        if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+            this.core.showMessage('Please select an image file (JPG, PNG) or PDF', 'error');
+            return;
+        }
+        
+        if (file.size > 10 * 1024 * 1024) {
+            this.core.showMessage('File too large. Maximum size is 10MB', 'error');
+            return;
+        }
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const imageDataUrl = e.target.result;
+            this.updateUploadPreview(imageDataUrl, side);
+            
+            // Store file in core
+            if (side === 'front') {
+                this.core.setFrontImage(file);
+            } else {
+                this.core.setBackImage(file);
+            }
+            
+            // Switch to this side and load image to canvas
+            this.core.setCurrentSide(side);
+            if (this.core.uiManager) {
+                this.core.uiManager.switchSide(side);
+            }
+            
+            // Load image to canvas with enhanced method
+            if (this.core.canvasManager) {
+                this.core.canvasManager.loadImageToCanvas(imageDataUrl)
+                    .then(() => {
+                        console.log('✅ Image loaded to canvas successfully');
+                        this.core.showMessage('Image uploaded successfully!', 'success');
+                    })
+                    .catch((error) => {
+                        console.error('❌ Error loading image to canvas:', error);
+                        this.core.showMessage('Error loading image to canvas', 'error');
+                    });
+            }
+            
+            // Show editor panel
+            const editorPanel = document.getElementById('editorPanel');
+            if (editorPanel) {
+                editorPanel.style.display = 'block';
+            }
+        };
+        reader.readAsDataURL(file);
+        
+        console.log(`📸 ${side} image processed:`, file.name);
+    }
+    
+    updateUploadPreview(imageSrc, side) {
+        // Update compact preview
+        const compactPreview = document.getElementById(`${side}PreviewCompact`);
+        const compactImg = document.getElementById(`${side}PreviewCompactImg`);
+        const uploadThumbnail = document.getElementById(`${side}UploadThumbnail`);
+        
+        if (compactPreview && compactImg && uploadThumbnail) {
+            compactImg.src = imageSrc;
+            compactPreview.style.display = 'block';
+            uploadThumbnail.style.display = 'none';
+            
+            // Add click handler to switch to this side when clicking the preview
+            compactPreview.style.cursor = 'pointer';
+            compactPreview.onclick = () => {
+                console.log(`🖱️ Clicked ${side} preview thumbnail - switching to ${side} side`);
+                if (this.core.uiManager) {
+                    this.core.uiManager.switchSide(side);
+                }
+            };
+        }
+        
+        // Also update old preview if it exists (backward compatibility)
+        const preview = document.getElementById(`${side}Preview`);
+        const previewImg = document.getElementById(`${side}PreviewImg`);
+        const uploadZone = document.getElementById(`${side}UploadZone`);
+        
+        if (preview && previewImg && uploadZone) {
+            previewImg.src = imageSrc;
+            preview.style.display = 'block';
+            uploadZone.style.display = 'none';
+        }
+    }
+    
+    async uploadImageToServer(file, side) {
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('side', side);
+            
+            const response = await fetch('http://localhost:9000/idcards/upload-template-image', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.message || 'Upload failed');
+            }
+            
+            console.log(`✅ ${side} image uploaded successfully:`, result.filename);
+            return result;
+            
+        } catch (error) {
+            console.error(`❌ Error uploading ${side} image:`, error);
+            this.core.showMessage(`Failed to upload ${side} image: ${error.message}`, 'error');
+            throw error;
+        }
+    }
+    
+    // Clear upload previews
+    clearUploadPreviews() {
+        ['front', 'back'].forEach(side => {
+            // Clear compact previews
+            const compactPreview = document.getElementById(`${side}PreviewCompact`);
+            const uploadThumbnail = document.getElementById(`${side}UploadThumbnail`);
+            
+            if (compactPreview && uploadThumbnail) {
+                compactPreview.style.display = 'none';
+                uploadThumbnail.style.display = 'block';
+            }
+            
+            // Clear old previews (backward compatibility)
+            const preview = document.getElementById(`${side}Preview`);
+            const uploadZone = document.getElementById(`${side}UploadZone`);
+            
+            if (preview && uploadZone) {
+                preview.style.display = 'none';
+                uploadZone.style.display = 'block';
+            }
+            
+            // Clear file inputs
+            const fileInput = document.getElementById(`${side}ImageInput`);
+            if (fileInput) {
+                fileInput.value = '';
+            }
+        });
+        
+        // Clear stored images in core
+        this.core.setFrontImage(null);
+        this.core.setBackImage(null);
+    }
+    
+    // Validate image file
+    validateImageFile(file) {
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        
+        if (!validTypes.includes(file.type)) {
+            throw new Error('Invalid file type. Please select a valid image file (JPEG, PNG, GIF, WebP)');
+        }
+        
+        if (file.size > maxSize) {
+            throw new Error('File too large. Maximum size is 10MB');
+        }
+        
+        return true;
+    }
+    
+    // Get image data URL from file
+    getImageDataURL(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(new Error('Failed to read file'));
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    // Resize image if needed
+    resizeImage(file, maxWidth = 1200, maxHeight = 800, quality = 0.8) {
+        return new Promise((resolve) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = () => {
+                // Calculate new dimensions
+                let { width, height } = img;
+                
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width *= ratio;
+                    height *= ratio;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Draw and convert to blob
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob(resolve, file.type, quality);
+            };
+            
+            img.src = URL.createObjectURL(file);
+        });
+    }
+    
+    // Public methods
+    hasImage(side) {
+        return side === 'front' ? this.core.getFrontImage() !== null : this.core.getBackImage() !== null;
+    }
+    
+    getImage(side) {
+        return side === 'front' ? this.core.getFrontImage() : this.core.getBackImage();
+    }
+}
+
+// Auto-initialize when core is ready
+if (window.templateEditorCore) {
+    new UploadManager(window.templateEditorCore);
+} else {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.templateEditorCore) {
+            new UploadManager(window.templateEditorCore);
+        }
+    });
+}

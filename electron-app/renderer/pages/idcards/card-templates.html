@@ -86,66 +86,67 @@
                     </div>
                     
                     <div class="editor-content">
-                        <!-- Template Upload Panel -->
-                        <div class="upload-panel">
-                            <h4><i class="fa fa-upload"></i> Upload Template Images</h4>
-                            
-                            <div class="upload-grid">
-                                <div class="upload-card">
-                                    <div class="upload-header">
-                                        <h5>Front Side <span class="required">*</span></h5>
-                                        <small>Main ID card design</small>
-                                    </div>
-                                    <div class="upload-zone" id="frontUploadZone">
-                                        <i class="fa fa-cloud-upload"></i>
-                                        <p>Drop front template here</p>
-                                        <small>PDF, JPG, PNG (Max 10MB)</small>
-                                        <input type="file" id="frontImageInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
-                                    </div>
-                                    <div class="upload-preview" id="frontPreview" style="display: none;">
-                                        <img id="frontPreviewImg" alt="Front Template">
-                                        <button class="btn btn-sm btn-danger" onclick="removeFrontImage()">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
+                        <!-- Compact Configuration Panel -->
+                        <div class="compact-config-panel">
+                            <div class="config-row">
+                                <!-- Template Name & Classes -->
+                                <div class="config-item">
+                                    <label for="templateName">Template Name</label>
+                                    <input type="text" id="templateName" class="form-control" placeholder="Enter name" required>
+                                </div>
+                                <div class="config-item">
+                                    <label for="assignedClasses">Classes</label>
+                                    <select id="assignedClasses" class="form-control" multiple size="2">
+                                        <!-- Classes will be populated -->
+                                    </select>
+                                </div>
+                                
+                                <!-- Compact Image Upload with Thumbnails -->
+                                <div class="config-item upload-thumbnails">
+                                    <label>Template Images</label>
+                                    <div class="image-uploads">
+                                        <!-- Front Image -->
+                                        <div class="image-upload-compact">
+                                            <div class="upload-thumbnail" id="frontUploadThumbnail" onclick="document.getElementById('frontImageInput').click()">
+                                                <i class="fa fa-plus"></i>
+                                                <span>Front</span>
+                                            </div>
+                                            <div class="image-preview-compact" id="frontPreviewCompact" style="display: none;">
+                                                <img id="frontPreviewCompactImg" alt="Front">
+                                                <div class="preview-overlay">
+                                                    <button class="btn-remove" onclick="removeFrontImage()" title="Remove">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <input type="file" id="frontImageInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
+                                        </div>
+                                        
+                                        <!-- Back Image -->
+                                        <div class="image-upload-compact">
+                                            <div class="upload-thumbnail" id="backUploadThumbnail" onclick="document.getElementById('backImageInput').click()">
+                                                <i class="fa fa-plus"></i>
+                                                <span>Back</span>
+                                            </div>
+                                            <div class="image-preview-compact" id="backPreviewCompact" style="display: none;">
+                                                <img id="backPreviewCompactImg" alt="Back">
+                                                <div class="preview-overlay">
+                                                    <button class="btn-remove" onclick="removeBackImage()" title="Remove">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <input type="file" id="backImageInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <div class="upload-card">
-                                    <div class="upload-header">
-                                        <h5>Back Side <span class="optional">Optional</span></h5>
-                                        <small>Reverse side design</small>
-                                    </div>
-                                    <div class="upload-zone" id="backUploadZone">
-                                        <i class="fa fa-cloud-upload"></i>
-                                        <p>Drop back template here</p>
-                                        <small>PDF, JPG, PNG (Max 10MB)</small>
-                                        <input type="file" id="backImageInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
-                                    </div>
-                                    <div class="upload-preview" id="backPreview" style="display: none;">
-                                        <img id="backPreviewImg" alt="Back Template">
-                                        <button class="btn btn-sm btn-danger" onclick="removeBackImage()">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Template Configuration -->
-                        <div class="config-panel">
-                            <h4><i class="fa fa-cogs"></i> Template Configuration</h4>
-                            
-                            <div class="config-form">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="templateName">Template Name</label>
-                                        <input type="text" id="templateName" class="form-control" placeholder="Enter template name" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="assignedClasses">Assigned Classes</label>
-                                        <select id="assignedClasses" class="form-control" multiple>
-                                            <!-- Classes will be populated -->
-                                        </select>
+                                <!-- Canvas Size Display -->
+                                <div class="config-item canvas-info">
+                                    <label>Canvas Size</label>
+                                    <div class="canvas-size-display" id="canvasSizeDisplay">
+                                        <span id="canvasDimensions">1050 × 650</span>
+                                        <small id="canvasScale">Scale: 1:1</small>
                                     </div>
                                 </div>
                             </div>
@@ -204,6 +205,10 @@
                                 <!-- Canvas Area -->
                                 <div class="canvas-area">
                                     <div class="canvas-header">
+                                        <button class="canvas-expand-btn" onclick="openPopupCanvas()">
+                                            <i class="fa fa-expand"></i>
+                                            Full Screen Editor
+                                        </button>
                                         <div class="canvas-controls">
                                             <button class="btn btn-sm btn-outline" onclick="zoomIn()">
                                                 <i class="fa fa-search-plus"></i>
@@ -287,6 +292,16 @@
 
     <!-- Scripts -->
     <script src="../../../../shared/js/jquery/jquery-2.2.4.min.js"></script>
+    
+    <!-- Template Editor Modules (Modular Architecture) -->
+    <script src="modules/core.js"></script>
+    <script src="modules/canvas.js"></script>
+    <script src="modules/templates.js"></script>
+    <script src="modules/upload.js"></script>
+    <script src="modules/elements.js"></script>
+    <script src="modules/ui.js"></script>
+    
+    <!-- Legacy compatibility layer -->
     <script src="card-templates.js"></script>
     
     <script>

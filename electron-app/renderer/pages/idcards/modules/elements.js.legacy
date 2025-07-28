@@ -1,0 +1,376 @@
+/**
+ * Element Manager for Template Editor
+ * Handles adding elements, positioning, properties, and coordinate management
+ */
+
+class ElementManager {
+    constructor(core) {
+        this.core = core;
+        this.selectedObject = null;
+        
+        this.init();
+    }
+    
+    init() {
+        this.core.registerElementManager(this);
+        this.setupElementControls();
+        this.setupExistingElementButtons();
+    }
+    
+    setupElementControls() {
+        console.log('🧩 Element controls will be set up after panel rendering');
+    }
+    
+    setupExistingElementButtons() {
+        // Setup existing element buttons in the HTML for main canvas
+        document.querySelectorAll('.element-item[data-type]').forEach(button => {
+            button.addEventListener('click', () => {
+                const elementType = button.dataset.type;
+                this.addElement(elementType);
+            });
+        });
+        
+        // Also setup popup element buttons when they exist
+        setTimeout(() => {
+            document.querySelectorAll('.element-item-popup[data-type]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const elementType = button.dataset.type;
+                    this.addElementToPopupCanvas(elementType);
+                });
+            });
+        }, 100);
+    }
+    
+    // Main method to add elements - works with both canvases
+    addElement(elementType) {
+        // Check if popup canvas is active
+        if (this.core.canvasManager && this.core.canvasManager.isPopupMode) {
+            this.addElementToPopupCanvas(elementType);
+        } else {
+            this.addElementToMainCanvas(elementType);
+        }
+    }
+    
+    addElementToMainCanvas(elementType) {
+        const canvas = this.core.getCanvas();
+        if (!canvas) {
+            this.core.showMessage('Canvas not ready. Please upload an image first.', 'warning');
+            return;
+        }
+        
+        console.log(`➕ Adding ${elementType} element to main canvas`);
+        
+        const element = this.createElement(elementType);
+        if (element) {
+            // Position element in center of main canvas
+            const canvasCenter = canvas.getCenter();
+            element.set({
+                left: canvasCenter.left - (element.width * (element.scaleX || 1)) / 2,
+                top: canvasCenter.top - (element.height * (element.scaleY || 1)) / 2
+            });
+            
+            canvas.add(element);
+            canvas.setActiveObject(element);
+            canvas.renderAll();
+            
+            this.updatePositionData();
+            this.core.showMessage(`${elementType} added to template`, 'success', 2000);
+        }
+    }
+    
+    addElementToPopupCanvas(elementType) {
+        const popupCanvas = this.core.canvasManager && this.core.canvasManager.popupCanvas;
+        if (!popupCanvas) {
+            console.error('❌ Popup canvas not available');
+            return;
+        }
+        
+        console.log(`➕ Adding ${elementType} element to popup canvas`);
+        
+        const element = this.createElement(elementType);
+        if (element) {
+            // Position element in center of popup canvas
+            const center = popupCanvas.getCenter();
+            const zoom = popupCanvas.getZoom();
+            const vpt = popupCanvas.viewportTransform;
+            
+            const centerX = (center.left - vpt[4]) / zoom;
+            const centerY = (center.top - vpt[5]) / zoom;
+            
+            element.set({
+                left: centerX,
+                top: centerY,
+                originX: 'center',
+                originY: 'center'
+            });
+            
+            popupCanvas.add(element);
+            popupCanvas.setActiveObject(element);
+            popupCanvas.renderAll();
+            
+            console.log(`✅ Element '${elementType}' added to popup canvas at (${centerX.toFixed(1)}, ${centerY.toFixed(1)})`);
+        }
+    }
+    
+    createElement(elementType) {
+        switch(elementType) {
+            case 'studentName':
+                return new fabric.Text('Student Name', {
+                    fontFamily: 'Arial',
+                    fontSize: 20,
+                    fill: '#000000',
+                    elementType: 'studentName'
+                });
+                
+            case 'rollId':
+                return new fabric.Text('Roll ID', {
+                    fontFamily: 'Arial',
+                    fontSize: 16,
+                    fill: '#000000',
+                    elementType: 'rollId'
+                });
+                
+            case 'className':
+                return new fabric.Text('Class Name', {
+                    fontFamily: 'Arial',
+                    fontSize: 16,
+                    fill: '#000000',
+                    elementType: 'className'
+                });
+                
+            case 'studentId':
+                return new fabric.Text('Student ID', {
+                    fontFamily: 'Arial',
+                    fontSize: 16,
+                    fill: '#000000',
+                    elementType: 'studentId'
+                });
+                
+            case 'photo':
+                const photoRect = new fabric.Rect({
+                    width: 120,
+                    height: 150,
+                    fill: '#f0f0f0',
+                    stroke: '#cccccc',
+                    strokeWidth: 2
+                });
+                
+                const photoText = new fabric.Text('Photo', {
+                    fontFamily: 'Arial',
+                    fontSize: 14,
+                    fill: '#666666',
+                    selectable: false,
+                    evented: false
+                });
+                
+                return new fabric.Group([photoRect, photoText], {
+                    elementType: 'photo'
+                });
+                
+            case 'qrCode':
+                const qrRect = new fabric.Rect({
+                    width: 80,
+                    height: 80,
+                    fill: '#ffffff',
+                    stroke: '#000000',
+                    strokeWidth: 1
+                });
+                
+                const qrText = new fabric.Text('QR', {
+                    fontFamily: 'Arial',
+                    fontSize: 12,
+                    fill: '#000000',
+                    selectable: false,
+                    evented: false
+                });
+                
+                return new fabric.Group([qrRect, qrText], {
+                    elementType: 'qrCode'
+                });
+                
+            case 'barcode':
+                const barcodeRect = new fabric.Rect({
+                    width: 100,
+                    height: 30,
+                    fill: '#ffffff',
+                    stroke: '#000000',
+                    strokeWidth: 1
+                });
+                
+                const barcodeText = new fabric.Text('Barcode', {
+                    fontFamily: 'Arial',
+                    fontSize: 10,
+                    fill: '#000000',
+                    selectable: false,
+                    evented: false
+                });
+                
+                return new fabric.Group([barcodeRect, barcodeText], {
+                    elementType: 'barcode'
+                });
+                
+            default:
+                console.error(`❌ Unknown element type: ${elementType}`);
+                return null;
+        }
+    }
+    
+    onObjectSelected(obj) {
+        this.selectedObject = obj;
+        if (obj && obj.elementType) {
+            this.showElementProperties(obj);
+        } else {
+            this.clearProperties();
+        }
+    }
+    
+    showElementProperties(obj) {
+        const propertiesPanel = document.getElementById('propertiesContent') || 
+                               document.querySelector('.properties-content');
+        if (!propertiesPanel) {
+            console.warn('Properties panel not found');
+            return;
+        }
+        
+        const elementType = obj.elementType;
+        
+        let html = '<div class="property-group">';
+        html += '<h5>Element: ' + elementType + '</h5>';
+        html += '<div class="form-group">';
+        html += '<label>Position X:</label>';
+        html += '<input type="number" value="' + Math.round(obj.left) + '" onchange="updateObjectProperty(\'left\', this.value)">';
+        html += '</div>';
+        html += '<div class="form-group">';
+        html += '<label>Position Y:</label>';
+        html += '<input type="number" value="' + Math.round(obj.top) + '" onchange="updateObjectProperty(\'top\', this.value)">';
+        html += '</div>';
+        
+        if (obj.type === 'text') {
+            html += '<div class="form-group">';
+            html += '<label>Font Size:</label>';
+            html += '<input type="number" value="' + (obj.fontSize || 16) + '" onchange="updateObjectProperty(\'fontSize\', this.value)">';
+            html += '</div>';
+            html += '<div class="form-group">';
+            html += '<label>Color:</label>';
+            html += '<input type="color" value="' + (obj.fill || '#000000') + '" onchange="updateObjectProperty(\'fill\', this.value)">';
+            html += '</div>';
+            html += '<div class="form-group">';
+            html += '<label>Text:</label>';
+            html += '<input type="text" value="' + obj.text + '" onchange="updateObjectProperty(\'text\', this.value)">';
+            html += '</div>';
+        }
+        
+        html += '<div class="form-group">';
+        html += '<button class="btn btn-sm btn-danger" onclick="deleteSelectedElement()">';
+        html += '<i class="fa fa-trash"></i> Delete';
+        html += '</button>';
+        html += '</div>';
+        html += '</div>';
+        
+        propertiesPanel.innerHTML = html;
+    }
+    
+    clearProperties() {
+        const propertiesPanel = document.getElementById('propertiesContent') || 
+                               document.querySelector('.properties-content');
+        if (propertiesPanel) {
+            propertiesPanel.innerHTML = '<div class="no-selection"><i class="fa fa-mouse-pointer"></i><p>Select an element to edit properties</p></div>';
+        }
+        this.selectedObject = null;
+    }
+    
+    updatePositionData() {
+        const canvas = this.core.getCanvas();
+        if (!canvas) return;
+        
+        const currentSide = this.core.getCurrentSide();
+        const positionData = this.core.getPositionData();
+        
+        // Clear current side data
+        positionData[currentSide] = {};
+        
+        // Collect data from all objects with elementType
+        canvas.getObjects().forEach(obj => {
+            if (obj.elementType) {
+                positionData[currentSide][obj.elementType] = {
+                    x: Math.round(obj.left),
+                    y: Math.round(obj.top),
+                    width: Math.round(obj.width * (obj.scaleX || 1)),
+                    height: Math.round(obj.height * (obj.scaleY || 1)),
+                    fontSize: obj.fontSize || 16,
+                    fontFamily: obj.fontFamily || 'Arial',
+                    color: obj.fill || '#000000',
+                    text: obj.text || '',
+                    rotation: obj.angle || 0
+                };
+            }
+        });
+        
+        this.core.setPositionData(positionData);
+        console.log(`📊 Updated position data for ${currentSide} side:`, positionData[currentSide]);
+    }
+    
+    loadPositionedElements() {
+        const canvas = this.core.getCanvas();
+        if (!canvas) return;
+        
+        const currentSide = this.core.getCurrentSide();
+        const positionData = this.core.getPositionData();
+        const positions = positionData[currentSide];
+        
+        if (!positions || Object.keys(positions).length === 0) {
+            console.log(`No positioned elements for ${currentSide} side`);
+            return;
+        }
+        
+        console.log(`Loading ${Object.keys(positions).length} positioned elements for ${currentSide} side`);
+        
+        // Clear existing non-background objects
+        const objects = canvas.getObjects();
+        objects.forEach(obj => {
+            if (obj.elementType) {
+                canvas.remove(obj);
+            }
+        });
+        
+        // Add positioned elements
+        Object.entries(positions).forEach(([elementType, data]) => {
+            const element = this.createElement(elementType);
+            
+            if (element) {
+                element.set({
+                    left: data.x,
+                    top: data.y,
+                    scaleX: (data.width || element.width) / element.width,
+                    scaleY: (data.height || element.height) / element.height,
+                    angle: data.rotation || 0
+                });
+                
+                if (element.type === 'text') {
+                    element.set({
+                        fontSize: data.fontSize || 16,
+                        fontFamily: data.fontFamily || 'Arial',
+                        fill: data.color || '#000000',
+                        text: data.text || elementType
+                    });
+                }
+                
+                canvas.add(element);
+            }
+        });
+        
+        canvas.renderAll();
+        console.log(`✅ Loaded ${Object.keys(positions).length} positioned elements for ${currentSide} side`);
+    }
+}
+
+// Auto-initialize when core is ready
+if (window.templateEditorCore) {
+    new ElementManager(window.templateEditorCore);
+} else {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.templateEditorCore) {
+            new ElementManager(window.templateEditorCore);
+        }
+    });
+}
